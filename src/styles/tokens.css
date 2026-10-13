@@ -1,0 +1,52 @@
+:root {
+  /* 차분한 저채도 팔레트. 회기 직후에 보는 화면이므로 대비를 과하게 올리지 않는다. */
+  --bg: #f7f5f2;
+  --surface: #ffffff;
+  --surface-alt: #f0ece7;
+  --border: #e0dad2;
+  --text: #2b2724;
+  --text-muted: #6b625a;
+  --accent: #5b7a6e;
+  --accent-soft: #e4ece8;
+  --accent-text: #ffffff;
+  --warn-surface: #f5efe4;
+  --warn-border: #e2d4b8;
+
+  --radius: 14px;
+  --radius-lg: 20px;
+  --gutter: 20px;
+  --max-width: 430px;
+
+  --font: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
+    'Malgun Gothic', 'Noto Sans KR', system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #1b1917;
+    --surface: #262320;
+    --surface-alt: #2f2b27;
+    --border: #3b362f;
+    --text: #ece7e1;
+    --text-muted: #a69c91;
+    --accent: #7fa294;
+    --accent-soft: #2c3b36;
+    --accent-text: #15201c;
+    --warn-surface: #302a20;
+    --warn-border: #4b4030;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #1b1917;
+  --surface: #262320;
+  --surface-alt: #2f2b27;
+  --border: #3b362f;
+  --text: #ece7e1;
+  --text-muted: #a69c91;
+  --accent: #7fa294;
+  --accent-soft: #2c3b36;
+  --accent-text: #15201c;
+  --warn-surface: #302a20;
+  --warn-border: #4b4030;
+}
