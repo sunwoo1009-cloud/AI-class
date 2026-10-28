@@ -4,9 +4,17 @@ interface Props {
   onStartCheckIn: () => void;
   onOpenJournal: () => void;
   onOpenSummary: () => void;
+  onOpenReview: () => void;
+  onOpenCalendar: () => void;
   onOpenSettings: () => void;
-  /** 2·3단계에서 열리는 화면. 아직 없으면 비활성으로 보여준다. */
-  pending?: { journal?: boolean; summary?: boolean; settings?: boolean };
+  /** 3단계에서 열리는 화면. 아직 없으면 비활성으로 보여준다. */
+  pending?: {
+    journal?: boolean;
+    summary?: boolean;
+    review?: boolean;
+    calendar?: boolean;
+    settings?: boolean;
+  };
 }
 
 /** 명세 9절 화면 2 */
@@ -14,6 +22,8 @@ export function Home({
   onStartCheckIn,
   onOpenJournal,
   onOpenSummary,
+  onOpenReview,
+  onOpenCalendar,
   onOpenSettings,
   pending = {},
 }: Props) {
@@ -59,6 +69,20 @@ export function Home({
 
       <button className="btn" disabled={pending.summary} onClick={onOpenSummary}>
         주간 요약
+        <span className="btn-sub">지금 괜찮은가</span>
+      </button>
+
+      <button className="btn" disabled={pending.review} onClick={onOpenReview}>
+        돌아보기
+        <span className="btn-sub">나아지고 있나</span>
+      </button>
+
+      <button
+        className="btn"
+        disabled={pending.calendar}
+        onClick={onOpenCalendar}
+      >
+        캘린더
       </button>
 
       <button
@@ -69,7 +93,7 @@ export function Home({
         설정
       </button>
 
-      {pending.journal || pending.summary || pending.settings ? (
+      {pending.journal || pending.calendar || pending.settings ? (
         <p className="muted" style={{ marginTop: 12, marginBottom: 0 }}>
           회색 버튼은 다음 단계에서 열어요.
         </p>

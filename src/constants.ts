@@ -118,3 +118,11 @@ export const ESCALATION = {
   sameReactionScope: 'all' as 'all' | 'primary',
   noImprovementCount: 2,
 };
+
+/** 명세 7.4 — 돌아보기. 기준 수치는 설계 가정이므로 상수로 분리한다. */
+export const REVIEW = {
+  bucketDays: 28,
+  maxBuckets: 4,
+  /** 구간 비교에 필요한 최소 재평정 수 */
+  minRatingsPerBucket: 3,
+};
