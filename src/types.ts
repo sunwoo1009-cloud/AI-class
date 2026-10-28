@@ -49,7 +49,6 @@ export interface JournalEntry {
 export interface Settings {
   displayName: string; // 자기 거리두기 기법용, 기기에만 저장
   onboardedAt: string;
-  journalPinHash: string | null; // 일기 잠금용 PIN의 해시, 미설정이면 null
 }
 
 // --- 흐름 전용 타입 (명세 6절) ---

@@ -31,7 +31,6 @@ export function App() {
           const next: Settings = {
             displayName,
             onboardedAt: new Date().toISOString(),
-            journalPinHash: null,
           };
           saveSettings(next);
           setSettings(next);
