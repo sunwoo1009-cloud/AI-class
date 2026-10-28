@@ -661,3 +661,20 @@ input[type='range'] {
     color: #e08d82;
   }
 }
+
+/* --- 체크박스 줄 --- */
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  font-size: 0.9375rem;
+}
+
+.check-row input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  margin: 0;
+}

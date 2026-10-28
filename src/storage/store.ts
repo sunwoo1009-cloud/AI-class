@@ -77,6 +77,10 @@ export function loadWeeklySessions(): WeeklySessionCount[] {
   return read<WeeklySessionCount[]>(KEYS.weeklySessions, []);
 }
 
+export function writeWeeklySessions(list: WeeklySessionCount[]): void {
+  write(KEYS.weeklySessions, list);
+}
+
 export function saveWeeklySession(entry: WeeklySessionCount): WeeklySessionCount[] {
   const list = loadWeeklySessions();
   const i = list.findIndex((w) => w.weekStart === entry.weekStart);
@@ -96,20 +100,8 @@ export function saveJournal(list: JournalEntry[]): void {
   write(KEYS.journal, list);
 }
 
-// --- 내보내기 / 전체 삭제 ---
-
-/** 명세 7.3 — 내보내기에서 일기는 기본적으로 제외한다 */
-export function exportData(includeJournal: boolean): string {
-  const payload: Record<string, unknown> = {
-    schemaVersion: SCHEMA_VERSION,
-    exportedAt: new Date().toISOString(),
-    settings: loadSettings(),
-    checkIns: loadCheckIns(),
-    weeklySessions: loadWeeklySessions(),
-  };
-  if (includeJournal) payload.journal = loadJournal();
-  return JSON.stringify(payload, null, 2);
-}
+// --- 전체 삭제 ---
+// 내보내기·가져오기는 lib/dataTransfer.ts 가 담당한다 (저장소와 분리해 테스트하기 위해).
 
 /** 명세 2절 — "모든 데이터 삭제" */
 export function clearAllData(): void {

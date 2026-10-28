@@ -5,6 +5,7 @@ import { Home } from './screens/Home';
 import { Journal } from './screens/Journal';
 import { Onboarding } from './screens/Onboarding';
 import { Review } from './screens/Review';
+import { SettingsScreen } from './screens/SettingsScreen';
 import { WeeklySummary } from './screens/WeeklySummary';
 import {
   ensureSchemaVersion,
@@ -13,7 +14,14 @@ import {
 } from './storage/store';
 import type { Settings } from './types';
 
-type View = 'home' | 'checkin' | 'summary' | 'review' | 'calendar' | 'journal';
+type View =
+  | 'home'
+  | 'checkin'
+  | 'summary'
+  | 'review'
+  | 'calendar'
+  | 'journal'
+  | 'settings';
 
 export function App() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -47,9 +55,7 @@ export function App() {
 
   switch (view) {
     case 'checkin':
-      return (
-        <CheckInFlow displayName={settings.displayName} onFinish={home} />
-      );
+      return <CheckInFlow displayName={settings.displayName} onFinish={home} />;
     case 'summary':
       return <WeeklySummary onBack={home} />;
     case 'review':
@@ -58,6 +64,19 @@ export function App() {
       return <Calendar onBack={home} />;
     case 'journal':
       return <Journal onDone={home} />;
+    case 'settings':
+      return (
+        <SettingsScreen
+          settings={settings}
+          onChangeSettings={setSettings}
+          onReset={() => {
+            // 전부 지우면 온보딩으로 돌아간다
+            setSettings(null);
+            setView('home');
+          }}
+          onBack={home}
+        />
+      );
     case 'home':
       return (
         <Home
@@ -66,8 +85,7 @@ export function App() {
           onOpenReview={() => setView('review')}
           onOpenCalendar={() => setView('calendar')}
           onOpenJournal={() => setView('journal')}
-          onOpenSettings={() => undefined}
-          pending={{ settings: true }}
+          onOpenSettings={() => setView('settings')}
         />
       );
   }
