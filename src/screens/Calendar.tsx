@@ -8,8 +8,15 @@ import {
   monthLabel,
 } from '../lib/calendar';
 import { formatDateLabel, formatTimeLabel } from '../lib/date';
-import { loadCheckIns, loadJournal } from '../storage/store';
-import type { CheckIn } from '../types';
+import { deleteJournal, loadCheckIns, loadJournal } from '../storage/store';
+import type { CheckIn, JournalEntry } from '../types';
+
+const PROMPT_LABELS: Record<JournalEntry['answers'][number]['promptId'], string> =
+  {
+    drain: '가장 지치게 한 것',
+    response: '몸과 마음의 반응',
+    let_go: '내려놓고 갈 것',
+  };
 
 interface Props {
   onBack: () => void;
@@ -18,7 +25,7 @@ interface Props {
 /** 명세 7.5 / 9절 화면 11 */
 export function Calendar({ onBack }: Props) {
   const checkIns = useMemo(() => loadCheckIns(), []);
-  const journal = useMemo(() => loadJournal(), []);
+  const [journal, setJournal] = useState(() => loadJournal());
 
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -121,7 +128,12 @@ export function Calendar({ onBack }: Props) {
       </div>
 
       {selected ? (
-        <DayDetail dateKey={selected} checkIns={dayCheckIns} />
+        <DayDetail
+          dateKey={selected}
+          checkIns={dayCheckIns}
+          entry={journal.find((j) => j.date === selected) ?? null}
+          onDeleteJournal={(id) => setJournal(deleteJournal(id))}
+        />
       ) : (
         <p className="muted" style={{ marginTop: 18 }}>
           기록이 있는 날을 누르면 그날 내용이 보여요.
@@ -136,10 +148,16 @@ export function Calendar({ onBack }: Props) {
 function DayDetail({
   dateKey,
   checkIns,
+  entry,
+  onDeleteJournal,
 }: {
   dateKey: string;
   checkIns: CheckIn[];
+  entry: JournalEntry | null;
+  onDeleteJournal: (id: string) => void;
 }) {
+  const [confirming, setConfirming] = useState(false);
+
   return (
     <div style={{ marginTop: 18 }}>
       <h2>{formatDateLabel(dateKey)}</h2>
@@ -182,7 +200,43 @@ function DayDetail({
         ))
       )}
 
-      {/* 일기는 3단계에서 이 자리에 붙는다 (명세 7.5) */}
+      {entry && entry.answers.length > 0 ? (
+        <>
+          <h2 style={{ marginTop: 20 }}>그날 일기</h2>
+          <div className="card">
+            {entry.answers.map((a) => (
+              <div key={a.promptId} style={{ marginBottom: 14 }}>
+                <div className="stat-label">{PROMPT_LABELS[a.promptId]}</div>
+                <p className="journal-body">{a.text}</p>
+              </div>
+            ))}
+            {confirming ? (
+              <div className="btn-row">
+                <button
+                  className="btn"
+                  style={{ textAlign: 'center' }}
+                  onClick={() => setConfirming(false)}
+                >
+                  그만두기
+                </button>
+                <button
+                  className="btn btn-danger"
+                  onClick={() => {
+                    onDeleteJournal(entry.id);
+                    setConfirming(false);
+                  }}
+                >
+                  지우기
+                </button>
+              </div>
+            ) : (
+              <button className="btn-quiet" onClick={() => setConfirming(true)}>
+                이 일기 지우기
+              </button>
+            )}
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }

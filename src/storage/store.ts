@@ -126,3 +126,23 @@ export function newId(): string {
   }
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
+
+/** 명세 7.3 — 하루에 1개. 같은 날 다시 열면 기존 일기를 수정한다. */
+export function journalForDate(date: string): JournalEntry | null {
+  return loadJournal().find((j) => j.date === date) ?? null;
+}
+
+export function upsertJournal(entry: JournalEntry): JournalEntry[] {
+  const list = loadJournal();
+  const i = list.findIndex((j) => j.date === entry.date);
+  const next = i >= 0 ? list.map((j, k) => (k === i ? entry : j)) : [...list, entry];
+  next.sort((a, b) => (a.date < b.date ? 1 : -1));
+  saveJournal(next);
+  return next;
+}
+
+export function deleteJournal(id: string): JournalEntry[] {
+  const next = loadJournal().filter((j) => j.id !== id);
+  saveJournal(next);
+  return next;
+}

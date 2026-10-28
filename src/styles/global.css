@@ -594,3 +594,70 @@ input[type='range'] {
   align-items: center;
   gap: 5px;
 }
+
+/* --- 하루 끝 일기 (명세 7.3) --- */
+
+.journal-notice {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin: 0 calc(var(--gutter) * -1);
+  padding: 12px var(--gutter);
+  background: var(--warn-surface);
+  border-bottom: 1px solid var(--warn-border);
+  color: var(--text);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.journal-field {
+  display: block;
+  margin-bottom: 18px;
+}
+
+.journal-question {
+  display: block;
+  font-size: 0.9375rem;
+  margin-bottom: 8px;
+}
+
+.journal-field textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 13px 15px;
+  resize: vertical;
+}
+
+.journal-field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.journal-body {
+  white-space: pre-wrap;
+  margin: 0 0 10px;
+}
+
+.journal-body:last-child {
+  margin-bottom: 0;
+}
+
+.btn-danger {
+  background: var(--surface);
+  border-color: var(--border);
+  color: #a8443a;
+  text-align: center;
+  font-weight: 600;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .btn-danger {
+    color: #e08d82;
+  }
+}
