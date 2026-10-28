@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Calendar } from './screens/Calendar';
 import { CheckInFlow } from './screens/CheckInFlow';
 import { Home } from './screens/Home';
 import { Onboarding } from './screens/Onboarding';
@@ -11,7 +12,7 @@ import {
 } from './storage/store';
 import type { Settings } from './types';
 
-type View = 'home' | 'checkin' | 'summary' | 'review';
+type View = 'home' | 'checkin' | 'summary' | 'review' | 'calendar';
 
 export function App() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -52,16 +53,18 @@ export function App() {
       return <WeeklySummary onBack={home} />;
     case 'review':
       return <Review onBack={home} />;
+    case 'calendar':
+      return <Calendar onBack={home} />;
     case 'home':
       return (
         <Home
           onStartCheckIn={() => setView('checkin')}
           onOpenSummary={() => setView('summary')}
           onOpenReview={() => setView('review')}
+          onOpenCalendar={() => setView('calendar')}
           onOpenJournal={() => undefined}
-          onOpenCalendar={() => undefined}
           onOpenSettings={() => undefined}
-          pending={{ journal: true, calendar: true, settings: true }}
+          pending={{ journal: true, settings: true }}
         />
       );
   }

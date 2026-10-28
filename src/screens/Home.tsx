@@ -52,13 +52,15 @@ export function Home({
       <div className="spacer" />
 
       <button
-        className={evening ? 'btn btn-primary' : 'btn'}
+        className={evening && !pending.journal ? 'btn btn-primary' : 'btn'}
         disabled={pending.journal}
         onClick={onOpenJournal}
         style={{ marginTop: 10 }}
       >
         하루 정리하기
-        {evening && !pending.journal ? (
+        {pending.journal ? (
+          <span className="btn-sub">아직 만들지 않았어요</span>
+        ) : evening ? (
           <span
             style={{ display: 'block', fontSize: '0.8125rem', opacity: 0.85 }}
           >
@@ -69,12 +71,16 @@ export function Home({
 
       <button className="btn" disabled={pending.summary} onClick={onOpenSummary}>
         주간 요약
-        <span className="btn-sub">지금 괜찮은가</span>
+        <span className="btn-sub">
+          {pending.summary ? '아직 만들지 않았어요' : '지금 괜찮은가'}
+        </span>
       </button>
 
       <button className="btn" disabled={pending.review} onClick={onOpenReview}>
         돌아보기
-        <span className="btn-sub">나아지고 있나</span>
+        <span className="btn-sub">
+          {pending.review ? '아직 만들지 않았어요' : '나아지고 있나'}
+        </span>
       </button>
 
       <button
@@ -83,6 +89,11 @@ export function Home({
         onClick={onOpenCalendar}
       >
         캘린더
+        {pending.calendar ? (
+          <span className="btn-sub">아직 만들지 않았어요</span>
+        ) : (
+          <span className="btn-sub">그날 뭘 했나</span>
+        )}
       </button>
 
       <button
@@ -91,13 +102,10 @@ export function Home({
         onClick={onOpenSettings}
       >
         설정
+        {pending.settings ? (
+          <span className="btn-sub">아직 만들지 않았어요</span>
+        ) : null}
       </button>
-
-      {pending.journal || pending.calendar || pending.settings ? (
-        <p className="muted" style={{ marginTop: 12, marginBottom: 0 }}>
-          회색 버튼은 다음 단계에서 열어요.
-        </p>
-      ) : null}
     </div>
   );
 }
