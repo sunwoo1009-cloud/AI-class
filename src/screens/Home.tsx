@@ -1,4 +1,10 @@
-import { isEveningWindow } from '../lib/date';
+import { useEffect, useMemo, useState } from 'react';
+import { isEveningScene } from '../lib/devTime';
+import { evaluateEscalation } from '../lib/escalation';
+import { StallPhotoScene } from '../scenes/StallPhotoScene';
+import { loadCheckIns } from '../storage/store';
+import { MenuSheet } from './home/MenuSheet';
+import { SpeechBubble } from './home/SpeechBubble';
 
 interface Props {
   onStartCheckIn: () => void;
@@ -7,17 +13,16 @@ interface Props {
   onOpenReview: () => void;
   onOpenCalendar: () => void;
   onOpenSettings: () => void;
-  /** 3단계에서 열리는 화면. 아직 없으면 비활성으로 보여준다. */
-  pending?: {
-    journal?: boolean;
-    summary?: boolean;
-    review?: boolean;
-    calendar?: boolean;
-    settings?: boolean;
-  };
 }
 
-/** 명세 9절 화면 2 */
+/** 말풍선이 저절로 뜨기까지 기다리는 시간 */
+const BUBBLE_DELAY_MS = 1000;
+
+/**
+ * 명세 9절 화면 2 — 노점 홈.
+ * 장면이 화면을 채우고, 주된 두 가지 행동은 사장님 말풍선 안에 있다.
+ * 나머지 메뉴는 차림표 시트로 내려간다.
+ */
 export function Home({
   onStartCheckIn,
   onOpenJournal,
@@ -25,87 +30,63 @@ export function Home({
   onOpenReview,
   onOpenCalendar,
   onOpenSettings,
-  pending = {},
 }: Props) {
-  const evening = isEveningWindow();
+  const evening = isEveningScene();
+  const [bubbleShown, setBubbleShown] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  // 명세 7.2 — 자원 제안 카드가 뜰 주인지. 차림표에 작은 표시를 붙인다
+  const escalated = useMemo(
+    () => evaluateEscalation(loadCheckIns()).triggered,
+    [],
+  );
+
+  // 처음 1초는 장면만 보여준다
+  useEffect(() => {
+    const t = window.setTimeout(() => setBubbleShown(true), BUBBLE_DELAY_MS);
+    return () => window.clearTimeout(t);
+  }, []);
 
   return (
-    <div className="app">
-      <div className="topbar">
-        <span className="topbar-title">회기 후 감압</span>
-      </div>
-
-      <h1>지금 회기가 끝났나요?</h1>
-      <p className="muted">
-        남아 있는 반응을 기록하고 조절 기법을 받아요. 30초에서 2분 30초 정도
-        걸려요.
-      </p>
-
-      <button
-        className="btn btn-primary"
-        style={{ marginTop: 16 }}
-        onClick={onStartCheckIn}
+    <StallPhotoScene lit={evening}>
+      {/* 화면 아무 데나 누르면 기다리지 않고 바로 말풍선이 뜬다 */}
+      <div
+        className="stall-photo-content"
+        onClick={() => setBubbleShown(true)}
+        role="presentation"
       >
-        회기 후 체크인 시작
-      </button>
-
-      <div className="spacer" />
-
-      <button
-        className={evening && !pending.journal ? 'btn btn-primary' : 'btn'}
-        disabled={pending.journal}
-        onClick={onOpenJournal}
-        style={{ marginTop: 10 }}
-      >
-        하루 정리하기
-        {pending.journal ? (
-          <span className="btn-sub">아직 만들지 않았어요</span>
-        ) : evening ? (
-          <span
-            style={{ display: 'block', fontSize: '0.8125rem', opacity: 0.85 }}
-          >
-            퇴근 전에 하루를 닫아요
-          </span>
-        ) : null}
-      </button>
-
-      <button className="btn" disabled={pending.summary} onClick={onOpenSummary}>
-        주간 요약
-        <span className="btn-sub">
-          {pending.summary ? '아직 만들지 않았어요' : '지금 괜찮은가'}
-        </span>
-      </button>
-
-      <button className="btn" disabled={pending.review} onClick={onOpenReview}>
-        돌아보기
-        <span className="btn-sub">
-          {pending.review ? '아직 만들지 않았어요' : '나아지고 있나'}
-        </span>
-      </button>
-
-      <button
-        className="btn"
-        disabled={pending.calendar}
-        onClick={onOpenCalendar}
-      >
-        캘린더
-        {pending.calendar ? (
-          <span className="btn-sub">아직 만들지 않았어요</span>
+        {bubbleShown ? (
+          <SpeechBubble
+            evening={evening}
+            onCheckIn={onStartCheckIn}
+            onJournal={onOpenJournal}
+          />
         ) : (
-          <span className="btn-sub">그날 뭘 했나</span>
+          <p className="stall-photo-hint">화면을 누르면 사장님이 말을 걸어요</p>
         )}
-      </button>
 
-      <button
-        className="btn"
-        disabled={pending.settings}
-        onClick={onOpenSettings}
-      >
-        설정
-        {pending.settings ? (
-          <span className="btn-sub">아직 만들지 않았어요</span>
-        ) : null}
-      </button>
-    </div>
+        <button
+          className="menu-tag"
+          onClick={(e) => {
+            e.stopPropagation();
+            setSheetOpen(true);
+          }}
+          aria-label={`차림표${escalated ? ' — 살펴볼 것이 있어요' : ''}`}
+        >
+          차림표
+          {escalated ? <span className="menu-dot" /> : null}
+        </button>
+
+        <MenuSheet
+          open={sheetOpen}
+          escalated={escalated}
+          onClose={() => setSheetOpen(false)}
+          onOpenSummary={onOpenSummary}
+          onOpenReview={onOpenReview}
+          onOpenCalendar={onOpenCalendar}
+          onOpenSettings={onOpenSettings}
+        />
+      </div>
+    </StallPhotoScene>
   );
 }

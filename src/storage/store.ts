@@ -18,6 +18,7 @@ export const KEYS = {
   checkIns: `${PREFIX}checkins`,
   journal: `${PREFIX}journal`,
   weeklySessions: `${PREFIX}weeklySessions`,
+  introSeen: `${PREFIX}introSeenDate`,
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -98,6 +99,17 @@ export function loadJournal(): JournalEntry[] {
 
 export function saveJournal(list: JournalEntry[]): void {
   write(KEYS.journal, list);
+}
+
+// --- 인트로 (퇴근길 장면을 오늘 봤는지) ---
+
+/** 인트로를 마지막으로 본 날짜. YYYY-MM-DD, 본 적 없으면 null */
+export function loadIntroSeenDate(): string | null {
+  return read<string | null>(KEYS.introSeen, null);
+}
+
+export function saveIntroSeenDate(dateKey: string): void {
+  write(KEYS.introSeen, dateKey);
 }
 
 // --- 전체 삭제 ---

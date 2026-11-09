@@ -4,7 +4,11 @@ import { CheckInFlow } from './screens/CheckInFlow';
 import { Home } from './screens/Home';
 import { Journal } from './screens/Journal';
 import { Onboarding } from './screens/Onboarding';
+import { IntroScene } from './scenes/IntroScene';
+import { PartsGallery } from './scenes/PartsGallery';
 import { Review } from './screens/Review';
+import { isEveningScene, introOverride } from './lib/devTime';
+import { markIntroSeen, shouldShowIntroNow } from './lib/intro';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { WeeklySummary } from './screens/WeeklySummary';
 import {
@@ -27,14 +31,50 @@ export function App() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [view, setView] = useState<View>('home');
+  const [showIntro, setShowIntro] = useState(false);
 
   useEffect(() => {
     ensureSchemaVersion();
-    setSettings(loadSettings());
+    const loadedSettings = loadSettings();
+    setSettings(loadedSettings);
+    // 인트로 판단은 앱을 열 때 한 번만 한다
+    setShowIntro(
+      shouldShowIntroNow(
+        loadedSettings !== null,
+        isEveningScene(),
+        introOverride(),
+      ),
+    );
     setLoaded(true);
   }, []);
 
   if (!loaded) return null;
+
+  // 개발 확인용 — ?parts=1 로 장면 부품을 따로 본다
+  if (
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).has('parts')
+  ) {
+    return (
+      <PartsGallery
+        onBack={() => {
+          window.location.search = '';
+        }}
+      />
+    );
+  }
+
+  // 인트로 — 퇴근길. 온보딩을 마친 사람에게만, 5시 이후 하루 한 번
+  if (settings && showIntro) {
+    return (
+      <IntroScene
+        onDone={() => {
+          markIntroSeen();
+          setShowIntro(false);
+        }}
+      />
+    );
+  }
 
   if (!settings) {
     return (

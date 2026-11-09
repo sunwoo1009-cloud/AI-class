@@ -1,4 +1,6 @@
 @import './tokens.css';
+@import './scene.css';
+@import './home-scene.css';
 
 * {
   box-sizing: border-box;

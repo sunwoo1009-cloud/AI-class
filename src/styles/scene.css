@@ -1,0 +1,401 @@
+/* =======================================================================
+   장면 테마 — 겨울 길거리 간식 노점
+   tokens.css 는 건드리지 않는다. .scene-home 안에서만 변수를 덮어쓴다.
+   어두운 남색은 쓰지 않는다. 전부 밝고 채도가 낮은 톤.
+   ======================================================================= */
+
+.scene-home {
+  /* 5시 이전 — 늦은 오후 */
+  --sky-top: #ccd1cd;
+  --sky-mid: #ded9cf;
+  --sky-bottom: #ece6d9;
+  --ground: #cac1b1;
+  --ground-deep: #b9af9d;
+
+  --canopy: #d6cab9;
+  --canopy-alt: #c2b4a0;
+  --canopy-edge: #ab9d89;
+  --wood: #9d7b57;
+  --wood-dark: #83664a;
+  --post: #8d7155;
+  --steamer: #b5afa3;
+  --steamer-dark: #9a9488;
+
+  --bulb: #c6beaf;
+  --bulb-core: #cfc8ba;
+  --glow-opacity: 0;
+  --steam-opacity: 0.3;
+
+  /* 장면 위에서는 기본 보조 글자색(#6b625a)이 대비 미달이라 더 진하게 쓴다.
+     이 값은 장면에 나오는 모든 배경에서 4.5:1 이상이다. 숫자로 확인했다. */
+  --text-muted: #3c362f;
+}
+
+/* 5시 이후 — 해질녘 노을. 저채도로 눌러 쨍한 주황을 피한다 */
+.scene-home[data-lit='true'] {
+  --sky-top: #bfb0bc;
+  --sky-mid: #dcb9a7;
+  --sky-bottom: #eed8c0;
+  --ground: #b6a693;
+  --ground-deep: #a2917e;
+
+  --canopy: #dcc9b2;
+  --canopy-alt: #c6ad92;
+  --canopy-edge: #a8907a;
+  --wood: #94704e;
+  --wood-dark: #7a5c41;
+  --post: #85684c;
+  --steamer: #b2a99a;
+  --steamer-dark: #978e7f;
+
+  --bulb: #f2dcae;
+  --bulb-core: #fdf3dd;
+  --glow-opacity: 1;
+  --steam-opacity: 0.55;
+}
+
+/* --- 배치 --- */
+
+.scene-home {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: var(--max-width);
+  overflow: hidden;
+}
+
+.scene-sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    var(--sky-top) 0%,
+    var(--sky-mid) 30%,
+    var(--sky-bottom) 52%
+  );
+  transition: background 600ms ease;
+}
+
+.scene-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 52%;
+  background: linear-gradient(
+    to bottom,
+    var(--ground) 0%,
+    var(--ground-deep) 100%
+  );
+}
+
+/* 원경 — 골목 끝에 작게 보이는 노점 */
+.scene-stall {
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  width: 216px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.scene-stall svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.scene-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: calc(20px + env(safe-area-inset-top)) var(--gutter)
+    calc(24px + env(safe-area-inset-bottom));
+}
+
+/* 버튼이 땅 위에 오도록 아래쪽으로 민다 */
+.scene-lead {
+  margin-top: 4px;
+}
+
+.scene-actions {
+  margin-top: auto;
+}
+
+/* --- 전구 불빛 --- */
+
+.bulb-glow {
+  opacity: var(--glow-opacity);
+  transition: opacity 900ms ease;
+}
+
+.bulb-flicker {
+  animation: bulb-breathe 7s ease-in-out infinite;
+}
+
+@keyframes bulb-breathe {
+  0%,
+  100% {
+    opacity: calc(var(--glow-opacity) * 0.82);
+  }
+  50% {
+    opacity: var(--glow-opacity);
+  }
+}
+
+/* --- 김 --- */
+
+.scene-steam path {
+  opacity: var(--steam-opacity);
+  animation: scene-steam 9s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: bottom center;
+}
+
+.scene-steam path:nth-child(2) {
+  animation-duration: 11s;
+  animation-delay: -3s;
+}
+
+.scene-steam path:nth-child(3) {
+  animation-duration: 10s;
+  animation-delay: -6s;
+}
+
+@keyframes scene-steam {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scaleY(0.7);
+  }
+  30% {
+    opacity: var(--steam-opacity);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-26px) scaleY(1.15) translateX(7px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-steam path,
+  .bulb-flicker {
+    animation: none;
+  }
+  .scene-steam path {
+    opacity: var(--steam-opacity);
+    transform: none;
+  }
+  .scene-sky {
+    transition: none;
+  }
+}
+
+/* =======================================================================
+   인트로 — 퇴근길
+   ======================================================================= */
+
+.scene-home {
+  --figure: #574b45;
+  --figure-dark: #463c37;
+  --lamp-post: #6d6058;
+  --lamp-head: #8a7a68;
+  --building: #9d8d85;
+  --window: #f3dcae;
+}
+
+.scene-home[data-lit='true'] {
+  --figure: #4f4440;
+  --figure-dark: #3f3632;
+  --lamp-post: #635650;
+  --lamp-head: #7d6c5c;
+  --building: #8f7e78;
+  --window: #fbe6ba;
+}
+
+.intro {
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 420ms ease;
+}
+
+.intro-leaving {
+  opacity: 0;
+}
+
+/* 흐르는 배경 */
+.intro-parallax {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 44%;
+  height: 34%;
+}
+
+.intro-parallax svg {
+  display: block;
+  width: 200%;
+  height: 100%;
+  overflow: visible;
+}
+
+.intro-scroll {
+  animation: intro-scroll 26s linear infinite;
+}
+
+@keyframes intro-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-390px);
+  }
+}
+
+/* 걸어가는 사람 — 제자리에서 걷는다 */
+.intro-walker {
+  position: absolute;
+  left: 50%;
+  bottom: 30%;
+  width: 92px;
+  transform: translateX(-50%);
+}
+
+.intro-walker svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 걷기 — 2프레임. 벌린 자세와 모은 자세를 딱딱 바꾼다 */
+.walker-frame-a.walk,
+.walker-frame-b.walk {
+  animation: walker-frame 0.9s steps(1, end) infinite;
+}
+
+.walker-frame-b.walk {
+  animation-delay: -0.45s;
+}
+
+/* 애니메이션이 꺼지면 벌린 자세 한 장만 남긴다 */
+.walker-frame-b {
+  opacity: 0;
+}
+
+.walker-frame-b.walk {
+  opacity: 1;
+}
+
+@keyframes walker-frame {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* 걸음에 맞춰 몸이 아주 살짝 오르내린다 */
+.walker-bob.walk {
+  animation: walker-bob 0.9s steps(1, end) infinite;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+
+@keyframes walker-bob {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+/* 오른쪽 끝에서 피어오르는 김 */
+.intro-hint-steam {
+  position: absolute;
+  right: 10px;
+  bottom: 34%;
+  width: 46px;
+  opacity: 0.75;
+}
+
+.intro-hint-steam svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* 문구 */
+.intro-copy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 26%;
+  padding: 18px var(--gutter);
+  text-align: center;
+  opacity: 0;
+  animation: intro-copy-in 900ms ease 1000ms forwards;
+}
+
+.intro-copy p {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+  line-height: 1.6;
+  font-weight: 600;
+  color: var(--text);
+  text-shadow: 0 1px 10px var(--sky-bottom), 0 0 22px var(--sky-bottom);
+}
+
+.intro-copy p:last-child {
+  margin-bottom: 0;
+}
+
+@keyframes intro-copy-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.intro-skip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  text-align: center;
+  font-size: 0.8125rem;
+  opacity: 0;
+  animation: intro-copy-in 700ms ease 1600ms forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-scroll,
+  .walker-bob.walk,
+  .walker-frame-a.walk,
+  .walker-frame-b.walk,
+  .walker-scarf.walk {
+    animation: none;
+  }
+  /* 애니메이션을 끄면 두 프레임이 겹치므로 한 장만 남긴다 */
+  .walker-frame-b.walk {
+    opacity: 0;
+  }
+  .intro-copy,
+  .intro-skip {
+    animation: none;
+    opacity: 1;
+  }
+  .intro {
+    transition: none;
+  }
+}
