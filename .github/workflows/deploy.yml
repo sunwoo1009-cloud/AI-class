@@ -1,0 +1,54 @@
+name: GitHub Pages 배포
+
+# main 에 push 할 때마다 빌드해서 배포한다.
+# 저장소 Settings → Pages → Source 를 "GitHub Actions" 로 해두어야 동작한다.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # 저장소 Actions 탭에서 손으로도 돌릴 수 있다
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 배포가 겹치면 나중 것만 끝까지 간다
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # 배포 전에 깨진 곳이 없는지 확인한다
+      - run: npx tsc -b
+      - run: npx vitest run
+
+      - run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

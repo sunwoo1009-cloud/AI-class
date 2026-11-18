@@ -3,6 +3,9 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  // GitHub Pages 는 /<저장소이름>/ 아래로 서비스된다.
+  // 다른 곳(Vercel 등)에 올릴 때는 '/' 로 바꾸면 된다.
+  base: '/AI-class/',
   plugins: [
     react(),
     VitePWA({
@@ -14,7 +17,8 @@ export default defineConfig({
         description:
           '회기 직후 반응을 기록하고 조절 기법을 안내받는 앱. 데이터는 기기에만 저장됩니다.',
         lang: 'ko',
-        start_url: '/',
+        start_url: '/AI-class/',
+        scope: '/AI-class/',
         display: 'standalone',
         background_color: '#f7f5f2',
         theme_color: '#f7f5f2',

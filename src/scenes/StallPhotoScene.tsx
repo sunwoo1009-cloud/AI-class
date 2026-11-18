@@ -24,7 +24,7 @@ export function StallPhotoScene({ lit, children }: Props) {
     <div className="stall-photo scene-home" data-lit={lit}>
       <img
         className="stall-photo-bg"
-        src="/images/stall-bg.png"
+        src={`${import.meta.env.BASE_URL}images/stall-bg.png`}
         alt=""
         aria-hidden="true"
         draggable={false}

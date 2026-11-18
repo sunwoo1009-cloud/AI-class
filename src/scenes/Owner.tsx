@@ -37,7 +37,7 @@ export function Owner({ breathing = true }: Props) {
           </svg>
         ) : (
           <img
-            src="/images/owner.png"
+            src={`${import.meta.env.BASE_URL}images/owner.png`}
             alt=""
             onError={() => setFailed(true)}
             draggable={false}
