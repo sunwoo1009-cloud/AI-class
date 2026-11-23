@@ -38,6 +38,17 @@ body {
   min-height: 100dvh;
 }
 
+/* 반드시 한 줄에 들어가야 하는 제목.
+   글자 수(약 19em)에 맞춰 화면 폭에 비례해 크기를 줄인다.
+   기본 크기보다 커지지는 않는다. */
+.h1-oneline {
+  white-space: nowrap;
+  font-size: min(
+    1.35rem,
+    calc((min(100vw, var(--max-width)) - 2 * var(--gutter)) / 19.4)
+  );
+}
+
 h1 {
   font-size: 1.35rem;
   line-height: 1.45;
@@ -157,7 +168,7 @@ button {
   border-radius: var(--radius);
   background: var(--surface);
   border: 1px solid var(--border);
-  text-align: left;
+  text-align: center;
   margin-bottom: 10px;
   position: relative;
 }
