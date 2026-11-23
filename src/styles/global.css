@@ -531,7 +531,7 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .coupon.is-stamped .stamp {
+  .coupon-slot.is-new .slot-stamp {
     animation: none;
   }
   .breath-fish.run {
@@ -598,84 +598,110 @@ input[type='range'] {
   gap: 18px;
 }
 
-/* 쿠폰 종이 — 길게 누르면 붕어빵 도장이 내려앉는다 */
+/* 쿠폰 종이 — 길게 누르면 빈 자리에 붕어빵 도장이 내려앉는다 */
 .coupon {
-  width: min(100%, 250px);
-  padding: 16px 18px 14px;
+  width: min(100%, 330px);
+  padding: 16px 16px 14px;
   border-radius: 10px;
   background: var(--strip-bg);
   border: 1px solid var(--strip-edge);
   box-shadow: 0 2px 8px rgba(60, 45, 25, 0.14);
   text-align: center;
-}
-
-.coupon-title {
-  margin: 0 0 26px;
-  font-size: 0.8125rem;
-  letter-spacing: 0.08em;
-  color: var(--strip-muted);
-}
-
-/* 도장 자리 — 점선 원 */
-.coupon-slot {
-  width: 148px;
-  height: 148px;
-  margin: 0 auto;
-  border-radius: 50%;
-  border: 2px dashed var(--strip-edge);
-  display: grid;
-  place-items: center;
   cursor: pointer;
   touch-action: none;
+  user-select: none;
 }
 
-.coupon-slot:focus-visible {
+.coupon:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
-/* --p 는 0~1 로 누른 정도. 1 에 가까울수록 내려앉고 진해진다. */
-.stamp {
-  width: 92px;
-  height: 69px;
-  fill: var(--stamp-ink);
-  transform: translateY(calc((1 - var(--p, 0)) * -26px))
-    scale(calc(1 + (1 - var(--p, 0)) * 0.22));
-  opacity: calc(0.22 + var(--p, 0) * 0.78);
+.coupon-title {
+  margin: 0 0 14px;
+  font-size: 0.875rem;
+  letter-spacing: 0.08em;
+  color: var(--strip-muted);
 }
 
-.stamp-eye {
-  fill: var(--strip-bg);
+/* 다섯 칸씩 두 줄 */
+.coupon-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 9px;
 }
 
-/* 다 누르면 종이에 찍힌 채로 남는다 */
-.coupon.is-stamped .coupon-slot {
+.coupon-slot {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px dashed var(--strip-edge);
+  display: grid;
+  place-items: center;
+  overflow: visible;
+}
+
+.coupon-slot.is-filled {
   border-style: solid;
   border-color: var(--stamp-ink);
 }
 
-.coupon.is-stamped .stamp {
-  transform: translateY(0) rotate(-7deg);
+.slot-stamp {
+  width: 76%;
+  height: 76%;
+  fill: var(--stamp-ink);
+}
+
+/* --p 는 0~1 로 누른 정도.
+   도장이 종이 쪽으로 내려오면서 작아지고 진해진다. 자리 밖으로
+   크게 벗어나지 않아야 윗줄 도장을 가리지 않는다. */
+.coupon-slot.is-target .slot-stamp {
+  transform: translateY(calc((1 - var(--p, 0)) * -7px))
+    scale(calc(1 + (1 - var(--p, 0)) * 0.55));
+  opacity: calc(0.16 + var(--p, 0) * 0.84);
+}
+
+/* 다 누르면 자리가 실선이 되고 도장이 살짝 기운 채 남는다 */
+.coupon.is-stamped .coupon-slot.is-target,
+.coupon-slot.is-filled {
+  border-style: solid;
+  border-color: var(--stamp-ink);
+}
+
+.coupon.is-stamped .slot-stamp {
+  transform: rotate(-7deg);
   opacity: 1;
+}
+
+.coupon-slot.is-new .slot-stamp {
   animation: stamp-press 420ms ease-out;
 }
 
 @keyframes stamp-press {
   0% {
-    transform: translateY(-6px) scale(1.12) rotate(-7deg);
+    transform: scale(1.5) rotate(-7deg);
+    opacity: 0.2;
   }
-  45% {
-    transform: translateY(0) scale(0.95) rotate(-7deg);
+  55% {
+    transform: scale(0.94) rotate(-7deg);
+    opacity: 1;
   }
   100% {
-    transform: translateY(0) scale(1) rotate(-7deg);
+    transform: scale(1) rotate(-7deg);
+    opacity: 1;
   }
 }
 
 .coupon-note {
-  margin: 12px 0 0;
+  margin: 14px 0 0;
   font-size: 0.875rem;
   color: var(--strip-muted);
+}
+
+.coupon-count {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  text-align: center;
 }
 
 .hold-done {

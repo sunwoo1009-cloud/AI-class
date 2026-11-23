@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent } from 'react';
 import { TECHNIQUE_LABELS } from '../constants';
+import { couponView, STAMPS_PER_CARD } from '../lib/coupon';
+import { addStamp, loadStampTotal } from '../storage/store';
 import { TAIYAKI_BODY, TAIYAKI_TAIL } from './menu/FoodIcon';
 import type { TechniqueId } from '../types';
 
@@ -19,6 +21,19 @@ export function ClosingRitual({ onReady, onMore }: Props) {
   const [progress, setProgress] = useState(0);
   const timerRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
+
+  // 화면에 들어올 때의 도장 수를 붙잡아 둔다. 화면이 바뀌어도 흔들리지 않는다.
+  const [base] = useState(() => loadStampTotal());
+  const savedRef = useRef(false);
+  const stamped = phase === 'closed' || phase === 'ask';
+  const view = couponView(base, stamped);
+
+  // 도장을 다 찍은 순간 한 번만 저장한다 (StrictMode 의 두 번 실행을 막는다)
+  useEffect(() => {
+    if (phase !== 'closed' || savedRef.current) return;
+    savedRef.current = true;
+    addStamp();
+  }, [phase]);
 
   // [1, 10] 숨을 한 번 쉬고
   useEffect(() => {
@@ -89,40 +104,68 @@ export function ClosingRitual({ onReady, onMore }: Props) {
       {phase === 'hold' || phase === 'closed' ? (
         <div className="script">
           <div className="hold-wrap">
-            <div className={`coupon${phase === 'closed' ? ' is-stamped' : ''}`}>
-              <p className="coupon-title">오늘의 붕어빵</p>
+            <div
+              className={`coupon${stamped ? ' is-stamped' : ''}`}
+              onPointerDown={startHold}
+              onPointerUp={cancelHold}
+              onPointerLeave={cancelHold}
+              onPointerCancel={cancelHold}
+              onKeyDown={onKeyDown}
+              onKeyUp={cancelHold}
+              onBlur={cancelHold}
+              role="button"
+              tabIndex={stamped ? -1 : 0}
+              aria-label={`붕어빵 쿠폰. 도장 ${view.filled}개. 3초 동안 길게 눌러 도장을 찍으세요`}
+            >
+              <p className="coupon-title">붕어빵 쿠폰</p>
 
-              <div
-                className="coupon-slot"
-                onPointerDown={startHold}
-                onPointerUp={cancelHold}
-                onPointerLeave={cancelHold}
-                onPointerCancel={cancelHold}
-                onKeyDown={onKeyDown}
-                onKeyUp={cancelHold}
-                onBlur={cancelHold}
-                role="button"
-                tabIndex={0}
-                aria-label="3초 동안 길게 눌러 도장을 찍으세요"
-              >
-                {/* 도장은 누르는 동안 종이로 내려앉고, 진해진다 */}
-                <svg
-                  className="stamp"
-                  viewBox="0 0 64 48"
-                  style={{ '--p': progress } as CSSProperties}
-                  aria-hidden="true"
-                  focusable="false"
-                >
-                  <path d={TAIYAKI_TAIL} />
-                  <path d={TAIYAKI_BODY} />
-                  <circle className="stamp-eye" cx="14" cy="19" r="2.8" />
-                </svg>
+              <div className="coupon-grid">
+                {Array.from({ length: STAMPS_PER_CARD }, (_, n) => {
+                  const filled = n < view.filled;
+                  const target = view.targetIndex === n;
+                  // 방금 찍힌 자리 — 여기에만 찍히는 움직임을 준다
+                  const fresh = stamped && n === view.filled - 1;
+                  return (
+                    <div
+                      key={n}
+                      className={`coupon-slot${filled ? ' is-filled' : ''}${
+                        target ? ' is-target' : ''
+                      }${fresh ? ' is-new' : ''}`}
+                    >
+                      {filled || target ? (
+                        <svg
+                          className="slot-stamp"
+                          viewBox="0 0 64 48"
+                          style={
+                            target
+                              ? ({ '--p': progress } as CSSProperties)
+                              : undefined
+                          }
+                          aria-hidden="true"
+                          focusable="false"
+                        >
+                          <path d={TAIYAKI_TAIL} />
+                          <path d={TAIYAKI_BODY} />
+                          <circle className="stamp-eye" cx="14" cy="19" r="3.4" />
+                        </svg>
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
 
               <p className="coupon-note">
-                {phase === 'closed' ? '찍었어요' : '3초 길게 누르기'}
+                {view.cardComplete
+                  ? '쿠폰 한 장을 다 채웠어요'
+                  : stamped
+                    ? '찍었어요'
+                    : '쿠폰을 3초 길게 누르기'}
               </p>
             </div>
+
+            <p className="coupon-count">
+              도장 {view.total}개 · 모은 쿠폰 {view.cards}장
+            </p>
 
             {phase === 'closed' ? (
               <p className="hold-done">이 회기는 여기까지</p>
@@ -135,6 +178,9 @@ export function ClosingRitual({ onReady, onMore }: Props) {
         <>
           <div className="script">
             <p className="script-text">다음 회기로 갈 준비가 됐나요?</p>
+            <p className="coupon-count">
+              도장 {view.total}개 · 모은 쿠폰 {view.cards}장
+            </p>
           </div>
           <button className="btn btn-primary" onClick={onReady}>
             준비됐어요

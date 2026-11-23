@@ -19,6 +19,7 @@ export const KEYS = {
   journal: `${PREFIX}journal`,
   weeklySessions: `${PREFIX}weeklySessions`,
   introSeen: `${PREFIX}introSeenDate`,
+  stamps: `${PREFIX}stampTotal`,
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -110,6 +111,20 @@ export function loadIntroSeenDate(): string | null {
 
 export function saveIntroSeenDate(dateKey: string): void {
   write(KEYS.introSeen, dateKey);
+}
+
+// --- 쿠폰 도장 (명세 8.7) ---
+
+/** 지금까지 찍은 도장 수. 마무리를 한 번 마칠 때마다 한 개 늘어난다. */
+export function loadStampTotal(): number {
+  const n = read<number>(KEYS.stamps, 0);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+}
+
+export function addStamp(): number {
+  const next = loadStampTotal() + 1;
+  write(KEYS.stamps, next);
+  return next;
 }
 
 // --- 전체 삭제 ---
