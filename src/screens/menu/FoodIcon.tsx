@@ -72,7 +72,7 @@ function bun(dot: string) {
         stroke="#6b5133"
         strokeWidth="2"
       />
-      <circle cx="32" cy="18" r="3.4" fill={dot} />
+      <ellipse cx="32" cy="19" rx="9" ry="5.5" fill={dot} />
     </>
   );
 }
@@ -88,30 +88,40 @@ function shape(kind: FoodIconId) {
     case 'bunPizza':
       return bun('#b4654a');
     case 'odeng':
+      // 세로 꼬치에 어묵 두 장을 꿴 모습. 아래로 나온 막대가 손잡이다.
       return (
         <>
           <rect
             x="30"
-            y="2"
+            y="1"
             width="4"
-            height="44"
+            height="46"
             rx="2"
             fill="#9b7b52"
             stroke="#6b5133"
             strokeWidth="1.2"
           />
+          <circle
+            cx="32"
+            cy="45"
+            r="2.4"
+            fill="#9b7b52"
+            stroke="#6b5133"
+            strokeWidth="1.2"
+          />
           <path
-            d="M10 13 C18 8 23 17 32 12 C41 7 46 16 54 11 L54 35 C46 40 41 31 32 36 C23 41 18 32 10 37 Z"
+            d="M8 7 C24 -1 40 15 56 7 L56 17 C40 25 24 9 8 17 Z"
             fill="#e0c79a"
             stroke="#6b5133"
             strokeWidth="2"
             strokeLinejoin="round"
           />
           <path
-            d="M22 16 L22 33 M42 14 L42 31"
-            stroke="#c0a070"
-            strokeWidth="1.6"
-            strokeLinecap="round"
+            d="M8 21 C24 13 40 29 56 21 L56 31 C40 39 24 23 8 31 Z"
+            fill="#e0c79a"
+            stroke="#6b5133"
+            strokeWidth="2"
+            strokeLinejoin="round"
           />
         </>
       );

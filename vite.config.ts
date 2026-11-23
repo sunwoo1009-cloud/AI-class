@@ -10,6 +10,12 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        // 기본값은 js/css/html 뿐이라 글꼴과 노점 사진이 빠졌다.
+        // 둘 다 없으면 오프라인에서 간판 글씨와 홈 배경이 사라진다.
+        globPatterns: ['**/*.{js,css,html}', 'assets/*.woff2', 'images/stall-bg.png'],
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+      },
       includeAssets: ['icon-192.png', 'icon-512.png'],
       manifest: {
         name: '회기 후 감압',

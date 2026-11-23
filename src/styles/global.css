@@ -3,6 +3,17 @@
 @import './home-scene.css';
 @import './gallery.css';
 
+/* 메뉴판 간판 글씨 — 주아체(SIL OFL 1.1). "메뉴판" 세 글자만 잘라 넣었다.
+   자세한 건 src/fonts/README.md 참고. 다른 글자에는 적용되지 않는다. */
+@font-face {
+  font-family: 'Jua';
+  src: url('../fonts/jua-menu.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -212,9 +223,10 @@ button {
   background: var(--sign-bg);
   border: 2px solid var(--sign-edge);
   color: var(--sign-text);
-  font-size: 1.0625rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-family: 'Jua', inherit;
+  font-size: 1.375rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
 }
 
 /* 종이 띠를 두 칸씩 늘어놓는다 */
