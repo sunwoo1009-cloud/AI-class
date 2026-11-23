@@ -18,8 +18,8 @@ export default defineConfig({
       },
       includeAssets: ['icon-192.png', 'icon-512.png'],
       manifest: {
-        name: '회기 후 감압',
-        short_name: '감압',
+        name: '퇴근길 붕어빵 한 입',
+        short_name: '붕어빵 한 입',
         description:
           '회기 직후 반응을 기록하고 조절 기법을 안내받는 앱. 데이터는 기기에만 저장됩니다.',
         lang: 'ko',

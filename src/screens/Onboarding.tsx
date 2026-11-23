@@ -11,7 +11,7 @@ export function Onboarding({ onDone }: Props) {
 
   return (
     <div className="app">
-      <h1>회기 후 감압</h1>
+      <h1>퇴근길 붕어빵 한 입</h1>
       <p className="muted">
         회기 직후에 남아 있는 반응을 기록하고, 2~3분 안에 조절 기법을
         안내받는 앱이에요.

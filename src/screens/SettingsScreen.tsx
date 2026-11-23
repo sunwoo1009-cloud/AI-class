@@ -61,7 +61,7 @@ export function SettingsScreen({
     const a = document.createElement('a');
     const stamp = new Date().toISOString().slice(0, 10);
     a.href = url;
-    a.download = `회기후감압-${stamp}.json`;
+    a.download = `퇴근길붕어빵-${stamp}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
