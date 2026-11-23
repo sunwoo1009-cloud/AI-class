@@ -1,6 +1,7 @@
 @import './tokens.css';
 @import './scene.css';
 @import './home-scene.css';
+@import './gallery.css';
 
 * {
   box-sizing: border-box;

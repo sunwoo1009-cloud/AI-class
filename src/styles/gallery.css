@@ -1,0 +1,148 @@
+/* =======================================================================
+   개발 확인용 화면 모음 (?screens=1)
+   실제 화면 컴포넌트를 휴대폰 크기 틀 안에 넣어 늘어놓는다.
+   앱 자체에는 쓰이지 않는 스타일이다.
+   ======================================================================= */
+
+.gal {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--surface-alt);
+  padding-bottom: 80px;
+}
+
+.gal-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.gal-spacer {
+  flex: 1;
+}
+
+.gal-title {
+  font-size: 0.9375rem;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.gal-back,
+.gal-chip {
+  font-family: inherit;
+  font-size: 0.875rem;
+  padding: 9px 14px;
+  min-height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.gal-chip.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 650;
+}
+
+.gal-note {
+  max-width: 820px;
+  margin: 18px auto 24px;
+  padding: 0 20px;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.gal-note code {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.875em;
+}
+
+.gal-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 20px;
+}
+
+.gal-item {
+  width: 390px;
+}
+
+.gal-caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.gal-caption b {
+  font-size: 0.9375rem;
+  font-weight: 650;
+}
+
+.gal-caption span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.gal-frame {
+  height: 780px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+}
+
+/* 내용이 긴 화면은 틀을 늘려 스크롤 없이 본다 */
+.gal-frame.is-tall {
+  height: 1100px;
+}
+
+/* 틀 안에서는 화면이 뷰포트가 아니라 틀 높이를 기준으로 삼아야 한다 */
+.gal-screen {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  position: relative;
+}
+
+.gal-screen .app,
+.gal-screen .scene-home,
+.gal-screen .stall-photo,
+.gal-screen .scene-content,
+.gal-screen .stall-photo-content {
+  min-height: 100%;
+  height: auto;
+  max-width: none;
+}
+
+/* 전체 화면을 덮는 장면은 틀에 꽉 채운다 */
+.gal-screen .scene-home,
+.gal-screen .stall-photo {
+  height: 100%;
+}
+
+/* 시트·배경막은 틀 안에만 머물게 */
+.gal-screen .sheet,
+.gal-screen .sheet-backdrop {
+  position: absolute;
+}

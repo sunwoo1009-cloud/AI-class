@@ -6,6 +6,7 @@ import { Journal } from './screens/Journal';
 import { Onboarding } from './screens/Onboarding';
 import { IntroScene } from './scenes/IntroScene';
 import { PartsGallery } from './scenes/PartsGallery';
+import { ScreensGallery } from './dev/ScreensGallery';
 import { Review } from './screens/Review';
 import { isEveningScene, introOverride } from './lib/devTime';
 import { markIntroSeen, shouldShowIntroNow } from './lib/intro';
@@ -49,6 +50,20 @@ export function App() {
   }, []);
 
   if (!loaded) return null;
+
+  // 개발 확인용 — ?screens=1 로 모든 화면을 한 페이지에서 본다
+  if (
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).has('screens')
+  ) {
+    return (
+      <ScreensGallery
+        onBack={() => {
+          window.location.search = '';
+        }}
+      />
+    );
+  }
 
   // 개발 확인용 — ?parts=1 로 장면 부품을 따로 본다
   if (
