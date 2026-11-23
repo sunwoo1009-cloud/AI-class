@@ -263,6 +263,13 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
     },
   ];
 
+  // ?screens=<id> 로 화면 하나만 본다. ?screens=1 이면 전부.
+  const only = new URLSearchParams(window.location.search).get('screens');
+  const shown =
+    only && screens.some((s) => s.id === only)
+      ? screens.filter((s) => s.id === only)
+      : screens;
+
   function go(param: string) {
     const q = new URLSearchParams(window.location.search);
     q.set('screens', '1');
@@ -277,7 +284,11 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
         <button className="gal-back" onClick={onBack}>
           앱으로 돌아가기
         </button>
-        <span className="gal-title">모든 화면 · {screens.length}개</span>
+        <span className="gal-title">
+          {shown.length === screens.length
+            ? `모든 화면 · ${screens.length}개`
+            : shown[0].label}
+        </span>
         <span className="gal-spacer" />
         <button
           className={`gal-chip${evening ? '' : ' is-on'}`}
@@ -301,7 +312,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       </p>
 
       <div className="gal-grid">
-        {screens.map((s) => (
+        {shown.map((s) => (
           <section className="gal-item" key={s.id} id={s.id}>
             <div className="gal-caption">
               <b>{s.label}</b>

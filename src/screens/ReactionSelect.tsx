@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { REACTIONS, reactionInfo, won } from '../constants';
 import type { ReactionType } from '../types';
+import { FoodIcon } from './menu/FoodIcon';
 
 interface Props {
   onSubmit: (reactions: ReactionType[]) => void;
@@ -62,6 +63,7 @@ export function ReactionSelect({ onSubmit, onCancel }: Props) {
                     {index === 0 ? '주 반응' : '두 번째'}
                   </span>
                 ) : null}
+                <FoodIcon kind={r.menuItem.icon} />
                 <span className="strip-reaction">{r.label}</span>
                 <span className="strip-item">{r.menuItem.name}</span>
                 <span className="strip-price">{won(r.menuItem.price)}</span>

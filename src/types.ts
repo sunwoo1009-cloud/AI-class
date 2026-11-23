@@ -101,3 +101,12 @@ export type FlowEvent =
   | { type: 'CLOSING_MORE' }
   | { type: 'CLOSING_MORE_TECHNIQUE' }
   | { type: 'CLOSING_MORE_EXIT' };
+
+/** 메뉴판 띠에 올라가는 간식 그림 종류 (표시용) */
+export type FoodIconId =
+  | 'taiyakiRed'
+  | 'taiyakiCream'
+  | 'odeng'
+  | 'eggBread'
+  | 'bunRed'
+  | 'bunPizza';
