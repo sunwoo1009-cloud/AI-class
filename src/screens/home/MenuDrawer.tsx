@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -7,13 +9,13 @@ interface Props {
   onOpenSettings: () => void;
   /**
    * 주간 요약에 자원 제안 카드가 떠 있는가 (명세 7.2).
-   * 요약이 시트 안으로 들어가면서 그 신호를 놓치기 쉬워져 표시를 붙인다.
+   * 요약이 메뉴 안으로 들어가면서 그 신호를 놓치기 쉬워져 표시를 붙인다.
    */
   escalated?: boolean;
 }
 
-/** 가판대 옆 나무 메뉴판을 누르면 아래에서 올라오는 시트 */
-export function MenuSheet({
+/** 왼쪽 위 메뉴 바를 누르면 왼쪽에서 밀려 나오는 서랍 */
+export function MenuDrawer({
   open,
   onClose,
   onOpenSummary,
@@ -22,6 +24,16 @@ export function MenuSheet({
   onOpenSettings,
   escalated = false,
 }: Props) {
+  // 열려 있을 때 Esc 로 닫는다
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
   const items: {
     label: string;
     sub?: string;
@@ -37,45 +49,48 @@ export function MenuSheet({
   return (
     <>
       <div
-        className={`sheet-backdrop${open ? ' is-open' : ''}`}
+        className={`drawer-backdrop${open ? ' is-open' : ''}`}
         onClick={onClose}
         aria-hidden="true"
       />
-      <div
-        className={`sheet${open ? ' is-open' : ''}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="메뉴판"
+      <nav
+        className={`drawer${open ? ' is-open' : ''}`}
+        aria-label="메뉴"
         aria-hidden={!open}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sheet-grip" aria-hidden="true" />
-        <h2 className="sheet-title">메뉴판</h2>
+        <div className="drawer-head">
+          <h2 className="drawer-title">메뉴</h2>
+          <button
+            className="drawer-close"
+            onClick={onClose}
+            tabIndex={open ? 0 : -1}
+            aria-label="메뉴 닫기"
+          >
+            ✕
+          </button>
+        </div>
 
         {items.map((it) => (
           <button
             key={it.label}
-            className="sheet-item"
+            className="drawer-item"
             onClick={() => {
               onClose();
               it.onClick();
             }}
             tabIndex={open ? 0 : -1}
           >
-            <span className="sheet-item-label">
+            <span className="drawer-item-label">
               {it.label}
               {it.dot ? (
-                <span className="sheet-dot" aria-label="살펴볼 것이 있어요" />
+                <span className="menu-dot" aria-label="살펴볼 것이 있어요" />
               ) : null}
             </span>
-            {it.sub ? <span className="sheet-item-sub">{it.sub}</span> : null}
+            {it.sub ? <span className="drawer-item-sub">{it.sub}</span> : null}
           </button>
         ))}
-
-        <button className="sheet-close" onClick={onClose} tabIndex={open ? 0 : -1}>
-          닫기
-        </button>
-      </div>
+      </nav>
     </>
   );
 }

@@ -1,5 +1,5 @@
 /* =======================================================================
-   노점 홈 — 사진 배경 + 사장님 + 말풍선 + 메뉴판 시트
+   노점 홈 — 사진 배경 + 말풍선 + 왼쪽 위 메뉴 바/서랍
 
    위치를 바꾸려면 아래 --steam-* / --menu-* / --bubble-* 숫자만 고치면 된다.
    ======================================================================= */
@@ -11,13 +11,14 @@
   --steam-height: 130px;
   --steam-opacity: 0.4;
 
-  --menu-right: 6%; /* 메뉴판 버튼 */
-  --menu-bottom: 15%;
+  --menu-left: var(--gutter); /* 왼쪽 위 메뉴 바 */
+  --menu-top: calc(12px + env(safe-area-inset-top));
 
-  --bubble-top: 5%; /* 말풍선 위 모서리 */
+  /* 말풍선은 메뉴 바 아래에서 시작한다 (바 46px + 사이 12px) */
+  --bubble-top: calc(var(--menu-top) + 58px);
   --bubble-tail-left: 46%; /* 말풍선 꼬리가 가리키는 가로 위치 */
 
-  /* 말풍선·시트 바탕. 사진 위에서도 읽히도록 불투명한 크림색 */
+  /* 말풍선·서랍 바탕. 사진 위에서도 읽히도록 불투명한 크림색 */
   --bubble-bg: #fdfaf3;
   --bubble-border: #e3dbcb;
 
@@ -196,34 +197,59 @@
   font-weight: 600;
 }
 
-/* --- 메뉴판 버튼 --- */
+/* --- 왼쪽 위 메뉴 바 --- */
 
-.menu-tag {
+.menu-bar {
   position: absolute;
-  right: var(--menu-right);
-  bottom: var(--menu-bottom);
-  min-width: 56px;
-  min-height: 56px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid #6b4e33;
-  background: #85603f;
-  color: #fffaf0;
-  font-family: inherit;
-  font-size: 0.9375rem;
-  font-weight: 650;
-  line-height: 1.3;
-  box-shadow: 0 4px 12px rgba(60, 45, 30, 0.28);
+  left: var(--menu-left);
+  top: var(--menu-top);
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid var(--bubble-border);
+  background: var(--bubble-bg);
+  box-shadow: 0 2px 10px rgba(60, 45, 30, 0.2);
   cursor: pointer;
-  z-index: 2;
+  z-index: 5;
 }
 
-.menu-tag:active {
-  filter: brightness(0.95);
+.menu-bar:active {
+  background: var(--surface-alt);
 }
 
-.menu-dot,
-.sheet-dot {
+.menu-bar-lines {
+  display: block;
+  width: 20px;
+}
+
+.menu-bar-lines span {
+  display: block;
+  height: 2px;
+  border-radius: 1px;
+  background: #4a4038;
+}
+
+.menu-bar-lines span + span {
+  margin-top: 5px;
+}
+
+/* 자원 제안이 떠 있다는 표시 (명세 7.2) */
+.menu-bar-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #b4654a;
+  border: 2px solid var(--bubble-bg);
+}
+
+.menu-dot {
   display: inline-block;
   width: 8px;
   height: 8px;
@@ -233,63 +259,72 @@
   vertical-align: 2px;
 }
 
-.menu-tag .menu-dot {
-  background: #fff1e0;
-}
+/* --- 메뉴 서랍 --- */
 
-/* --- 메뉴판 시트 --- */
-
-.sheet-backdrop {
+.drawer-backdrop {
   position: absolute;
   inset: 0;
   background: rgba(40, 32, 26, 0.38);
   opacity: 0;
   pointer-events: none;
   transition: opacity 260ms ease;
-  z-index: 3;
+  z-index: 6;
 }
 
-.sheet-backdrop.is-open {
+.drawer-backdrop.is-open {
   opacity: 1;
   pointer-events: auto;
 }
 
-.sheet {
+.drawer {
   position: absolute;
   left: 0;
-  right: 0;
+  top: 0;
   bottom: 0;
-  z-index: 4;
+  width: min(80%, 288px);
+  z-index: 7;
   background: var(--bubble-bg);
-  border-top: 1px solid var(--bubble-border);
-  border-radius: 20px 20px 0 0;
-  padding: 10px var(--gutter) calc(18px + env(safe-area-inset-bottom));
-  transform: translateY(100%);
-  transition: transform 300ms cubic-bezier(0.22, 0.8, 0.3, 1);
-  box-shadow: 0 -8px 26px rgba(60, 50, 40, 0.2);
+  border-right: 1px solid var(--bubble-border);
+  padding: calc(10px + env(safe-area-inset-top)) 14px
+    calc(18px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  transform: translateX(-100%);
+  transition: transform 280ms cubic-bezier(0.22, 0.8, 0.3, 1);
+  box-shadow: 6px 0 26px rgba(60, 50, 40, 0.22);
   cursor: default;
 }
 
-.sheet.is-open {
-  transform: translateY(0);
+.drawer.is-open {
+  transform: translateX(0);
 }
 
-.sheet-grip {
-  width: 38px;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--border);
-  margin: 0 auto 12px;
+.drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
 }
 
-.sheet-title {
+.drawer-title {
   font-size: 0.875rem;
   color: var(--text-muted);
   font-weight: 600;
-  margin: 0 0 10px;
+  margin: 0;
 }
 
-.sheet-item {
+.drawer-close {
+  width: 44px;
+  height: 44px;
+  margin-right: -10px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.drawer-item {
   display: block;
   width: 100%;
   min-height: 56px;
@@ -305,33 +340,19 @@
   cursor: pointer;
 }
 
-.sheet-item:active {
+.drawer-item:active {
   background: var(--surface-alt);
 }
 
-.sheet-item-label {
+.drawer-item-label {
   display: block;
 }
 
-.sheet-item-sub {
+.drawer-item-sub {
   display: block;
   font-size: 0.8125rem;
   color: var(--text-muted);
   margin-top: 2px;
-}
-
-.sheet-close {
-  display: block;
-  width: 100%;
-  min-height: 48px;
-  padding: 13px;
-  margin-top: 4px;
-  border: none;
-  background: none;
-  color: var(--text-muted);
-  font-family: inherit;
-  font-size: 0.9375rem;
-  cursor: pointer;
 }
 
 /* --- 장면만 보이는 1초 --- */
@@ -357,8 +378,8 @@
   .stall-photo-hint {
     animation: none;
   }
-  .sheet,
-  .sheet-backdrop {
+  .drawer,
+  .drawer-backdrop {
     transition: none;
   }
 }

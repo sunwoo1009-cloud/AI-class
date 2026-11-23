@@ -3,7 +3,7 @@ import { isEveningScene } from '../lib/devTime';
 import { evaluateEscalation } from '../lib/escalation';
 import { StallPhotoScene } from '../scenes/StallPhotoScene';
 import { loadCheckIns } from '../storage/store';
-import { MenuSheet } from './home/MenuSheet';
+import { MenuDrawer } from './home/MenuDrawer';
 import { SpeechBubble } from './home/SpeechBubble';
 
 interface Props {
@@ -21,7 +21,7 @@ const BUBBLE_DELAY_MS = 1000;
 /**
  * 명세 9절 화면 2 — 노점 홈.
  * 장면이 화면을 채우고, 주된 두 가지 행동은 말풍선 안에 있다.
- * 나머지 메뉴는 메뉴판 시트로 내려간다.
+ * 나머지 메뉴는 왼쪽 위 메뉴 바 뒤에 있다.
  */
 export function Home({
   onStartCheckIn,
@@ -33,9 +33,9 @@ export function Home({
 }: Props) {
   const evening = isEveningScene();
   const [bubbleShown, setBubbleShown] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  // 명세 7.2 — 자원 제안 카드가 뜰 주인지. 메뉴판에 작은 표시를 붙인다
+  // 명세 7.2 — 자원 제안 카드가 뜰 주인지. 메뉴 바에 작은 표시를 붙인다
   const escalated = useMemo(
     () => evaluateEscalation(loadCheckIns()).triggered,
     [],
@@ -55,6 +55,23 @@ export function Home({
         onClick={() => setBubbleShown(true)}
         role="presentation"
       >
+        <button
+          className="menu-bar"
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen(true);
+          }}
+          aria-label={`메뉴 열기${escalated ? ' — 살펴볼 것이 있어요' : ''}`}
+          aria-expanded={menuOpen}
+        >
+          <span className="menu-bar-lines" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+          {escalated ? <span className="menu-bar-dot" /> : null}
+        </button>
+
         {bubbleShown ? (
           <SpeechBubble
             evening={evening}
@@ -65,22 +82,10 @@ export function Home({
           <p className="stall-photo-hint">화면을 누르면 사장님이 말을 걸어요</p>
         )}
 
-        <button
-          className="menu-tag"
-          onClick={(e) => {
-            e.stopPropagation();
-            setSheetOpen(true);
-          }}
-          aria-label={`메뉴판${escalated ? ' — 살펴볼 것이 있어요' : ''}`}
-        >
-          메뉴판
-          {escalated ? <span className="menu-dot" /> : null}
-        </button>
-
-        <MenuSheet
-          open={sheetOpen}
+        <MenuDrawer
+          open={menuOpen}
           escalated={escalated}
-          onClose={() => setSheetOpen(false)}
+          onClose={() => setMenuOpen(false)}
           onOpenSummary={onOpenSummary}
           onOpenReview={onOpenReview}
           onOpenCalendar={onOpenCalendar}

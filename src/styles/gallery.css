@@ -141,8 +141,8 @@
   height: 100%;
 }
 
-/* 시트·배경막은 틀 안에만 머물게 */
-.gal-screen .sheet,
-.gal-screen .sheet-backdrop {
+/* 서랍·배경막은 틀 안에만 머물게 */
+.gal-screen .drawer,
+.gal-screen .drawer-backdrop {
   position: absolute;
 }
