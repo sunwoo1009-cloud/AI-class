@@ -74,7 +74,6 @@ export function Home({
 
         {bubbleShown ? (
           <SpeechBubble
-            evening={evening}
             onCheckIn={onStartCheckIn}
             onJournal={onOpenJournal}
           />

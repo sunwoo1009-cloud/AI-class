@@ -177,24 +177,37 @@
   display: block;
   font-size: 0.8125rem;
   line-height: 1.4;
-  color: var(--text-muted);
   margin-top: 3px;
 }
 
-/* 투명도를 주면 대비가 3.91 로 떨어진다. 불투명하게 둔다 */
-.bubble-btn-primary .bubble-btn-sub {
-  color: var(--accent-text);
-}
-
 .bubble-btn:active {
-  background: var(--surface-alt);
+  filter: brightness(0.96);
 }
 
-.bubble-btn-primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-text);
+/* 두 버튼은 색으로 구분한다. 말풍선 바탕이 밝고 어두운 모드와
+   무관하게 크림색이라, 글자색도 고정값으로 둔다.
+   대비는 계산해서 확인했다 — 본문 9.12 / 설명 5.59 (하늘색),
+   본문 10.22 / 설명 5.93 (베이지). 모두 AA 를 넘는다. */
+.bubble-btn-checkin {
+  background: #cfe4f0;
+  border-color: #a9c9db;
+  color: #1f3a47;
   font-weight: 600;
+}
+
+.bubble-btn-checkin .bubble-btn-sub {
+  color: #3d5a69;
+}
+
+.bubble-btn-journal {
+  background: #f0e5d2;
+  border-color: #ddcbaf;
+  color: #3a3127;
+  font-weight: 600;
+}
+
+.bubble-btn-journal .bubble-btn-sub {
+  color: #5f5445;
 }
 
 /* --- 왼쪽 위 메뉴 바 --- */
