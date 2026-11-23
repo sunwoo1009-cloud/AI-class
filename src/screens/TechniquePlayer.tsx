@@ -104,7 +104,7 @@ export function TechniquePlayer({
             {step.art ? <TechniqueArt kind={step.art} /> : null}
 
             {step.speech ? null : (
-              <p className="script-text">{fillName(step.text, displayName)}</p>
+              <ScriptText text={fillName(step.text, displayName)} />
             )}
           </>
         ) : null}
@@ -142,6 +142,17 @@ export function TechniquePlayer({
         </button>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * 대본 문구. 줄을 나눈 문구는 한 줄이 통째로 들어가도록 글자를 줄인다.
+ * 가장 긴 줄이 약 18.6em 이라 그 비율로 화면 폭에 맞춘다.
+ */
+function ScriptText({ text }: { text: string }) {
+  const multi = text.includes('\n');
+  return (
+    <p className={`script-text${multi ? ' is-lines' : ''}`}>{text}</p>
   );
 }
 

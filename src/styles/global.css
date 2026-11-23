@@ -417,6 +417,20 @@ button {
   line-height: 1.75;
   margin: 0;
   white-space: pre-line;
+  /* 한글은 어절 단위로 끊는다. 낱글자가 혼자 다음 줄로 넘어가지 않게. */
+  word-break: keep-all;
+}
+
+/* 줄을 나눠 적은 문구는 한 줄이 통째로 들어가도록 글자를 줄인다.
+   화면 폭이 아니라 **글이 들어가는 칸** 기준이어야 한다. 개발용 모음처럼
+   틀 안에 넣어 보여줄 때 화면 폭으로 재면 넘친다. */
+.script {
+  container-type: inline-size;
+}
+
+.script-text.is-lines {
+  /* 가장 긴 줄이 약 19em 이다. 여유를 둬 칸 너비의 1/20.4 로 잡는다. */
+  font-size: min(1.1875rem, 4.9cqw);
 }
 
 .script-reason {

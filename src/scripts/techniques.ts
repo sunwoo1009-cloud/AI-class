@@ -140,6 +140,7 @@ const containment: TechniqueScript = {
       text: lines(
         '뚜껑을 닫으세요',
         '이건 지우는 게 아니라 보관해 두는 거예요',
+        '필요할 때 다시 열 수 있어요',
       ),
     },
     {
