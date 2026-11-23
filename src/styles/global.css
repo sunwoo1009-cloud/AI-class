@@ -433,6 +433,11 @@ button {
   font-size: min(1.1875rem, 4.9cqw);
 }
 
+/* 선택지 위의 물음 — 아래 버튼과 사이를 띄운다 */
+.script-choice-text {
+  margin-bottom: 22px;
+}
+
 .script-reason {
   font-size: 0.8125rem;
   color: var(--text-muted);

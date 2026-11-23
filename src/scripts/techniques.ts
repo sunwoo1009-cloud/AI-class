@@ -171,7 +171,10 @@ const detachment: TechniqueScript = {
     {
       kind: 'choice',
       seconds: 15,
-      text: '지금 머릿속에 남아 있는 생각이 어떤 종류인지 골라보세요.',
+      text: lines(
+        '지금 머릿속에 남아 있는 생각이',
+        '어떤 종류인지 골라보세요',
+      ),
       choiceId: 'thought_kind',
       options: [
         { id: 'missed', label: '내가 놓친 것 같은 부분' },
@@ -213,7 +216,10 @@ const detachment: TechniqueScript = {
     {
       kind: 'text',
       seconds: 45,
-      text: '이제 잠깐 자리에서 일어나 보세요. 창밖을 보거나, 물을 마시거나, 복도를 한 번 걸어도 돼요.',
+      text: lines(
+        '이제 잠깐 자리에서 일어나 보세요',
+        '창밖을 보거나, 물을 마셔보세요',
+      ),
     },
     { kind: 'text', seconds: 15, text: '다음 회기는 다음 회기의 일이에요.' },
   ],

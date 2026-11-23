@@ -119,9 +119,7 @@ export function TechniquePlayer({
 
         {step.kind === 'choice' ? (
           <div>
-            <p className="script-text" style={{ marginBottom: 22 }}>
-              {step.text}
-            </p>
+            <ScriptText text={step.text} className="script-choice-text" />
             {resolveOptions(step, answers).map((o) => (
               <button
                 key={o.id}
@@ -147,12 +145,24 @@ export function TechniquePlayer({
 
 /**
  * 대본 문구. 줄을 나눈 문구는 한 줄이 통째로 들어가도록 글자를 줄인다.
- * 가장 긴 줄이 약 18.6em 이라 그 비율로 화면 폭에 맞춘다.
+ * 크기는 global.css 의 .script-text.is-lines 가 칸 너비를 보고 정한다.
  */
-function ScriptText({ text }: { text: string }) {
+function ScriptText({
+  text,
+  className,
+}: {
+  text: string;
+  className?: string;
+}) {
   const multi = text.includes('\n');
   return (
-    <p className={`script-text${multi ? ' is-lines' : ''}`}>{text}</p>
+    <p
+      className={`script-text${multi ? ' is-lines' : ''}${
+        className ? ` ${className}` : ''
+      }`}
+    >
+      {text}
+    </p>
   );
 }
 
