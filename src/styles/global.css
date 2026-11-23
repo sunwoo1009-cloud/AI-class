@@ -458,16 +458,14 @@ button {
   gap: 26px;
 }
 
-.breath-circle {
-  width: 190px;
-  height: 190px;
-  border-radius: 50%;
-  background: var(--accent-soft);
-  border: 2px solid var(--accent);
+/* 김이 나는 붕어빵. 숨에 맞춰 통째로 커졌다 작아진다. */
+.breath-fish {
+  width: 164px;
+  height: 272px;
   transform: scale(0.55);
 }
 
-.breath-circle.run {
+.breath-fish.run {
   animation-name: breathe;
   animation-iteration-count: infinite;
   animation-timing-function: ease-in-out;
@@ -485,15 +483,61 @@ button {
   }
 }
 
+/* 김 — 밝은 화면에서도 보이게 글자색을 쓴다 */
+.breath-steam path {
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transform-box: fill-box;
+  animation: breath-steam 4.6s ease-in-out infinite;
+}
+
+.breath-steam path:nth-child(2) {
+  animation-duration: 5.4s;
+  animation-delay: -1.7s;
+}
+
+.breath-steam path:nth-child(3) {
+  animation-duration: 5s;
+  animation-delay: -3.2s;
+}
+
+@keyframes breath-steam {
+  0% {
+    opacity: 0;
+    transform: translateY(5px) scaleY(0.85);
+  }
+  35% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-9px) scaleY(1.1);
+  }
+}
+
+/* 마지막 화면 — 김이 걷힌 붕어빵 */
+.script-art {
+  display: block;
+  width: 132px;
+  height: 99px;
+  margin: 0 auto 20px;
+}
+
 .breath-phase {
   font-size: 1.25rem;
   color: var(--text);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .breath-circle.run {
+  .breath-fish.run {
     animation: none;
     transform: scale(0.8);
+  }
+  .breath-steam path {
+    animation: none;
+    opacity: 0.5;
   }
 }
 

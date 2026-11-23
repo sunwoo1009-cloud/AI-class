@@ -6,10 +6,16 @@ import type { FoodIconId } from '../../types';
  * 납작한 평면 일러스트라 글자 크기로 줄여도 형태가 남는다.
  * 품목 이름이 바로 아래에 적히므로 그림은 읽어줄 필요가 없다 (aria-hidden).
  */
-export function FoodIcon({ kind }: { kind: FoodIconId }) {
+export function FoodIcon({
+  kind,
+  className = 'strip-icon',
+}: {
+  kind: FoodIconId;
+  className?: string;
+}) {
   return (
     <svg
-      className="strip-icon"
+      className={className}
       viewBox="0 0 64 48"
       aria-hidden="true"
       focusable="false"
@@ -75,6 +81,11 @@ function bun(dot: string) {
       <ellipse cx="32" cy="19" rx="9" ry="5.5" fill={dot} />
     </>
   );
+}
+
+/** SVG 껍데기 없이 모양만. 다른 그림과 겹쳐 쓸 때 (호흡 화면의 김 등). */
+export function foodShape(kind: FoodIconId) {
+  return shape(kind);
 }
 
 function shape(kind: FoodIconId) {

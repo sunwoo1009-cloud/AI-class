@@ -9,7 +9,13 @@ export interface ScriptOption {
 }
 
 export type ScriptStep =
-  | { kind: 'text'; seconds: number; text: string }
+  | {
+      kind: 'text';
+      seconds: number;
+      text: string;
+      /** 글과 함께 보여줄 그림 (명세 8.1) */
+      art?: 'taiyakiCool';
+    }
   | {
       kind: 'breathing';
       seconds: number;
@@ -43,13 +49,14 @@ const slowBreathing: TechniqueScript = {
     {
       kind: 'text',
       seconds: 5,
-      text: '숨을 조금 천천히 쉬어볼게요. 원이 커질 때 들이쉬고, 작아질 때 내쉬세요.',
+      text: '붕어빵이 아직 뜨거워요. 붕어빵이 커질 때 숨을 들이쉬고, 작아질 때 내쉬며 식혀봐요.',
     },
     { kind: 'breathing', seconds: 80, cycles: 8, inhaleSec: 4, exhaleSec: 6 },
     {
       kind: 'text',
       seconds: 5,
       text: '마지막 날숨에서 어깨가 내려가는지 확인해 보세요.',
+      art: 'taiyakiCool',
     },
   ],
 };

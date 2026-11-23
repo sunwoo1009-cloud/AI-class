@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { TECHNIQUE_LABELS } from '../constants';
 import { fillName } from '../lib/josa';
+import { foodShape } from './menu/FoodIcon';
 import { TECHNIQUE_SCRIPTS } from '../scripts/techniques';
 import type { ScriptOption, ScriptStep } from '../scripts/techniques';
 import type { TechniqueId } from '../types';
@@ -93,7 +94,19 @@ export function TechniquePlayer({
         ) : null}
 
         {step.kind === 'text' ? (
-          <p className="script-text">{fillName(step.text, displayName)}</p>
+          <>
+            {step.art === 'taiyakiCool' ? (
+              <svg
+                className="script-art"
+                viewBox="0 0 64 48"
+                aria-hidden="true"
+                focusable="false"
+              >
+                {foodShape('taiyakiRed')}
+              </svg>
+            ) : null}
+            <p className="script-text">{fillName(step.text, displayName)}</p>
+          </>
         ) : null}
 
         {step.kind === 'breathing' ? (
@@ -132,7 +145,11 @@ export function TechniquePlayer({
   );
 }
 
-/** 명세 8.1 [2] — 들숨 4초, 날숨 6초로 8번 */
+/** 명세 8.1 [2] — 들숨 4초, 날숨 6초로 8번.
+ *
+ * 김이 나는 팥붕어빵이 숨에 맞춰 커졌다 작아진다.
+ * 김은 붕어빵과 한 그림이라 같이 커지고, 올라가는 움직임은 따로 돈다.
+ */
 function BreathingCircle({
   cycles,
   inhaleSec,
@@ -157,13 +174,23 @@ function BreathingCircle({
 
   return (
     <div className="breath">
-      <div
-        className="breath-circle run"
+      <svg
+        className="breath-fish run"
+        viewBox="0 0 64 106"
         style={{
           animationDuration: `${cycleSec}s`,
           animationIterationCount: cycles,
         }}
-      />
+        aria-hidden="true"
+        focusable="false"
+      >
+        <g className="breath-steam">
+          <path d="M21 52 C15 41 25 35 19 23 C16 16 20 12 18 7" />
+          <path d="M33 54 C27 42 37 36 31 24 C28 16 32 12 30 6" />
+          <path d="M45 52 C39 41 49 35 43 24 C40 17 44 13 42 9" />
+        </g>
+        <g transform="translate(0,58)">{foodShape('taiyakiRed')}</g>
+      </svg>
       <div className="breath-phase">{phase === 'in' ? '들이쉬고' : '내쉬고'}</div>
     </div>
   );
