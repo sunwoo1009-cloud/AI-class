@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { TECHNIQUE_LABELS } from '../constants';
 import { fillName } from '../lib/josa';
 import { foodShape } from './menu/FoodIcon';
+import { TechniqueArt } from './menu/TechniqueArt';
 import { TECHNIQUE_SCRIPTS } from '../scripts/techniques';
 import type { ScriptOption, ScriptStep } from '../scripts/techniques';
 import type { TechniqueId } from '../types';
@@ -95,17 +96,16 @@ export function TechniquePlayer({
 
         {step.kind === 'text' ? (
           <>
-            {step.art === 'taiyakiCool' ? (
-              <svg
-                className="script-art"
-                viewBox="0 0 64 48"
-                aria-hidden="true"
-                focusable="false"
-              >
-                {foodShape('taiyakiRed')}
-              </svg>
+            {/* 말풍선이면 글이 그림 위에, 아니면 그림 아래에 온다 */}
+            {step.speech ? (
+              <p className="art-bubble">{fillName(step.text, displayName)}</p>
             ) : null}
-            <p className="script-text">{fillName(step.text, displayName)}</p>
+
+            {step.art ? <TechniqueArt kind={step.art} /> : null}
+
+            {step.speech ? null : (
+              <p className="script-text">{fillName(step.text, displayName)}</p>
+            )}
           </>
         ) : null}
 

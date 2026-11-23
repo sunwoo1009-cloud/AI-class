@@ -1,3 +1,4 @@
+import type { ArtKind } from '../screens/menu/TechniqueArt';
 import type { TechniqueId } from '../types';
 
 /** 선택지 하나. action이 있으면 흐름에 신호를 보낸다. */
@@ -13,8 +14,10 @@ export type ScriptStep =
       kind: 'text';
       seconds: number;
       text: string;
-      /** 글과 함께 보여줄 그림 (명세 8.1) */
-      art?: 'taiyakiCool';
+      /** 글과 함께 보여줄 그림 */
+      art?: ArtKind;
+      /** 글을 그림 위 말풍선 안에 넣는다 */
+      speech?: boolean;
     }
   | {
       kind: 'breathing';
@@ -215,17 +218,21 @@ const selfDistancing: TechniqueScript = {
     {
       kind: 'text',
       seconds: 20,
-      text: '지금 상황을 내 이름으로 말해보세요. "{name는} 지금 화가 나 있다."',
+      text: '지금 상황을 내 이름으로 말해보세요. (예시: "{name는} 지금 화가 나 있다.")',
+      art: 'creamSteam',
+      speech: true,
     },
     {
       kind: 'text',
       seconds: 20,
       text: '이어서 물어보세요. "{name는} 왜 화가 났을까?" 답을 찾지 않아도 돼요. 질문만 해보세요.',
+      art: 'creamRack',
     },
     {
       kind: 'text',
       seconds: 20,
       text: '일주일 뒤에 이 회기를 떠올린다고 생각해 보세요. 그때 이 감정은 어느 정도일까요?',
+      art: 'creamClock',
     },
   ],
 };
