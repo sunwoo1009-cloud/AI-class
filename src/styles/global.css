@@ -612,6 +612,10 @@ input[type='range'] {
   user-select: none;
 }
 
+.coupon.is-static {
+  cursor: default;
+}
+
 .coupon:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
