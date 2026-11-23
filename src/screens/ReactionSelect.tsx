@@ -36,7 +36,6 @@ export function ReactionSelect({ onSubmit, onCancel }: Props) {
         <button className="btn-quiet" onClick={onCancel}>
           그만두기
         </button>
-        <span className="topbar-title">메뉴판</span>
       </div>
 
       <h1 className="h1-oneline">지금 남아 있는 반응에 이름을 붙여보세요</h1>
@@ -45,27 +44,31 @@ export function ReactionSelect({ onSubmit, onCancel }: Props) {
       </p>
 
       <div className="menu-board">
-        {REACTIONS.map((r) => {
-          const index = picked.indexOf(r.id);
-          const selected = index >= 0;
-          return (
-            <button
-              key={r.id}
-              className="choice menu-choice"
-              aria-pressed={selected}
-              onClick={() => toggle(r.id)}
-            >
-              {selected ? (
-                <span className="choice-order choice-order-left">
-                  {index === 0 ? '주 반응' : '2'}
-                </span>
-              ) : null}
-              <span className="choice-label">{r.label}</span>
-              <span className="menu-item-name">{r.menuItem.name}</span>
-              <span className="menu-price">{won(r.menuItem.price)}</span>
-            </button>
-          );
-        })}
+        <p className="menu-sign">메뉴판</p>
+
+        <div className="menu-strips">
+          {REACTIONS.map((r) => {
+            const index = picked.indexOf(r.id);
+            const selected = index >= 0;
+            return (
+              <button
+                key={r.id}
+                className="menu-strip"
+                aria-pressed={selected}
+                onClick={() => toggle(r.id)}
+              >
+                {selected ? (
+                  <span className="strip-stamp">
+                    {index === 0 ? '주 반응' : '두 번째'}
+                  </span>
+                ) : null}
+                <span className="strip-reaction">{r.label}</span>
+                <span className="strip-item">{r.menuItem.name}</span>
+                <span className="strip-price">{won(r.menuItem.price)}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {picked.length > 0 ? (

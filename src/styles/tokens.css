@@ -12,6 +12,17 @@
   --warn-surface: #f5efe4;
   --warn-border: #e2d4b8;
 
+  /* 노점 메뉴판 — 나무 간판과 종이 띠 (반응 선택 화면에서만 쓴다) */
+  --board-bg: #e8d6b2;
+  --board-edge: #cbb388;
+  --strip-bg: #fdf7ea;
+  --strip-edge: #d8c49e;
+  --strip-text: #332a1e;
+  --strip-muted: #6b5a42;
+  --sign-bg: #8a6a45;
+  --sign-edge: #6b5133;
+  --sign-text: #fff7e8;
+
   --radius: 14px;
   --radius-lg: 20px;
   --gutter: 20px;
@@ -34,6 +45,16 @@
     --accent-text: #15201c;
     --warn-surface: #302a20;
     --warn-border: #4b4030;
+
+    --board-bg: #3a332a;
+    --board-edge: #4b4238;
+    --strip-bg: #272320;
+    --strip-edge: #46403a;
+    --strip-text: #ece7e1;
+    --strip-muted: #a69c91;
+    --sign-bg: #5a452e;
+    --sign-edge: #6f5435;
+    --sign-text: #f3e7d4;
   }
 }
 
@@ -49,4 +70,14 @@
   --accent-text: #15201c;
   --warn-surface: #302a20;
   --warn-border: #4b4030;
+
+  --board-bg: #3a332a;
+  --board-edge: #4b4238;
+  --strip-bg: #272320;
+  --strip-edge: #46403a;
+  --strip-text: #ece7e1;
+  --strip-muted: #a69c91;
+  --sign-bg: #5a452e;
+  --sign-edge: #6f5435;
+  --sign-text: #f3e7d4;
 }

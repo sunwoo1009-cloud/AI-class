@@ -196,43 +196,106 @@ button {
 /* --- 노점 메뉴판 (반응 선택 화면) --- */
 
 .menu-board {
-  margin-top: 16px;
+  margin: 16px 0 14px;
+  padding: 14px 12px 16px;
+  border-radius: 12px;
+  background: var(--board-bg);
+  border: 1px solid var(--board-edge);
 }
 
-/* 이름은 가운데, 고른 순서는 왼쪽, 값은 오른쪽.
-   가운데 글자가 양옆 것과 부딪히지 않게 좌우 여백을 같이 준다. */
-.menu-choice {
-  padding-left: 62px;
-  padding-right: 62px;
+/* 위쪽 나무 간판 */
+.menu-sign {
+  width: fit-content;
+  margin: 0 auto 16px;
+  padding: 7px 26px;
+  border-radius: 8px;
+  background: var(--sign-bg);
+  border: 2px solid var(--sign-edge);
+  color: var(--sign-text);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
 }
 
-.menu-item-name {
-  display: block;
-  margin-top: 2px;
+/* 종이 띠를 두 칸씩 늘어놓는다 */
+.menu-strips {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+/* 한 띠에 세 줄 — 반응 이름 · 품목 · 값 */
+.menu-strip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 126px;
+  padding: 18px 8px 12px;
+  border-radius: 6px;
+  background: var(--strip-bg);
+  border: 1px solid var(--strip-edge);
+  box-shadow: 0 1px 3px rgba(60, 45, 25, 0.18);
+  color: var(--strip-text);
+  text-align: center;
+}
+
+.strip-reaction {
+  font-size: 1.0625rem;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.strip-item {
+  margin-top: 3px;
   font-size: 0.8125rem;
-  color: var(--text-muted);
+  line-height: 1.35;
+  color: var(--strip-muted);
 }
 
-.menu-price {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.8125rem;
-  color: var(--text-muted);
+/* 값은 띠 아래쪽, 가는 선 밑에 */
+.strip-price {
+  width: 100%;
+  margin-top: auto;
+  padding-top: 9px;
+  border-top: 1px solid var(--strip-edge);
+  font-size: 0.875rem;
+  color: var(--strip-muted);
   font-variant-numeric: tabular-nums;
 }
 
-/* 고른 칸은 바탕이 연한 초록이 되므로 작은 글자를 진하게 바꾼다.
-   (어두운 모드에서 muted 색은 이 바탕에서 4.36:1 로 AA 에 못 미친다) */
-.menu-choice[aria-pressed='true'] .menu-item-name,
-.menu-choice[aria-pressed='true'] .menu-price {
+/* 고른 띠 */
+.menu-strip[aria-pressed='true'] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
   color: var(--text);
 }
 
-.choice-order-left {
-  right: auto;
-  left: 14px;
+/* 연한 초록 바탕에서는 muted 색이 어두운 모드에서 AA(4.5:1)에 못 미친다 */
+.menu-strip[aria-pressed='true'] .strip-item,
+.menu-strip[aria-pressed='true'] .strip-price {
+  color: var(--text);
+}
+
+.menu-strip[aria-pressed='true'] .strip-price {
+  border-top-color: var(--accent);
+}
+
+/* 몇 번째로 골랐는지 찍는 도장 */
+.strip-stamp {
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 0.6875rem;
+  font-weight: 650;
+  white-space: nowrap;
 }
 
 /* --- 영수증 --- */
