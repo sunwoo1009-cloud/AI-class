@@ -77,12 +77,19 @@ const grounding: TechniqueScript = {
     {
       kind: 'text',
       seconds: 15,
-      text: '발바닥으로 바닥을 꾹 눌러보세요. 몇 초 누르고 있다가 힘을 빼세요.',
+      text: lines(
+        '발바닥으로 바닥을 꾹 눌러보세요',
+        '몇 초 누르고 있다가 힘을 빼세요',
+      ),
     },
     {
       kind: 'text',
       seconds: 20,
-      text: '지금 보이는 것 중에서 색깔이 다른 물건 세 개를 찾아보세요. 속으로 이름을 불러도 돼요.',
+      text: lines(
+        '지금 보이는 것 중에서',
+        '색깔이 다른 물건 세 개를 찾아보세요',
+        '속으로 이름을 불러도 돼요',
+      ),
     },
     {
       kind: 'text',
@@ -92,7 +99,10 @@ const grounding: TechniqueScript = {
     {
       kind: 'text',
       seconds: 20,
-      text: '손에 닿는 물건 하나를 만져보세요. 온도와 질감에 주의를 두세요.',
+      text: lines(
+        '손에 닿는 물건 하나를 만져보세요',
+        '온도와 질감에 주의를 두세요',
+      ),
     },
     {
       kind: 'text',
