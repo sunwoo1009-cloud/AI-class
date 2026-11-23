@@ -1,49 +1,66 @@
 import type { ArousalLevel, ReactionType, TechniqueId } from './types';
 
-/** 명세 5절 — 반응 유형별 라벨 (반응 선택 화면 표시 순서) */
+/**
+ * 명세 5절 — 반응 유형별 라벨 (반응 선택 화면 표시 순서).
+ *
+ * menuItem 은 노점 메뉴판 화면에서만 쓰는 표시용 이름과 값이다.
+ * 기록·요약·캘린더·기법 선택에는 label 과 arousal 만 쓴다.
+ */
 export const REACTIONS: {
   id: ReactionType;
   label: string;
   arousal: ArousalLevel;
   technique: TechniqueId;
+  menuItem: { name: string; price: number };
 }[] = [
   {
     id: 'hyperarousal',
     label: '과각성',
     arousal: 'hyper',
     technique: 'slow_breathing',
+    menuItem: { name: '팥붕어빵', price: 2000 },
   },
   {
     id: 'anger',
     label: '분노·짜증',
     arousal: 'hyper',
     technique: 'self_distancing',
+    menuItem: { name: '슈크림 붕어빵', price: 2000 },
   },
   {
     id: 'intrusion',
     label: '침습적 장면',
     arousal: 'hyper',
     technique: 'containment',
+    menuItem: { name: '어묵', price: 2000 },
   },
   {
     id: 'numbness',
     label: '멍함',
     arousal: 'hypo',
     technique: 'grounding',
+    menuItem: { name: '계란빵', price: 3000 },
   },
   {
     id: 'heaviness',
     label: '무력감',
     arousal: 'mid',
     technique: 'compassion',
+    menuItem: { name: '팥호빵', price: 3000 },
   },
   {
     id: 'rumination',
     label: '반추',
     arousal: 'mid',
     technique: 'detachment',
+    menuItem: { name: '피자호빵', price: 3000 },
   },
 ];
+
+/** 메뉴판·영수증에 쓰는 값 표기 — 2000 → "2,000원" */
+export function won(price: number): string {
+  return `${price.toLocaleString('ko-KR')}원`;
+}
 
 const REACTION_MAP = new Map(REACTIONS.map((r) => [r.id, r]));
 

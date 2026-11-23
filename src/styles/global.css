@@ -193,6 +193,102 @@ button {
   font-weight: 600;
 }
 
+/* --- 노점 메뉴판 (반응 선택 화면) --- */
+
+.menu-board {
+  margin-top: 16px;
+}
+
+/* 이름은 가운데, 고른 순서는 왼쪽, 값은 오른쪽.
+   가운데 글자가 양옆 것과 부딪히지 않게 좌우 여백을 같이 준다. */
+.menu-choice {
+  padding-left: 62px;
+  padding-right: 62px;
+}
+
+.menu-item-name {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.menu-price {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 고른 칸은 바탕이 연한 초록이 되므로 작은 글자를 진하게 바꾼다.
+   (어두운 모드에서 muted 색은 이 바탕에서 4.36:1 로 AA 에 못 미친다) */
+.menu-choice[aria-pressed='true'] .menu-item-name,
+.menu-choice[aria-pressed='true'] .menu-price {
+  color: var(--text);
+}
+
+.choice-order-left {
+  right: auto;
+  left: 14px;
+}
+
+/* --- 영수증 --- */
+
+.receipt {
+  margin-top: 4px;
+  padding: 14px 16px 16px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.receipt-title {
+  margin: 0 0 6px;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.receipt-rule {
+  border-top: 1px dashed var(--border);
+  margin: 8px 0;
+}
+
+.receipt-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+}
+
+.receipt-name {
+  font-size: 0.9375rem;
+}
+
+.receipt-sub {
+  display: block;
+  margin-top: 1px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.receipt-price {
+  font-size: 0.9375rem;
+  white-space: nowrap;
+}
+
+.receipt-total .receipt-name,
+.receipt-total .receipt-price {
+  font-weight: 650;
+}
+
 /* --- 카드 --- */
 
 .card {
