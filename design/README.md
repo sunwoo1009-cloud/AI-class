@@ -63,3 +63,35 @@ bash design/build-preview.sh
 세계를 덧씌우면 정반대가 된다.
 
 원칙: **그림은 따뜻하게, 글은 건조하게.**
+
+---
+
+# 노점 그림 만드는 순서 (2026-11-23 추가)
+
+`public/images/stall-bg.png` 는 손으로 그린 게 아니라 원본 그림을
+세 단계로 가공한 결과다. 원본은 `design/stall-source.png` 다.
+
+```bash
+# 1) 수레만 잘라낸다 (배경을 투명하게)
+node tools/cutout.mjs design/stall-source.png .work/cut.png 6
+
+# 2) 폰 화면 비율(1:2)에 맞춰 위에 하늘을 덧댄다
+#    가로가 넓으면 object-fit: cover 가 양옆을 잘라 찜기와 차양 끝이 날아간다
+node tools/extend-canvas.mjs design/stall-source.png .work/ext.png 317 0 640
+node tools/extend-canvas.mjs .work/cut.png .work/extmask.png 317 0 640
+
+# 3) 쓰던 그림의 노을빛을 입힌다
+#    배경은 짙게, 수레는 옅게 — 차양의 노란색이 탁해지지 않도록
+node tools/sunset-wash.mjs <노을 원본> .work/ext.png .work/extmask.png \
+  public/images/stall-bg.png
+```
+
+3단계의 `<노을 원본>` 은 노을빛을 가져올 그림이다. 이 작업에서는 그때까지
+쓰던 `stall-bg.png` 를 썼다. 다시 만들 일이 있으면 git 기록에서 커밋
+`72b3853` 시점의 파일을 꺼내 쓰면 된다.
+
+## 숫자를 고칠 때
+
+- `317` — 위에 덧댄 하늘 높이. 차양 윗선이 화면의 약 35% 에 오도록 맞춘 값이다.
+  말풍선이 그 위를 덮으므로 이보다 작으면 차양이 가린다.
+- `6` — 잘라내기 허용치. 크게 하면 배경이 수레 안으로 번져 수레가 조각난다.

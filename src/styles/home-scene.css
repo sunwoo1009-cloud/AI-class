@@ -5,11 +5,12 @@
    ======================================================================= */
 
 .stall-photo {
-  --steam-left: 11%; /* 찜기(호빵) 위치 */
-  --steam-bottom: 40%;
-  --steam-width: 58px;
-  --steam-height: 130px;
-  --steam-opacity: 0.4;
+  --steam-left: 5%; /* 찜기(호빵) 위치 */
+  --steam-bottom: 50%;
+  --steam-width: 52px;
+  --steam-height: 118px;
+  /* 그림에 이미 김이 그려져 있다. 움직임만 얹는 정도로 옅게. */
+  --steam-opacity: 0.22;
 
   --menu-left: var(--gutter); /* 왼쪽 위 메뉴 바 */
   --menu-top: calc(12px + env(safe-area-inset-top));
