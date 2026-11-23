@@ -45,6 +45,12 @@ export interface TechniqueScript {
   steps: ScriptStep[];
 }
 
+/**
+ * 줄을 나눠 보여줄 문구. 줄바꿈은 .script-text 의 white-space: pre-line 이 살린다.
+ * 화면이 좁으면 각 줄이 그 안에서 한 번 더 접힌다.
+ */
+const lines = (...parts: string[]) => parts.join('\n');
+
 /** 명세 8.1 느린 호흡 (약 90초) */
 const slowBreathing: TechniqueScript = {
   id: 'slow_breathing',
@@ -103,27 +109,46 @@ const containment: TechniqueScript = {
     {
       kind: 'text',
       seconds: 15,
-      text: '회기에서 들은 이야기 중에 떠오르는 장면이 있다면, 그걸 지우려 하지 말고 잠시 바라보세요.',
+      text: lines(
+        '회기에서 들은 이야기 중에',
+        '떠오르는 장면이 있다면',
+        '그걸 지우려 하지 말고',
+        '잠시 바라보세요',
+      ),
     },
     {
       kind: 'text',
       seconds: 20,
-      text: '그 장면을 담아둘 수 있는 상자나 서랍을 하나 떠올려 보세요. 뚜껑이 단단히 닫히는 것이면 좋아요.',
+      text: lines(
+        '그 장면을 담아둘 수 있는',
+        '상자나 서랍을 하나 떠올려 보세요',
+        '뚜껑이 단단히 닫히는 것이면 좋아요',
+      ),
     },
     {
       kind: 'text',
       seconds: 30,
-      text: '장면을 그 안에 넣어보세요. 다 들어가지 않으면 크기를 줄이거나 흐리게 만들어서 넣어도 돼요.',
+      text: lines(
+        '장면을 그 안에 넣어보세요',
+        '다 들어가지 않으면 크기를 줄이거나',
+        '흐리게 만들어서 넣어도 돼요',
+      ),
     },
     {
       kind: 'text',
       seconds: 20,
-      text: '뚜껑을 닫으세요. 이건 지우는 게 아니라 보관해 두는 거예요. 필요할 때 수퍼비전이나 사례 검토 시간에 다시 열 수 있어요.',
+      text: lines(
+        '뚜껑을 닫으세요',
+        '이건 지우는 게 아니라 보관해 두는 거예요',
+      ),
     },
     {
       kind: 'text',
       seconds: 15,
-      text: '상자를 어디에 둘지 정하세요. 사무실 밖이어도 괜찮아요.',
+      text: lines(
+        '상자를 어디에 둘지 정하세요',
+        '사무실 밖이어도 괜찮아요',
+      ),
     },
   ],
 };
