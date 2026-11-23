@@ -12,7 +12,7 @@ interface Props {
   escalated?: boolean;
 }
 
-/** 가판대 옆 나무 차림표를 누르면 아래에서 올라오는 시트 */
+/** 가판대 옆 나무 메뉴판을 누르면 아래에서 올라오는 시트 */
 export function MenuSheet({
   open,
   onClose,
@@ -45,12 +45,12 @@ export function MenuSheet({
         className={`sheet${open ? ' is-open' : ''}`}
         role="dialog"
         aria-modal="true"
-        aria-label="차림표"
+        aria-label="메뉴판"
         aria-hidden={!open}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sheet-grip" aria-hidden="true" />
-        <h2 className="sheet-title">차림표</h2>
+        <h2 className="sheet-title">메뉴판</h2>
 
         {items.map((it) => (
           <button

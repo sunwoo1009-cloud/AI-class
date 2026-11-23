@@ -20,8 +20,8 @@ const BUBBLE_DELAY_MS = 1000;
 
 /**
  * 명세 9절 화면 2 — 노점 홈.
- * 장면이 화면을 채우고, 주된 두 가지 행동은 사장님 말풍선 안에 있다.
- * 나머지 메뉴는 차림표 시트로 내려간다.
+ * 장면이 화면을 채우고, 주된 두 가지 행동은 말풍선 안에 있다.
+ * 나머지 메뉴는 메뉴판 시트로 내려간다.
  */
 export function Home({
   onStartCheckIn,
@@ -35,7 +35,7 @@ export function Home({
   const [bubbleShown, setBubbleShown] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  // 명세 7.2 — 자원 제안 카드가 뜰 주인지. 차림표에 작은 표시를 붙인다
+  // 명세 7.2 — 자원 제안 카드가 뜰 주인지. 메뉴판에 작은 표시를 붙인다
   const escalated = useMemo(
     () => evaluateEscalation(loadCheckIns()).triggered,
     [],
@@ -71,9 +71,9 @@ export function Home({
             e.stopPropagation();
             setSheetOpen(true);
           }}
-          aria-label={`차림표${escalated ? ' — 살펴볼 것이 있어요' : ''}`}
+          aria-label={`메뉴판${escalated ? ' — 살펴볼 것이 있어요' : ''}`}
         >
-          차림표
+          메뉴판
           {escalated ? <span className="menu-dot" /> : null}
         </button>
 

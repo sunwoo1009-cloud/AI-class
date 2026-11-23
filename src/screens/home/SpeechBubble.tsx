@@ -1,15 +1,15 @@
 interface Props {
-  /** 오후 5시 이후인가 — 문구와 버튼 순서가 바뀐다 */
+  /** 오후 5시 이후인가 — 버튼 순서와 강조가 바뀐다 */
   evening: boolean;
   onCheckIn: () => void;
   onJournal: () => void;
 }
 
 /**
- * 사장님 머리 위 말풍선.
- * 대사는 아래 두 개로 고정이다. 입력을 받거나 대화가 이어지지 않는다.
+ * 노점 앞에서 떠오르는 생각과 두 가지 선택.
+ * 문구는 아래 고정값만 쓴다. 입력을 받거나 대화가 이어지지 않는다.
  *
- * 문구를 고를 때 명세 2절 원칙 5(위로 문구 금지)를 지킨다.
+ * 명세 2절 원칙 5(위로 문구 금지)를 지킨다.
  * "오늘 고생했어요" 같은 말은 쓰지 않는다 — 앱이 사용자를 평가하는 말로 읽힌다.
  */
 export function SpeechBubble({ evening, onCheckIn, onJournal }: Props) {
@@ -22,7 +22,10 @@ export function SpeechBubble({ evening, onCheckIn, onJournal }: Props) {
         onCheckIn();
       }}
     >
-      퇴근하고 맛있는 냄새가 나서 왔어요
+      하나 먹어야지~
+      <span className="bubble-btn-sub">
+        여러 단계를 거치며 오늘의 나를 기록하기
+      </span>
     </button>
   );
 
@@ -35,13 +38,14 @@ export function SpeechBubble({ evening, onCheckIn, onJournal }: Props) {
         onJournal();
       }}
     >
-      오늘 하루 이렇게 마무리하네요
+      아니야, 다음에 먹을래!
+      <span className="bubble-btn-sub">간단하게 하루 정리하기</span>
     </button>
   );
 
   return (
     <div className="bubble">
-      <p className="bubble-line">{evening ? '마무리하고 갈래요?' : '어서 와요~'}</p>
+      <p className="bubble-line">맛있는 냄새! 먹을까?</p>
       <div className="bubble-actions">
         {evening ? [journal, checkIn] : [checkIn, journal]}
       </div>

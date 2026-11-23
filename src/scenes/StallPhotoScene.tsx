@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Owner } from './Owner';
 import { StallScene } from './StallScene';
 
 interface Props {
@@ -47,7 +46,6 @@ export function StallPhotoScene({ lit, children }: Props) {
         </svg>
       </div>
 
-      <Owner />
 
       <div className="stall-photo-content">{children}</div>
     </div>

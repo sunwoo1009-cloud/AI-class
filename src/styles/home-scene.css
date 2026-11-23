@@ -1,28 +1,21 @@
 /* =======================================================================
-   노점 홈 — 사진 배경 + 사장님 + 말풍선 + 차림표 시트
+   노점 홈 — 사진 배경 + 사장님 + 말풍선 + 메뉴판 시트
 
-   위치를 바꾸려면 아래 --owner-* / --steam-* / --menu-* 숫자만 고치면 된다.
+   위치를 바꾸려면 아래 --steam-* / --menu-* / --bubble-* 숫자만 고치면 된다.
    ======================================================================= */
 
 .stall-photo {
-  /* 배경 이미지(864x1241) 기준으로 잡은 값.
-     가판대 윗면 = 세로 62% 지점, 천막 아래 = 45% 지점.
-     그 사이 17% 안에 상체가 들어가야 비율이 맞는다. */
-  --owner-left: 46%; /* 왼쪽에서 — 붕어빵 틀 뒤 (cover 가 좌우 14%씩 자른 뒤 기준) */
-  --owner-bottom: 38%; /* 아래에서 — 가판대 윗면 선 */
-  --owner-width: 17%; /* 어깨 너비. 수레 폭의 1/4 정도 */
-  --owner-visible: 13%; /* 가판대 위로 드러나는 높이 (머리~허리) */
-
   --steam-left: 11%; /* 찜기(호빵) 위치 */
   --steam-bottom: 40%;
   --steam-width: 58px;
   --steam-height: 130px;
   --steam-opacity: 0.4;
 
-  --menu-right: 6%; /* 차림표 버튼 */
+  --menu-right: 6%; /* 메뉴판 버튼 */
   --menu-bottom: 15%;
 
-  --bubble-top: 5%; /* 말풍선 위 모서리 — 하늘 영역이라 노점을 안 가린다 */
+  --bubble-top: 5%; /* 말풍선 위 모서리 */
+  --bubble-tail-left: 46%; /* 말풍선 꼬리가 가리키는 가로 위치 */
 
   /* 말풍선·시트 바탕. 사진 위에서도 읽히도록 불투명한 크림색 */
   --bubble-bg: #fdfaf3;
@@ -97,50 +90,6 @@
   }
 }
 
-/* --- 사장님 --- */
-
-.owner {
-  position: absolute;
-  left: var(--owner-left);
-  bottom: var(--owner-bottom);
-  width: var(--owner-width);
-  height: var(--owner-visible);
-  transform: translateX(-50%);
-  pointer-events: none;
-  /* 가판대에 가려 상체만 보이게 아래를 잘라낸다 */
-  overflow: hidden;
-}
-
-.owner-inner {
-  width: 100%;
-}
-
-.owner img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.owner-figure {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.owner-breathing .owner-inner {
-  animation: owner-breathe 4.5s ease-in-out infinite;
-}
-
-@keyframes owner-breathe {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
-}
-
 /* --- 화면 위 내용 --- */
 
 .stall-photo-content {
@@ -171,7 +120,7 @@
   content: '';
   position: absolute;
   /* 꼬리가 사장님을 가리키도록 같은 가로 위치를 쓴다 */
-  left: var(--owner-left);
+  left: var(--bubble-tail-left);
   bottom: -11px;
   width: 20px;
   height: 20px;
@@ -223,6 +172,19 @@
   cursor: pointer;
 }
 
+.bubble-btn-sub {
+  display: block;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+/* 투명도를 주면 대비가 3.91 로 떨어진다. 불투명하게 둔다 */
+.bubble-btn-primary .bubble-btn-sub {
+  color: var(--accent-text);
+}
+
 .bubble-btn:active {
   background: var(--surface-alt);
 }
@@ -234,7 +196,7 @@
   font-weight: 600;
 }
 
-/* --- 차림표 버튼 --- */
+/* --- 메뉴판 버튼 --- */
 
 .menu-tag {
   position: absolute;
@@ -275,7 +237,7 @@
   background: #fff1e0;
 }
 
-/* --- 차림표 시트 --- */
+/* --- 메뉴판 시트 --- */
 
 .sheet-backdrop {
   position: absolute;
@@ -388,7 +350,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .owner-breathing .owner-inner,
   .stall-photo-steam path {
     animation: none;
   }
