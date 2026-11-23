@@ -531,6 +531,9 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .coupon.is-stamped .stamp {
+    animation: none;
+  }
   .breath-fish.run {
     animation: none;
     transform: scale(0.8);
@@ -595,41 +598,84 @@ input[type='range'] {
   gap: 18px;
 }
 
-.hold {
-  width: 170px;
-  height: 170px;
+/* 쿠폰 종이 — 길게 누르면 붕어빵 도장이 내려앉는다 */
+.coupon {
+  width: min(100%, 250px);
+  padding: 16px 18px 14px;
+  border-radius: 10px;
+  background: var(--strip-bg);
+  border: 1px solid var(--strip-edge);
+  box-shadow: 0 2px 8px rgba(60, 45, 25, 0.14);
+  text-align: center;
+}
+
+.coupon-title {
+  margin: 0 0 26px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: var(--strip-muted);
+}
+
+/* 도장 자리 — 점선 원 */
+.coupon-slot {
+  width: 148px;
+  height: 148px;
+  margin: 0 auto;
   border-radius: 50%;
-  border: 2px solid var(--accent);
-  background: var(--accent-soft);
+  border: 2px dashed var(--strip-edge);
   display: grid;
   place-items: center;
-  color: var(--text-muted);
-  font-size: 0.875rem;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.4s ease, opacity 0.4s ease;
+  cursor: pointer;
   touch-action: none;
-  user-select: none;
 }
 
-.hold-fill {
-  position: absolute;
-  inset: 0;
-  background: var(--accent);
-  opacity: 0.18;
-  transform-origin: bottom;
-  transform: scaleY(0);
-  transition: transform 0.1s linear;
+.coupon-slot:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
-.hold.closed {
-  transform: scale(0.1);
-  opacity: 0;
+/* --p 는 0~1 로 누른 정도. 1 에 가까울수록 내려앉고 진해진다. */
+.stamp {
+  width: 92px;
+  height: 69px;
+  fill: var(--stamp-ink);
+  transform: translateY(calc((1 - var(--p, 0)) * -26px))
+    scale(calc(1 + (1 - var(--p, 0)) * 0.22));
+  opacity: calc(0.22 + var(--p, 0) * 0.78);
 }
 
-.hold-label {
-  position: relative;
-  z-index: 1;
+.stamp-eye {
+  fill: var(--strip-bg);
+}
+
+/* 다 누르면 종이에 찍힌 채로 남는다 */
+.coupon.is-stamped .coupon-slot {
+  border-style: solid;
+  border-color: var(--stamp-ink);
+}
+
+.coupon.is-stamped .stamp {
+  transform: translateY(0) rotate(-7deg);
+  opacity: 1;
+  animation: stamp-press 420ms ease-out;
+}
+
+@keyframes stamp-press {
+  0% {
+    transform: translateY(-6px) scale(1.12) rotate(-7deg);
+  }
+  45% {
+    transform: translateY(0) scale(0.95) rotate(-7deg);
+  }
+  100% {
+    transform: translateY(0) scale(1) rotate(-7deg);
+  }
+}
+
+.coupon-note {
+  margin: 12px 0 0;
+  font-size: 0.875rem;
+  color: var(--strip-muted);
 }
 
 .hold-done {

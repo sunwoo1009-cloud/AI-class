@@ -22,6 +22,7 @@
   --sign-bg: #8a6a45;
   --sign-edge: #6b5133;
   --sign-text: #fff7e8;
+  --stamp-ink: #b2452f;
 
   --radius: 14px;
   --radius-lg: 20px;
@@ -55,6 +56,7 @@
     --sign-bg: #5a452e;
     --sign-edge: #6f5435;
     --sign-text: #f3e7d4;
+    --stamp-ink: #cf6a54;
   }
 }
 
@@ -80,4 +82,5 @@
   --sign-bg: #5a452e;
   --sign-edge: #6f5435;
   --sign-text: #f3e7d4;
+  --stamp-ink: #cf6a54;
 }

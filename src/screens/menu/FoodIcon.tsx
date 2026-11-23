@@ -25,19 +25,24 @@ export function FoodIcon({
   );
 }
 
+/** 붕어빵 윤곽. 메뉴판 그림과 마무리 화면 도장이 같은 모양을 쓴다. */
+export const TAIYAKI_TAIL = 'M43 10 L62 3 L57 24 L62 45 L43 38 Z';
+export const TAIYAKI_BODY =
+  'M45 11 C36 2 16 2 8 12 C2 20 2 28 8 36 C16 46 36 46 45 37 Z';
+
 /** 붕어빵 — 속 색깔만 바꿔 팥/슈크림을 구분한다 */
 function taiyaki(filling: string) {
   return (
     <>
       <path
-        d="M43 10 L62 3 L57 24 L62 45 L43 38 Z"
+        d={TAIYAKI_TAIL}
         fill="#d9a95f"
         stroke="#6b5133"
         strokeWidth="2"
         strokeLinejoin="round"
       />
       <path
-        d="M45 11 C36 2 16 2 8 12 C2 20 2 28 8 36 C16 46 36 46 45 37 Z"
+        d={TAIYAKI_BODY}
         fill="#d9a95f"
         stroke="#6b5133"
         strokeWidth="2"

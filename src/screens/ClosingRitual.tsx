@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import type { CSSProperties, KeyboardEvent } from 'react';
 import { TECHNIQUE_LABELS } from '../constants';
+import { TAIYAKI_BODY, TAIYAKI_TAIL } from './menu/FoodIcon';
 import type { TechniqueId } from '../types';
 
 const HOLD_MS = 3000;
@@ -62,6 +64,14 @@ export function ClosingRitual({ onReady, onMore }: Props) {
 
   useEffect(() => clearHold, []);
 
+  // 포인터뿐 아니라 키보드로도 누를 수 있어야 한다
+  function onKeyDown(e: KeyboardEvent) {
+    if (e.key !== ' ' && e.key !== 'Enter') return;
+    e.preventDefault();
+    if (e.repeat) return;
+    startHold();
+  }
+
   return (
     <div className="app">
       <div className="topbar">
@@ -79,22 +89,41 @@ export function ClosingRitual({ onReady, onMore }: Props) {
       {phase === 'hold' || phase === 'closed' ? (
         <div className="script">
           <div className="hold-wrap">
-            <div
-              className={`hold${phase === 'closed' ? ' closed' : ''}`}
-              onPointerDown={startHold}
-              onPointerUp={cancelHold}
-              onPointerLeave={cancelHold}
-              onPointerCancel={cancelHold}
-              role="button"
-              tabIndex={0}
-              aria-label="3초 동안 길게 누르세요"
-            >
+            <div className={`coupon${phase === 'closed' ? ' is-stamped' : ''}`}>
+              <p className="coupon-title">오늘의 붕어빵</p>
+
               <div
-                className="hold-fill"
-                style={{ transform: `scaleY(${progress})` }}
-              />
-              <span className="hold-label">3초 길게 누르기</span>
+                className="coupon-slot"
+                onPointerDown={startHold}
+                onPointerUp={cancelHold}
+                onPointerLeave={cancelHold}
+                onPointerCancel={cancelHold}
+                onKeyDown={onKeyDown}
+                onKeyUp={cancelHold}
+                onBlur={cancelHold}
+                role="button"
+                tabIndex={0}
+                aria-label="3초 동안 길게 눌러 도장을 찍으세요"
+              >
+                {/* 도장은 누르는 동안 종이로 내려앉고, 진해진다 */}
+                <svg
+                  className="stamp"
+                  viewBox="0 0 64 48"
+                  style={{ '--p': progress } as CSSProperties}
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d={TAIYAKI_TAIL} />
+                  <path d={TAIYAKI_BODY} />
+                  <circle className="stamp-eye" cx="14" cy="19" r="2.8" />
+                </svg>
+              </div>
+
+              <p className="coupon-note">
+                {phase === 'closed' ? '찍었어요' : '3초 길게 누르기'}
+              </p>
             </div>
+
             {phase === 'closed' ? (
               <p className="hold-done">이 회기는 여기까지</p>
             ) : null}
