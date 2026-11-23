@@ -4,49 +4,42 @@ import type { ArousalLevel, ReactionType, TechniqueId } from './types';
 export const REACTIONS: {
   id: ReactionType;
   label: string;
-  hint: string;
   arousal: ArousalLevel;
   technique: TechniqueId;
 }[] = [
   {
     id: 'hyperarousal',
     label: '과각성',
-    hint: '긴장, 심장이 뜀',
     arousal: 'hyper',
     technique: 'slow_breathing',
   },
   {
     id: 'anger',
     label: '분노·짜증',
-    hint: '',
     arousal: 'hyper',
     technique: 'self_distancing',
   },
   {
     id: 'intrusion',
     label: '침습적 장면',
-    hint: '장면이 자꾸 떠오름',
     arousal: 'hyper',
     technique: 'containment',
   },
   {
     id: 'numbness',
-    label: '멍함·해리감',
-    hint: '',
+    label: '멍함',
     arousal: 'hypo',
     technique: 'grounding',
   },
   {
     id: 'heaviness',
-    label: '무거움·무력감',
-    hint: '',
+    label: '무력감',
     arousal: 'mid',
     technique: 'compassion',
   },
   {
     id: 'rumination',
     label: '반추',
-    hint: '같은 생각이 반복됨',
     arousal: 'mid',
     technique: 'detachment',
   },

@@ -47,7 +47,6 @@ export function ReactionSelect({ onSubmit, onCancel }: Props) {
               onClick={() => toggle(r.id)}
             >
               <span className="choice-label">{r.label}</span>
-              {r.hint ? <span className="choice-hint">{r.hint}</span> : null}
               {selected ? (
                 <span className="choice-order">
                   {index === 0 ? '주 반응' : '2'}

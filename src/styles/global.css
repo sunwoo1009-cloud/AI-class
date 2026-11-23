@@ -171,12 +171,6 @@ button {
   font-size: 1rem;
 }
 
-.choice-hint {
-  color: var(--text-muted);
-  font-size: 0.8125rem;
-  margin-left: 6px;
-}
-
 .choice-order {
   position: absolute;
   right: 16px;

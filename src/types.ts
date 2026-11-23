@@ -4,8 +4,8 @@ export type ReactionType =
   | 'hyperarousal' // 과각성 (긴장, 심장이 뜀)
   | 'anger' // 분노·짜증
   | 'intrusion' // 침습적 장면
-  | 'numbness' // 멍함·해리감
-  | 'heaviness' // 무거움·무력감
+  | 'numbness' // 멍함
+  | 'heaviness' // 무력감
   | 'rumination'; // 반추
 
 export type TechniqueId =
