@@ -77,9 +77,7 @@ export function Home({
             onCheckIn={onStartCheckIn}
             onJournal={onOpenJournal}
           />
-        ) : (
-          <p className="stall-photo-hint">화면을 누르면 사장님이 말을 걸어요</p>
-        )}
+        ) : null}
 
         <MenuDrawer
           open={menuOpen}
