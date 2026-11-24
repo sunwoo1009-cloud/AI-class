@@ -42,7 +42,11 @@ const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 export const feedbackConnected = Boolean(URL_ && KEY);
 
 function headers(): HeadersInit {
-  return { apikey: KEY ?? '', Authorization: `Bearer ${KEY ?? ''}`, 'Content-Type': 'application/json' };
+  const h: Record<string, string> = { apikey: KEY ?? '', 'Content-Type': 'application/json' };
+  // 예전 anon 키(eyJ… 로 시작하는 JWT)는 Authorization 에도 넣는다.
+  // 새 publishable 키(sb_publishable_…)는 apikey 하나만 보낸다.
+  if (KEY?.startsWith('eyJ')) h.Authorization = `Bearer ${KEY}`;
+  return h;
 }
 
 export async function listFeedback(): Promise<FeedbackItem[]> {
