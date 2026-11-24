@@ -208,8 +208,24 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       render: () => <ClosingRitual onReady={noop} onMore={noop} />,
     },
     {
+      id: 'closing-ask',
+      label: '종결 의례 — 마무리 질문',
+      spec: '8.7',
+      render: () => (
+        <ClosingRitual onReady={noop} onMore={noop} initialPhase="ask" />
+      ),
+    },
+    {
+      id: 'closing-bye',
+      label: '종결 의례 — 수고했어요',
+      spec: '8.7',
+      render: () => (
+        <ClosingRitual onReady={noop} onMore={noop} initialPhase="bye" />
+      ),
+    },
+    {
       id: 'closing-more',
-      label: '종결 의례 — 조금 더',
+      label: '종결 의례 — 다른 기법',
       spec: '6.5',
       render: () => (
         <ClosingMore

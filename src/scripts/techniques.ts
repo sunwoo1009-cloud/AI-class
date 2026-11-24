@@ -58,13 +58,18 @@ const slowBreathing: TechniqueScript = {
     {
       kind: 'text',
       seconds: 5,
-      text: '붕어빵이 아직 뜨거워요. 붕어빵이 커질 때 숨을 들이쉬고, 작아질 때 내쉬며 식혀봐요.',
+      text: lines(
+        '붕어빵이 아직 뜨거워요',
+        '',
+        '붕어빵이 커질 때 숨을 들이쉬고,',
+        '작아질 때 내쉬며 식혀봐요',
+      ),
     },
     { kind: 'breathing', seconds: 80, cycles: 8, inhaleSec: 4, exhaleSec: 6 },
     {
       kind: 'text',
       seconds: 5,
-      text: '마지막 날숨에서 어깨가 내려가는지 확인해 보세요.',
+      text: lines('마지막 날숨에서 어깨가 내려가는지', '확인해 보세요'),
       art: 'taiyakiCool',
     },
   ],

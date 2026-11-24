@@ -957,9 +957,23 @@ input[type='range'] {
 
 .coupon-title {
   margin: 0 0 14px;
-  font-size: 0.875rem;
-  letter-spacing: 0.08em;
-  color: var(--strip-muted);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  /* 간판과 같은 갈색 — 바탕 #fdf7ea 대비 4.65:1 (큰 글씨 기준 3:1 을 넉넉히 넘는다) */
+  color: var(--sign-bg);
+}
+
+/* 마무리 질문의 두 버튼 — 같은 굵기·가운데 정렬 */
+.btn.closing-choice {
+  text-align: center;
+  font-weight: 700;
+}
+
+/* '괜찮아요' 뒤 인사 */
+.bye-text {
+  font-size: 1.375rem;
+  font-weight: 700;
 }
 
 /* 다섯 칸씩 두 줄 */

@@ -9,16 +9,20 @@ import type { TechniqueId } from '../types';
 
 const HOLD_MS = 3000;
 
-type Phase = 'breath' | 'hold' | 'closed' | 'ask';
+/** bye — '괜찮아요'를 누른 뒤 인사 화면. 여기서 홈으로 가야 기록(ready)이 끝난다. */
+export type ClosingPhase = 'breath' | 'hold' | 'closed' | 'ask' | 'bye';
+type Phase = ClosingPhase;
 
 interface Props {
   onReady: () => void;
   onMore: () => void;
+  /** 개발용 모음에서 중간 단계를 바로 보려고 쓴다. 실제 흐름은 늘 breath 부터. */
+  initialPhase?: Phase;
 }
 
 /** 명세 8.7 / 9절 화면 8 — 모든 경로가 마지막에 거친다 */
-export function ClosingRitual({ onReady, onMore }: Props) {
-  const [phase, setPhase] = useState<Phase>('breath');
+export function ClosingRitual({ onReady, onMore, initialPhase = 'breath' }: Props) {
+  const [phase, setPhase] = useState<Phase>(initialPhase);
   const [progress, setProgress] = useState(0);
   const timerRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -26,7 +30,7 @@ export function ClosingRitual({ onReady, onMore }: Props) {
   // 화면에 들어올 때의 도장 수를 붙잡아 둔다. 화면이 바뀌어도 흔들리지 않는다.
   const [base] = useState(() => loadStampTotal());
   const savedRef = useRef(false);
-  const stamped = phase === 'closed' || phase === 'ask';
+  const stamped = phase === 'closed' || phase === 'ask' || phase === 'bye';
   const view = couponView(base, stamped);
 
   // 도장을 다 찍은 순간 한 번만 저장한다 (StrictMode 의 두 번 실행을 막는다)
@@ -134,15 +138,31 @@ export function ClosingRitual({ onReady, onMore }: Props) {
               {/* 방금 찍은 쿠폰을 그대로 둔다. 누를 수는 없다. */}
               <CouponCard view={view} progress={1} stamped />
               <p className="script-text" style={{ marginTop: 6 }}>
-                다음 회기로 갈 준비가 됐나요?
+                감정이 정리가 안 됐다면 다른 기법을 사용해 볼 수 있어요
               </p>
             </div>
           </div>
-          <button className="btn btn-primary" onClick={onReady}>
-            준비됐어요
+          {/* 두 버튼은 같은 굵기로 맞춘다 (closing-choice) */}
+          <button
+            className="btn btn-primary closing-choice"
+            onClick={() => setPhase('bye')}
+          >
+            괜찮아요
           </button>
-          <button className="btn" style={{ textAlign: 'center' }} onClick={onMore}>
-            조금 더 시간이 필요해요
+          <button className="btn closing-choice" onClick={onMore}>
+            다른 기법 사용해보기
+          </button>
+        </>
+      ) : null}
+
+      {/* 명세 8.7 [4] — 2026-11-24 사용자 결정으로 원칙 5의 예외 */}
+      {phase === 'bye' ? (
+        <>
+          <div className="script">
+            <p className="script-text bye-text">오늘 하루도 수고했어요</p>
+          </div>
+          <button className="btn btn-primary" onClick={onReady}>
+            홈으로
           </button>
         </>
       ) : null}
@@ -243,7 +263,7 @@ function CouponCard({
   );
 }
 
-/** 명세 6.5 — '조금 더 시간이 필요해요'를 고른 뒤 */
+/** 명세 6.5 — '다른 기법 사용해보기'를 고른 뒤 */
 export function ClosingMore({
   candidate,
   onTechnique,

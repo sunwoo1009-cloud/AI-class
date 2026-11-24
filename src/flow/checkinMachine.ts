@@ -66,7 +66,7 @@ function nextCandidate(state: FlowState): TechniqueId | null {
   return ordered.find((t) => !done.includes(t)) ?? null;
 }
 
-/** 종결 의례에서 '조금 더 시간이 필요해요'를 골랐을 때 줄 수 있는 기법 */
+/** 종결 의례에서 '다른 기법 사용해보기'를 골랐을 때 줄 수 있는 기법 */
 export function moreTechniqueCandidate(state: FlowState): TechniqueId | null {
   if (state.techniques.length >= FLOW.maxTechniques) return null;
   return nextCandidate(state);
