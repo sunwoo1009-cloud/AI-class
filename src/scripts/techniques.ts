@@ -287,7 +287,13 @@ const selfDistancing: TechniqueScript = {
     {
       kind: 'text',
       seconds: 20,
-      text: '일주일 뒤에 이 회기를 떠올린다고 생각해 보세요. 그때 이 감정은 어느 정도일까요?',
+      text: lines(
+        '일주일 뒤에',
+        '이 회기를 떠올린다고',
+        '생각해보세요',
+        '',
+        '그때 이 감정은 어느 정도일까요?',
+      ),
       art: 'creamClock',
     },
   ],
