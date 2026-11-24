@@ -67,7 +67,7 @@ export function TechniquePlayer({
   }
 
   return (
-    <div className="app">
+    <div className="app app-paper">
       <div className="topbar">
         <span className="topbar-title topbar-title-strong">
           {TECHNIQUE_LABELS[technique]}

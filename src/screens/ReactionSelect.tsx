@@ -33,7 +33,7 @@ export function ReactionSelect({ onSubmit, onCancel }: Props) {
   );
 
   return (
-    <div className="app">
+    <div className="app app-paper">
       <div className="topbar">
         <button className="btn-quiet" onClick={onCancel}>
           그만두기

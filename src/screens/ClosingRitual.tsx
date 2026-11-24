@@ -89,7 +89,7 @@ export function ClosingRitual({ onReady, onMore }: Props) {
   }
 
   return (
-    <div className="app">
+    <div className="app app-paper">
       <div className="topbar">
         <span className="topbar-title">마무리</span>
       </div>
@@ -254,7 +254,7 @@ export function ClosingMore({
   onExit: () => void;
 }) {
   return (
-    <div className="app">
+    <div className="app app-paper">
       <div className="topbar">
         <span className="topbar-title">마무리</span>
       </div>

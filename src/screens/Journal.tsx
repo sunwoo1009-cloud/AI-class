@@ -70,7 +70,7 @@ export function Journal({ onDone }: Props) {
 
   if (saved) {
     return (
-      <div className="app">
+      <div className="app app-paper">
         <div className="script">
           <p className="script-text">오늘 일은 여기까지예요</p>
         </div>
@@ -82,7 +82,7 @@ export function Journal({ onDone }: Props) {
   }
 
   return (
-    <div className="app">
+    <div className="app app-paper">
       {/* 명세 7.3 — 스크롤해도 사라지지 않게 고정한다 */}
       <div className="journal-notice">
         내담자를 알아볼 수 있는 정보는 쓰지 마세요. 오늘의 나에 대해 써주세요.

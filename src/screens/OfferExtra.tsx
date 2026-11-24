@@ -24,7 +24,7 @@ const DECLINE_LABEL: Record<OfferVariant, string> = {
 /** 명세 9절 화면 6 */
 export function OfferExtra({ variant, technique, onAccept, onDecline }: Props) {
   return (
-    <div className="app">
+    <div className="app app-paper">
       <div className="topbar">
         <span className="topbar-title">선택</span>
       </div>
