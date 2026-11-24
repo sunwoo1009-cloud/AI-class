@@ -1,18 +1,34 @@
 import { useRef, useState } from 'react';
+import { backupDue } from '../lib/backup';
 import { buildExport, parseImport } from '../lib/dataTransfer';
 import type { Snapshot } from '../lib/dataTransfer';
 import {
   clearAllData,
   loadCheckIns,
   loadJournal,
+  loadLastExportAt,
   loadSettings,
+  loadStampTotal,
   loadWeeklySessions,
+  oldestRecordAt,
   saveCheckIns,
   saveJournal,
+  saveLastExportAt,
   saveSettings,
+  saveStampTotal,
   writeWeeklySessions,
 } from '../storage/store';
 import type { Settings } from '../types';
+
+/** 홈 화면에 설치해서 연 것인지. 설치해서 쓰면 브라우저가 기록을 덜 지운다. */
+function isInstalled(): boolean {
+  if (typeof window === 'undefined') return false;
+  const iosStandalone =
+    (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  return (
+    iosStandalone || window.matchMedia?.('(display-mode: standalone)').matches === true
+  );
+}
 
 interface Props {
   settings: Settings;
@@ -27,6 +43,7 @@ function snapshot(): Snapshot {
     checkIns: loadCheckIns(),
     weeklySessions: loadWeeklySessions(),
     journal: loadJournal(),
+    stampTotal: loadStampTotal(),
   };
 }
 
@@ -43,8 +60,15 @@ export function SettingsScreen({
   const [importNote, setImportNote] = useState<string | null>(null);
   const [confirmingReset, setConfirmingReset] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [lastExport, setLastExport] = useState(loadLastExportAt);
+  const [installed] = useState(isInstalled);
 
   const trimmed = name.trim();
+  const showBackupNote = backupDue({
+    lastExportAt: lastExport,
+    oldestRecordAt: oldestRecordAt(),
+    now: new Date(),
+  });
 
   function saveName() {
     if (trimmed.length === 0) return;
@@ -64,6 +88,9 @@ export function SettingsScreen({
     a.download = `퇴근길붕어빵-${stamp}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    const at = new Date().toISOString();
+    saveLastExportAt(at);
+    setLastExport(at);
   }
 
   async function importJson(file: File) {
@@ -77,6 +104,7 @@ export function SettingsScreen({
     saveCheckIns(merged.checkIns);
     saveJournal(merged.journal);
     writeWeeklySessions(merged.weeklySessions);
+    saveStampTotal(merged.stampTotal);
     if (merged.settings) {
       saveSettings(merged.settings);
       onChangeSettings(merged.settings);
@@ -100,6 +128,37 @@ export function SettingsScreen({
         </button>
         <span className="topbar-title">설정</span>
       </div>
+
+      {/* 명세 7.6 — 한 달 넘게 내보내지 않았으면 조용히 알린다 */}
+      {showBackupNote ? (
+        <div className="card card-note">
+          <p style={{ marginBottom: 0 }}>
+            {lastExport
+              ? `마지막 백업이 ${lastExport.slice(0, 10)}이에요.`
+              : '아직 백업한 적이 없어요.'}{' '}
+            기록은 이 기기에만 있어서, 기기를 잃어버리면 함께 사라져요. 아래
+            ‘JSON 파일로 내보내기’로 백업할 수 있어요.
+          </p>
+        </div>
+      ) : null}
+
+      {/* 명세 7.6 — 브라우저 주소로 쓰면 기록이 지워질 수 있다 */}
+      {installed ? null : (
+        <div className="card card-note">
+          <p style={{ marginBottom: 8, fontWeight: 650 }}>
+            홈 화면에 추가해서 쓰세요
+          </p>
+          <p className="muted" style={{ marginBottom: 6 }}>
+            브라우저 주소로만 쓰면, 오래 열지 않았을 때 브라우저가 기록을 지울 수
+            있어요. 설치해서 쓰면 이 일이 생기지 않아요.
+          </p>
+          <p className="muted" style={{ marginBottom: 0 }}>
+            아이폰 사파리: 공유 버튼 → ‘홈 화면에 추가’
+            <br />
+            안드로이드 크롬: 오른쪽 위 ⋮ → ‘홈 화면에 추가’ 또는 ‘앱 설치’
+          </p>
+        </div>
+      )}
 
       <h2>표시 이름</h2>
       <p className="muted">자기 거리두기 기법에서 이름을 부를 때 써요.</p>
@@ -128,7 +187,7 @@ export function SettingsScreen({
 
       <h2>데이터 내보내기</h2>
       <p className="muted">
-        기기를 바꿀 때 쓰세요. 파일은 이 기기에 저장되고 어디로도 전송되지 않아요.
+        백업하거나 기기를 바꿀 때 쓰세요. 파일은 이 기기에 저장되고 어디로도 전송되지 않아요.
       </p>
       <label className="check-row">
         <input
@@ -172,7 +231,7 @@ export function SettingsScreen({
 
       <h2 style={{ marginTop: 22 }}>모든 데이터 삭제</h2>
       <p className="muted">
-        체크인, 일기, 회기 수, 표시 이름을 모두 지워요. 되돌릴 수 없어요. 기관
+        체크인, 일기, 회기 수, 쿠폰 도장, 표시 이름을 모두 지워요. 되돌릴 수 없어요. 기관
         공용 기기에서 쓰셨다면 나가기 전에 지우세요.
       </p>
       {confirmingReset ? (

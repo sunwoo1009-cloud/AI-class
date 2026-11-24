@@ -20,7 +20,29 @@ export const KEYS = {
   weeklySessions: `${PREFIX}weeklySessions`,
   introSeen: `${PREFIX}introSeenDate`,
   stamps: `${PREFIX}stampTotal`,
+  lastExport: `${PREFIX}lastExportAt`,
 } as const;
+
+/**
+ * 브라우저에 "이 사이트 데이터는 함부로 지우지 마세요"를 요청한다.
+ * 저장 공간이 모자랄 때 브라우저가 사이트 데이터를 정리하는 것을 막는다.
+ * 기록을 처음 쓸 때 한 번만 묻는다. 지원하지 않거나 거절돼도 앱은 그대로 돈다.
+ */
+let persistAsked = false;
+function askPersistOnce(): void {
+  if (persistAsked) return;
+  persistAsked = true;
+  try {
+    const storage = typeof navigator !== 'undefined' ? navigator.storage : undefined;
+    if (!storage?.persist || !storage.persisted) return;
+    void storage
+      .persisted()
+      .then((already) => (already ? true : storage.persist()))
+      .catch(() => undefined);
+  } catch {
+    // 지원하지 않는 브라우저
+  }
+}
 
 function read<T>(key: string, fallback: T): T {
   try {
@@ -35,6 +57,7 @@ function read<T>(key: string, fallback: T): T {
 function write(key: string, value: unknown): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    askPersistOnce();
   } catch {
     // 저장 공간이 없거나 접근이 막힌 경우 조용히 넘긴다.
   }
@@ -125,6 +148,32 @@ export function addStamp(): number {
   const next = loadStampTotal() + 1;
   write(KEYS.stamps, next);
   return next;
+}
+
+/** 가져오기로 도장 수를 옮길 때 쓴다 */
+export function saveStampTotal(n: number): void {
+  write(KEYS.stamps, Math.max(0, Math.floor(n)));
+}
+
+// --- 백업 (명세 7.6) ---
+
+/** 마지막으로 내보낸 시각. 내보낸 적 없으면 null */
+export function loadLastExportAt(): string | null {
+  return read<string | null>(KEYS.lastExport, null);
+}
+
+export function saveLastExportAt(iso: string): void {
+  write(KEYS.lastExport, iso);
+}
+
+/** 가장 오래된 체크인·일기 시각. 백업 알림을 언제부터 셀지 정한다. */
+export function oldestRecordAt(): string | null {
+  const times = [
+    ...loadCheckIns().map((c) => c.timestamp),
+    ...loadJournal().map((j) => j.createdAt),
+  ].filter((t) => !Number.isNaN(new Date(t).getTime()));
+  if (times.length === 0) return null;
+  return times.reduce((a, b) => (new Date(a) < new Date(b) ? a : b));
 }
 
 // --- 전체 삭제 ---

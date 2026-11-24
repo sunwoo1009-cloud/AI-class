@@ -8,6 +8,7 @@ const empty: Snapshot = {
   checkIns: [],
   weeklySessions: [],
   journal: [],
+  stampTotal: 0,
 };
 
 const checkIn = (id: string, sudsPre = 5): CheckIn => ({
@@ -34,6 +35,7 @@ const full: Snapshot = {
   checkIns: [checkIn('a'), checkIn('b')],
   weeklySessions: [{ weekStart: '2026-10-19', sessions: 20 }],
   journal: [entry('2026-10-20')],
+  stampTotal: 13,
 };
 
 // ---------------------------------------------------------------------------
@@ -102,6 +104,37 @@ describe('parseImport — 정상 파일', () => {
     };
     const r2 = parseImport(buildExport(full, false), existing);
     if (r2.ok) expect(r2.merged.settings?.displayName).toBe('민');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 쿠폰 도장 — 기기를 바꿔도 0부터 다시 시작하지 않게
+// ---------------------------------------------------------------------------
+
+describe('쿠폰 도장 수 옮기기', () => {
+  it('내보내기에 도장 수가 들어간다', () => {
+    const parsed = JSON.parse(buildExport(full, false));
+    expect(parsed.stampTotal).toBe(13);
+  });
+
+  it('빈 기기로 가져오면 도장 수가 그대로 온다', () => {
+    const r = parseImport(buildExport(full, false), empty);
+    if (r.ok) expect(r.merged.stampTotal).toBe(13);
+  });
+
+  it('합칠 때는 둘 중 큰 쪽을 남긴다 — 도장이 줄어들지 않는다', () => {
+    const r = parseImport(buildExport(full, false), { ...empty, stampTotal: 20 });
+    if (r.ok) expect(r.merged.stampTotal).toBe(20);
+  });
+
+  it('도장 수가 없거나 이상한 옛 파일은 기기 값을 유지한다', () => {
+    const old = JSON.stringify({ checkIns: [] });
+    const r1 = parseImport(old, { ...empty, stampTotal: 4 });
+    if (r1.ok) expect(r1.merged.stampTotal).toBe(4);
+
+    const bad = JSON.stringify({ checkIns: [], stampTotal: -3 });
+    const r2 = parseImport(bad, { ...empty, stampTotal: 4 });
+    if (r2.ok) expect(r2.merged.stampTotal).toBe(4);
   });
 });
 

@@ -14,6 +14,8 @@ export interface Snapshot {
   checkIns: CheckIn[];
   weeklySessions: WeeklySessionCount[];
   journal: JournalEntry[];
+  /** 쿠폰 도장 수 (명세 8.7). 기기를 바꿔도 0부터 다시 시작하지 않게 함께 옮긴다. */
+  stampTotal: number;
 }
 
 export type ImportOutcome =
@@ -45,6 +47,7 @@ export function buildExport(snap: Snapshot, includeJournal: boolean): string {
     settings: snap.settings,
     checkIns: snap.checkIns,
     weeklySessions: snap.weeklySessions,
+    stampTotal: snap.stampTotal,
   };
   if (includeJournal) payload.journal = snap.journal;
   return JSON.stringify(payload, null, 2);
@@ -156,7 +159,7 @@ export function parseImport(raw: string, current: Snapshot): ImportOutcome {
     return { ok: false, reason: 'JSON 파일이 아니에요.' };
   }
 
-  const known = ['checkIns', 'journal', 'weeklySessions', 'settings'];
+  const known = ['checkIns', 'journal', 'weeklySessions', 'settings', 'stampTotal'];
   if (!known.some((k) => k in parsed)) {
     return {
       ok: false,
@@ -218,10 +221,19 @@ export function parseImport(raw: string, current: Snapshot): ImportOutcome {
     }
   }
 
+  // 도장은 둘 중 큰 쪽을 남긴다 — 가져오기로 도장이 줄어드는 일은 없다
+  const incomingStamps =
+    typeof parsed.stampTotal === 'number' &&
+    Number.isInteger(parsed.stampTotal) &&
+    parsed.stampTotal > 0
+      ? parsed.stampTotal
+      : 0;
+
   return {
     ok: true,
     merged: {
       settings,
+      stampTotal: Math.max(current.stampTotal, incomingStamps),
       checkIns: [...current.checkIns, ...newCheckIns],
       journal: [...current.journal, ...newJournal].sort((a, b) =>
         a.date < b.date ? 1 : -1,
