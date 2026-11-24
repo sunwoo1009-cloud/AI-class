@@ -5,6 +5,7 @@ import { CouponBook } from './screens/CouponBook';
 import { JoinScreen } from './screens/JoinScreen';
 import { AdminPage } from './dev/AdminPage';
 import { Boutique } from './screens/Boutique';
+import { RateApp } from './screens/RateApp';
 import { Home } from './screens/Home';
 import { Journal } from './screens/Journal';
 import { Onboarding } from './screens/Onboarding';
@@ -34,6 +35,7 @@ type View =
   | 'journal'
   | 'coupons'
   | 'boutique'
+  | 'rate'
   | 'settings';
 
 export function App() {
@@ -182,6 +184,8 @@ function AppMain() {
       return <CouponBook onBack={home} />;
     case 'boutique':
       return <Boutique onBack={home} />;
+    case 'rate':
+      return <RateApp onBack={home} />;
     case 'settings':
       return (
         <SettingsScreen
@@ -204,6 +208,7 @@ function AppMain() {
           onOpenCalendar={() => setView('calendar')}
           onOpenCoupons={() => setView('coupons')}
           onOpenBoutique={() => setView('boutique')}
+          onOpenRate={() => setView('rate')}
           onOpenJournal={() => setView('journal')}
           onOpenSettings={() => setView('settings')}
         />

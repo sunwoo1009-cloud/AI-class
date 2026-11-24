@@ -14,6 +14,7 @@ interface Props {
   onOpenCalendar: () => void;
   onOpenCoupons: () => void;
   onOpenBoutique: () => void;
+  onOpenRate: () => void;
   onOpenSettings: () => void;
 }
 
@@ -33,6 +34,7 @@ export function Home({
   onOpenCalendar,
   onOpenCoupons,
   onOpenBoutique,
+  onOpenRate,
   onOpenSettings,
 }: Props) {
   const evening = isEveningScene();
@@ -92,6 +94,7 @@ export function Home({
           onOpenCalendar={onOpenCalendar}
           onOpenCoupons={onOpenCoupons}
           onOpenBoutique={onOpenBoutique}
+          onOpenRate={onOpenRate}
           onOpenSettings={onOpenSettings}
         />
       </div>

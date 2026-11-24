@@ -17,6 +17,38 @@ export interface AdminStats {
   journal_users: number;
   journals: number;
   feedback: number;
+  /** 앱 별점·리뷰 (reviews.sql 실행 전이면 없다) */
+  reviews?: number;
+  rating_avg?: number | null;
+}
+
+export interface AppReviewItem {
+  id: number;
+  rating: number;
+  body: string;
+  created_at: string;
+}
+
+/** 출시 후 리뷰 — 운영자 계정으로만 읽힌다 */
+export async function listReviewsAdmin(): Promise<
+  { ok: true; items: AppReviewItem[] } | { ok: false; reason: string }
+> {
+  const sb = await client();
+  const { data, error } = await sb
+    .from('reviews')
+    .select('id,rating,body,created_at')
+    .order('created_at', { ascending: false })
+    .limit(300);
+  if (error) return { ok: false, reason: friendlyError(error.message) };
+  return { ok: true, items: (data ?? []) as AppReviewItem[] };
+}
+
+export async function deleteReviewItem(id: number): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const sb = await client();
+  const { error, count } = await sb.from('reviews').delete({ count: 'exact' }).eq('id', id);
+  if (error) return { ok: false, reason: friendlyError(error.message) };
+  if (count === 0) return { ok: false, reason: '지우지 못했어요 (운영자 권한을 확인해 주세요)' };
+  return { ok: true };
 }
 
 export type AdminCheck = 'not-signed-in' | 'not-admin' | 'admin' | 'not-set-up';

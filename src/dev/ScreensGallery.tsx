@@ -7,6 +7,7 @@ import { Home } from '../screens/Home';
 import { Journal } from '../screens/Journal';
 import { CouponBook } from '../screens/CouponBook';
 import { Boutique } from '../screens/Boutique';
+import { RateApp } from '../screens/RateApp';
 import { AvatarParts } from './AvatarParts';
 import { AboutSheet, FeedbackSheet } from './PresentSheets';
 import { AdminDemoSheet } from './AdminPage';
@@ -90,6 +91,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           onOpenCalendar={noop}
           onOpenCoupons={noop}
           onOpenBoutique={noop}
+          onOpenRate={noop}
           onOpenSettings={noop}
         />
       ),
@@ -312,6 +314,11 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       render: () => <Boutique onBack={noop} />,
     },
     {
+      id: 'rate',
+      label: '별점·리뷰',
+      render: () => <RateApp onBack={noop} />,
+    },
+    {
       id: 'avatar-parts',
       label: '아바타 — 아이템 확인용',
       spec: '8.8',
@@ -383,7 +390,7 @@ const SHEETS: Sheet[] = [
   {
     title: '메뉴',
     kind: 'row',
-    ids: ['summary', 'review', 'calendar', 'coupons', 'settings'],
+    ids: ['summary', 'review', 'calendar', 'coupons', 'rate', 'settings'],
   },
   { title: '아바타 꾸미기', kind: 'row', ids: ['boutique', 'avatar-parts'] },
   { title: '운영자 화면', kind: 'admin' },

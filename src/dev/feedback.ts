@@ -62,11 +62,16 @@ function headers(): HeadersInit {
 
 // 받은 피드백 읽기는 운영자만 한다 — sync/admin.ts 의 listFeedbackAdmin (운영자 로그인 필요).
 
-export async function sendFeedback(body: string): Promise<void> {
-  const res = await fetch(`${URL_}/rest/v1/feedback`, {
+/** 로그인 없이 표에 한 줄 넣기 (읽기는 못 한다). 피드백·별점 리뷰가 함께 쓴다. */
+export async function insertPublic(table: 'feedback' | 'reviews', row: object): Promise<void> {
+  const res = await fetch(`${URL_}/rest/v1/${table}`, {
     method: 'POST',
     headers: { ...headers(), Prefer: 'return=minimal' },
-    body: JSON.stringify({ body }),
+    body: JSON.stringify(row),
   });
   if (!res.ok) throw new Error(`보내지 못했어요 (${res.status})`);
+}
+
+export function sendFeedback(body: string): Promise<void> {
+  return insertPublic('feedback', { body });
 }

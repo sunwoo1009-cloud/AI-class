@@ -1639,6 +1639,60 @@ input[type='range'] {
   color: var(--sign-bg);
 }
 
+/* --- 별점·리뷰 (RateApp, 명세 7.8) --- */
+
+.rate-stars {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 14px 0 4px;
+}
+
+.rate-star {
+  width: 52px;
+  height: 52px;
+  padding: 4px;
+  border-radius: 50%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rate-star svg {
+  width: 100%;
+  height: 100%;
+  fill: var(--surface);
+  stroke: var(--btn-edge);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  transition: transform 0.12s ease;
+}
+
+.rate-star.is-on svg {
+  fill: #f2c94c;
+  stroke: #b8902a;
+}
+
+.rate-star:active svg {
+  transform: scale(0.9);
+}
+
+.rate-label {
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.rate-text {
+  width: 100%;
+  padding: 13px 15px;
+  border-radius: 14px;
+  border: 1.5px solid var(--btn-edge);
+  background: var(--btn-bg);
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+
 /* --- 체크박스 줄 --- */
 
 .check-row {

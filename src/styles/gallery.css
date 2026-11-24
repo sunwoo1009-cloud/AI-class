@@ -418,6 +418,16 @@
   background: var(--btn-primary-bg);
 }
 
+.admin-stars {
+  margin: 0 0 4px !important;
+  color: #e0b23a;
+  letter-spacing: 2px;
+}
+
+.admin-stars span {
+  color: var(--border);
+}
+
 /* 발표용 '운영자 화면' 시트 */
 .admin-demo {
   max-width: 900px;
