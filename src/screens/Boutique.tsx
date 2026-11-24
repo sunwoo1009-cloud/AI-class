@@ -5,11 +5,11 @@ import {
   CATEGORIES,
   CATEGORY_LABELS,
   ITEMS,
-  buyItem,
+  buyItems,
   stampBalance,
   toggleEquip,
 } from '../lib/boutique';
-import type { Category, Closet, Item } from '../lib/boutique';
+import type { Category, Closet, Item, Slot } from '../lib/boutique';
 import { loadCloset, loadStampTotal, saveCloset } from '../storage/store';
 
 interface Props {
@@ -31,15 +31,16 @@ export function Boutique({ onBack }: Props) {
   const [stampTotal] = useState(loadStampTotal);
   const [tab, setTab] = useState<Tab>('shop');
   const [category, setCategory] = useState<Category | 'all'>('all');
-  /** 사기 전에 입혀 보는 아이템 */
-  const [trying, setTrying] = useState<Item | null>(null);
+  /** 사기 전에 입혀 보는 아이템들 — 칸마다 하나씩, 여러 칸을 함께 입혀 볼 수 있다 */
+  const [trying, setTrying] = useState<Partial<Record<Slot, Item>>>({});
+  const tryList = Object.values(trying) as Item[];
+  const tryCost = tryList.reduce((sum, i) => sum + i.price, 0);
 
   const balance = stampBalance(stampTotal, closet);
 
-  // 무대에 보일 모습 — 입혀 보는 중이면 그 칸만 바꿔 끼운다
-  const stage: Equipped = trying
-    ? { ...closet.equipped, [trying.slot]: trying.id }
-    : closet.equipped;
+  // 무대에 보일 모습 — 입고 있는 것 위에 입혀 보는 것들을 칸마다 바꿔 끼운다
+  const stage: Equipped = { ...closet.equipped };
+  for (const i of tryList) stage[i.slot] = i.id;
 
   const list = useMemo(
     () =>
@@ -56,20 +57,42 @@ export function Boutique({ onBack }: Props) {
     saveCloset(next);
   }
 
-  function onPick(item: Item) {
-    if (closet.owned.includes(item.id)) {
-      setTrying(null);
-      update(toggleEquip(closet, item.id));
-    } else {
-      setTrying((cur) => (cur?.id === item.id ? null : item));
-    }
+  /** 칸 하나를 입혀 보기에서 뺀다 */
+  function untry(slot: Slot) {
+    setTrying((cur) => {
+      const next = { ...cur };
+      delete next[slot];
+      return next;
+    });
   }
 
-  function buy() {
-    if (!trying) return;
-    const r = buyItem(closet, stampTotal, trying.id);
-    if (r.ok) update(r.closet);
-    setTrying(null);
+  function onPick(item: Item) {
+    if (closet.owned.includes(item.id)) {
+      // 가진 것을 고르면 그 칸은 입혀 보기에서 빠지고 바로 입는다
+      untry(item.slot);
+      const worn = closet.equipped[item.slot] === item.id;
+      update(worn && trying[item.slot] ? closet : toggleEquip(closet, item.id));
+      return;
+    }
+    // 안 가진 것 — 같은 것을 다시 누르면 빼고, 아니면 그 칸에 입혀 본다
+    setTrying((cur) => {
+      const next = { ...cur };
+      if (cur[item.slot]?.id === item.id) delete next[item.slot];
+      else next[item.slot] = item;
+      return next;
+    });
+  }
+
+  function buyAll() {
+    const r = buyItems(
+      closet,
+      stampTotal,
+      tryList.map((i) => i.id),
+    );
+    if (r.ok) {
+      update(r.closet);
+      setTrying({});
+    }
   }
 
   return (
@@ -96,10 +119,7 @@ export function Boutique({ onBack }: Props) {
             role="tab"
             aria-selected={tab === id}
             className="boutique-tab"
-            onClick={() => {
-              setTab(id);
-              setTrying(null);
-            }}
+            onClick={() => setTab(id)}
           >
             {label}
           </button>
@@ -109,7 +129,9 @@ export function Boutique({ onBack }: Props) {
       {/* 무대 */}
       <div className="boutique-stage">
         <AvatarSvg className="boutique-avatar" equipped={stage} title="꾸민 직장인" />
-        {trying ? <span className="boutique-trying">입어 보는 중</span> : null}
+        {tryList.length > 0 ? (
+          <span className="boutique-trying">입어 보는 중 {tryList.length}개</span>
+        ) : null}
       </div>
 
       {/* 종류 */}
@@ -136,7 +158,7 @@ export function Boutique({ onBack }: Props) {
           {list.map((item) => {
             const owned = closet.owned.includes(item.id);
             const worn = closet.equipped[item.slot] === item.id;
-            const isTrying = trying?.id === item.id;
+            const isTrying = trying[item.slot]?.id === item.id;
             return (
               <button
                 key={item.id}
@@ -150,12 +172,18 @@ export function Boutique({ onBack }: Props) {
                 <AvatarSvg
                   className="boutique-thumb"
                   viewBox={PREVIEW_VIEWBOX[item.slot]}
-                  equipped={{ ...closet.equipped, [item.slot]: item.id }}
+                  equipped={{ ...stage, [item.slot]: item.id }}
                   mannequin
                 />
                 <span className="boutique-name">{item.name}</span>
                 <span className="boutique-price">
-                  {owned ? (worn ? '입는 중' : '가진 것') : `도장 ${item.price}개`}
+                  {owned
+                    ? worn
+                      ? '입는 중'
+                      : '가진 것'
+                    : isTrying
+                      ? '입어 보는 중'
+                      : `도장 ${item.price}개`}
                 </span>
               </button>
             );
@@ -165,31 +193,42 @@ export function Boutique({ onBack }: Props) {
 
       <div className="spacer" />
 
-      {/* 사기 시트 — 입어 보는 중일 때만 */}
-      {trying ? (
-        <div className="boutique-sheet" role="dialog" aria-label={`${trying.name} 사기`}>
-          <p className="boutique-sheet-title">
-            {trying.name} · 도장 {trying.price}개
-          </p>
+      {/* 사기 시트 — 입어 보는 것이 있을 때만. 칩을 누르면 그것만 뺀다. */}
+      {tryList.length > 0 ? (
+        <div className="boutique-sheet" role="dialog" aria-label="입어 본 아이템 사기">
+          <div className="boutique-chips">
+            {tryList.map((i) => (
+              <button
+                key={i.id}
+                className="boutique-chip"
+                onClick={() => untry(i.slot)}
+                aria-label={`${i.name} 빼기`}
+              >
+                {i.name} · {i.price}
+                <span aria-hidden="true"> ✕</span>
+              </button>
+            ))}
+          </div>
+          <p className="boutique-sheet-title">합계 도장 {tryCost}개</p>
           <p className="muted" style={{ margin: '0 0 12px' }}>
-            {balance >= trying.price
-              ? `사면 도장이 ${balance}개에서 ${balance - trying.price}개가 돼요`
+            {balance >= tryCost
+              ? `사면 도장이 ${balance}개에서 ${balance - tryCost}개가 돼요`
               : `지금 도장은 ${balance}개예요`}
           </p>
           <div className="btn-row">
             <button
               className="btn"
               style={{ textAlign: 'center' }}
-              onClick={() => setTrying(null)}
+              onClick={() => setTrying({})}
             >
-              그만두기
+              모두 빼기
             </button>
             <button
               className="btn btn-primary"
-              disabled={balance < trying.price}
-              onClick={buy}
+              disabled={balance < tryCost}
+              onClick={buyAll}
             >
-              사기
+              {tryList.length > 1 ? `${tryList.length}개 사기` : '사기'}
             </button>
           </div>
         </div>

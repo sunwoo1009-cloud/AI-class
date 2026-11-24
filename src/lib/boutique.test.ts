@@ -3,6 +3,7 @@ import {
   ITEMS,
   PRICE,
   buyItem,
+  buyItems,
   emptyCloset,
   itemById,
   mergeCloset,
@@ -73,6 +74,39 @@ describe('buyItem — 사기', () => {
 
   it('없는 아이템은 거절한다', () => {
     expect(buyItem(closet(), 10, 'nope')).toEqual({ ok: false, reason: 'unknown' });
+  });
+});
+
+describe('buyItems — 입어 본 것을 한 번에 사기', () => {
+  const top = ITEMS.find((i) => i.slot === 'top')!;
+  const hat = ITEMS.find((i) => i.slot === 'hat')!;
+
+  it('합계만큼 도장이 빠지고, 모두 가지고, 모두 입는다', () => {
+    const r = buyItems(closet(), 10, [top.id, hat.id]);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.closet.spent).toBe(top.price + hat.price);
+    expect(r.closet.owned).toEqual([top.id, hat.id]);
+    expect(r.closet.equipped.top).toBe(top.id);
+    expect(r.closet.equipped.hat).toBe(hat.id);
+  });
+
+  it('합계가 모자라면 하나도 사지 않는다', () => {
+    const r = buyItems(closet(), top.price + hat.price - 1, [top.id, hat.id]);
+    expect(r).toEqual({ ok: false, reason: 'short' });
+  });
+
+  it('이미 가진 것이나 없는 것이 섞이면 거절한다', () => {
+    expect(buyItems(closet({ owned: [top.id] }), 10, [top.id, hat.id])).toEqual({
+      ok: false,
+      reason: 'owned',
+    });
+    expect(buyItems(closet(), 10, [hat.id, 'nope'])).toEqual({ ok: false, reason: 'unknown' });
+  });
+
+  it('같은 아이템이 두 번 들어와도 한 번만 산다', () => {
+    const r = buyItems(closet(), 10, [hat.id, hat.id]);
+    if (r.ok) expect(r.closet.spent).toBe(hat.price);
   });
 });
 

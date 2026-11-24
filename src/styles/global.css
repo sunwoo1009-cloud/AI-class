@@ -1210,6 +1210,24 @@ input[type='range'] {
   box-shadow: 0 -8px 20px rgba(90, 65, 30, 0.12);
 }
 
+/* 입어 보는 아이템 — 누르면 빠진다 */
+.boutique-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.boutique-chip {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1.5px solid var(--btn-edge);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
 .boutique-sheet-title {
   margin: 0 0 4px;
   font-size: 1.0625rem;

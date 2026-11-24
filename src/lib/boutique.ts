@@ -146,6 +146,29 @@ export function buyItem(closet: Closet, stampTotal: number, id: string): BuyResu
   };
 }
 
+/**
+ * 입어 본 여러 개를 한 번에 산다. 하나라도 문제가 있으면 **하나도 사지 않는다**
+ * (도장이 반만 빠지는 일이 없게).
+ */
+export function buyItems(closet: Closet, stampTotal: number, ids: string[]): BuyResult {
+  const unique = [...new Set(ids)];
+  const items: Item[] = [];
+  for (const id of unique) {
+    const item = itemById(id);
+    if (!item) return { ok: false, reason: 'unknown' };
+    if (closet.owned.includes(id)) return { ok: false, reason: 'owned' };
+    items.push(item);
+  }
+  const cost = items.reduce((sum, i) => sum + i.price, 0);
+  if (stampBalance(stampTotal, closet) < cost) return { ok: false, reason: 'short' };
+  const equipped = { ...closet.equipped };
+  for (const i of items) equipped[i.slot] = i.id;
+  return {
+    ok: true,
+    closet: { spent: closet.spent + cost, owned: [...closet.owned, ...unique], equipped },
+  };
+}
+
 /** 가진 아이템을 누르면 입고, 입고 있으면 벗는다 */
 export function toggleEquip(closet: Closet, id: string): Closet {
   const item = itemById(id);
