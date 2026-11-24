@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { FEEDBACK_COOLDOWN_MS, FEEDBACK_MAX, checkFeedback } from './feedback';
+import { FEEDBACK_COOLDOWN_MS, FEEDBACK_MAX, baseUrl, checkFeedback } from './feedback';
+
+describe('baseUrl — Supabase 주소 정리', () => {
+  it('뒤에 붙은 /rest/v1/ 과 / 를 떼어 낸다', () => {
+    const want = 'https://abc.supabase.co';
+    expect(baseUrl('https://abc.supabase.co/rest/v1/')).toBe(want);
+    expect(baseUrl('https://abc.supabase.co/rest/v1')).toBe(want);
+    expect(baseUrl('https://abc.supabase.co/')).toBe(want);
+    expect(baseUrl(' https://abc.supabase.co ')).toBe(want);
+  });
+});
 
 describe('checkFeedback — 피드백 보내기 전 검사', () => {
   const now = 1_000_000;

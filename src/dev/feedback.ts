@@ -35,7 +35,18 @@ export function checkFeedback(raw: string, lastSentAt: number | null, now: numbe
   return { ok: true, body };
 }
 
-const URL_ = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/$/, '');
+/**
+ * 프로젝트 주소만 남긴다. 대시보드에서 'https://xxx.supabase.co/rest/v1/' 처럼
+ * 뒤에 경로가 붙은 주소를 복사해 넣는 경우가 있어서 그 꼬리를 떼어 낸다.
+ */
+export function baseUrl(raw: string | undefined): string | undefined {
+  return raw
+    ?.trim()
+    .replace(/\/+$/, '')
+    .replace(/\/rest\/v1$/, '');
+}
+
+const URL_ = baseUrl(import.meta.env.VITE_SUPABASE_URL as string | undefined);
 const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
 /** 연결 정보가 빌드에 들어 있는가 */
