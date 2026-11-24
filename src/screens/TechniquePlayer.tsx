@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Lines } from '../components/Lines';
 import { TECHNIQUE_LABELS } from '../constants';
 import { fillName } from '../lib/josa';
 import { foodShape } from './menu/FoodIcon';
@@ -144,8 +145,8 @@ export function TechniquePlayer({
 }
 
 /**
- * 대본 문구. 줄을 나눈 문구는 한 줄이 통째로 들어가도록 글자를 줄인다.
- * 크기는 global.css 의 .script-text.is-lines 가 칸 너비를 보고 정한다.
+ * 대본 문구. 줄을 나눈 문구는 Lines 가 한 줄씩 들어가도록 크기를 맞춘다.
+ * 한 줄짜리는 평범한 문단으로 둔다.
  */
 function ScriptText({
   text,
@@ -154,16 +155,9 @@ function ScriptText({
   text: string;
   className?: string;
 }) {
-  const multi = text.includes('\n');
-  return (
-    <p
-      className={`script-text${multi ? ' is-lines' : ''}${
-        className ? ` ${className}` : ''
-      }`}
-    >
-      {text}
-    </p>
-  );
+  const cls = `script-text${className ? ` ${className}` : ''}`;
+  if (!text.includes('\n')) return <p className={cls}>{text}</p>;
+  return <Lines text={text} className={cls} base="1.1875rem" />;
 }
 
 /** 명세 8.1 [2] — 들숨 4초, 날숨 6초로 8번.

@@ -29,6 +29,10 @@ body {
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  /* 한글은 어절 단위로 끊는다. 낱글자가 혼자 다음 줄로 넘어가지 않게.
+     끊을 데가 없는 긴 영문·주소는 예외로 중간에서 끊는다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 #root {
@@ -371,6 +375,24 @@ button {
   font-weight: 650;
 }
 
+/* --- 줄을 직접 나눠 적은 문단 (components/Lines.tsx) --- */
+
+.lines {
+  white-space: pre-line;
+  /* 한글은 어절 단위로 끊는다. 낱글자가 혼자 다음 줄로 넘어가지 않게. */
+  word-break: keep-all;
+  line-height: 1.65;
+}
+
+.lines.mb-0 {
+  margin-bottom: 0;
+}
+
+/* Lines 가 글자 크기를 잴 기준 칸. 카드 밖에서 쓸 때 감싼다. */
+.lines-box {
+  container-type: inline-size;
+}
+
 /* --- 카드 --- */
 
 .card {
@@ -379,6 +401,8 @@ button {
   border-radius: var(--radius);
   padding: 16px 18px;
   margin-bottom: 14px;
+  /* 안의 Lines 가 이 칸 너비를 기준으로 글자 크기를 정한다 */
+  container-type: inline-size;
 }
 
 .card-note {
@@ -426,11 +450,6 @@ button {
    틀 안에 넣어 보여줄 때 화면 폭으로 재면 넘친다. */
 .script {
   container-type: inline-size;
-}
-
-.script-text.is-lines {
-  /* 가장 긴 줄이 약 19em 이다. 여유를 둬 칸 너비의 1/20.4 로 잡는다. */
-  font-size: min(1.1875rem, 4.9cqw);
 }
 
 /* 선택지 위의 물음 — 아래 버튼과 사이를 띄운다 */
