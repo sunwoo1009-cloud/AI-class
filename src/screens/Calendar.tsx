@@ -9,6 +9,7 @@ import {
 } from '../lib/calendar';
 import { formatDateLabel, formatTimeLabel } from '../lib/date';
 import { deleteJournal, loadCheckIns, loadJournal } from '../storage/store';
+import { deleteRemoteJournal } from '../sync/account';
 import type { CheckIn, JournalEntry } from '../types';
 
 const PROMPT_LABELS: Record<JournalEntry['answers'][number]['promptId'], string> =
@@ -132,7 +133,12 @@ export function Calendar({ onBack }: Props) {
           dateKey={selected}
           checkIns={dayCheckIns}
           entry={journal.find((j) => j.date === selected) ?? null}
-          onDeleteJournal={(id) => setJournal(deleteJournal(id))}
+          onDeleteJournal={(id) => {
+            const date = journal.find((j) => j.id === id)?.date;
+            setJournal(deleteJournal(id));
+            // 일기를 백업 중이면 서버에서도 지운다 (명세 7.7)
+            if (date) void deleteRemoteJournal(date);
+          }}
         />
       ) : (
         <p className="muted" style={{ marginTop: 18 }}>

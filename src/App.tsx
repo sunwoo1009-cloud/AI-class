@@ -10,6 +10,7 @@ import { IntroScene } from './scenes/IntroScene';
 import { PartsGallery } from './scenes/PartsGallery';
 import { ScreensGallery } from './dev/ScreensGallery';
 import { leaveToApp, ReturnToPresentation } from './dev/presentReturn';
+import { startAutoSync } from './sync/account';
 import { Review } from './screens/Review';
 import { introOverride } from './lib/devTime';
 import { shouldShowIntro } from './lib/intro';
@@ -51,6 +52,8 @@ function AppMain() {
 
   useEffect(() => {
     ensureSchemaVersion();
+    // 가입해 로그인한 기기면 서버와 조용히 맞춘다 (명세 7.7). 안 했으면 아무것도 안 한다.
+    startAutoSync();
     const loadedSettings = loadSettings();
     setSettings(loadedSettings);
     // 인트로 판단은 앱을 열 때 한 번만 한다
@@ -95,9 +98,10 @@ function AppMain() {
   if (!settings) {
     return (
       <Onboarding
-        onDone={(displayName) => {
+        onDone={() => {
+          // 부를 이름은 선택 가입할 때 정한다. 그 전에는 비워 둔다 (대본에는 ○○).
           const next: Settings = {
-            displayName,
+            displayName: '',
             onboardedAt: new Date().toISOString(),
           };
           saveSettings(next);

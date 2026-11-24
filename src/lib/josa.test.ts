@@ -1,5 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { fillName, hasFinalConsonant, josa } from './josa';
+import { fillName, hasFinalConsonant, josa, scriptName } from './josa';
+
+describe('scriptName — 닉네임이 없을 때', () => {
+  it('닉네임이 있으면 그대로', () => {
+    expect(scriptName(' 선우 ')).toBe('선우');
+  });
+
+  it('없으면 ○○ 로 두고, 조사는 "는"이 붙는다', () => {
+    expect(scriptName('')).toBe('○○');
+    expect(scriptName(undefined)).toBe('○○');
+    expect(fillName('"{name는} 지금 화가 나 있다."', scriptName(''))).toBe(
+      '"○○는 지금 화가 나 있다."',
+    );
+  });
+});
 
 describe('hasFinalConsonant', () => {
   it('받침이 있는 이름을 구분한다', () => {

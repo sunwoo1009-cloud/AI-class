@@ -1,15 +1,14 @@
-import { useState } from 'react';
 import { Lines } from '../components/Lines';
 
 interface Props {
-  onDone: (displayName: string) => void;
+  onDone: () => void;
 }
 
-/** 명세 9절 화면 1 */
+/**
+ * 명세 9절 화면 1.
+ * 2026-11-25 — 부를 이름 입력을 뺐다. 이름(닉네임)은 선택 가입할 때 정한다 (명세 7.7).
+ */
 export function Onboarding({ onDone }: Props) {
-  const [name, setName] = useState('');
-  const trimmed = name.trim();
-
   return (
     <div className="app">
       <h1>퇴근길 붕어빵 한 입</h1>
@@ -22,13 +21,14 @@ export function Onboarding({ onDone }: Props) {
       </div>
 
       <div className="card" style={{ marginTop: 18 }}>
-        <h2>데이터는 기기에만 저장돼요</h2>
+        <h2>기록은 기본으로 기기에만 저장돼요</h2>
         <Lines
           className="muted mb-0"
           base="0.875rem"
           text={
-            '계정도 서버도 없어요\n' +
+            '가입하지 않아도 모든 기능을 쓸 수 있어요\n' +
             '기록은 이 브라우저에만 남고 기관과 공유되지 않아요\n' +
+            '원하면 설정에서 가입해 백업할 수 있어요\n' +
             '설정에서 언제든 전부 지울 수 있어요'
           }
         />
@@ -49,34 +49,8 @@ export function Onboarding({ onDone }: Props) {
         />
       </div>
 
-      <label htmlFor="displayName" style={{ display: 'block', marginTop: 8 }}>
-        <h2 style={{ marginBottom: 4 }}>어떻게 불러드릴까요?</h2>
-        <div className="lines-box">
-          <Lines
-            className="muted"
-            base="0.875rem"
-            text={'자기 거리두기 기법에서 이름을 부를 때 써요\n기기에만 저장돼요'}
-          />
-        </div>
-      </label>
-      <input
-        id="displayName"
-        className="btn"
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="예: 선우"
-        maxLength={20}
-        autoComplete="off"
-        style={{ marginBottom: 20 }}
-      />
-
       <div className="spacer" />
-      <button
-        className="btn btn-primary"
-        disabled={trimmed.length === 0}
-        onClick={() => onDone(trimmed)}
-      >
+      <button className="btn btn-primary" onClick={onDone}>
         시작하기
       </button>
     </div>

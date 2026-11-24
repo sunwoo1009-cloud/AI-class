@@ -1548,6 +1548,80 @@ input[type='range'] {
   }
 }
 
+/* --- 기록 백업·동기화 (AccountSection, 명세 7.7) --- */
+
+.account {
+  margin-bottom: 8px;
+}
+
+.account-notice {
+  margin: 10px 0;
+  padding: 12px 14px 12px 30px;
+  border-radius: 14px;
+  background: var(--warn-surface);
+  border: 1px solid var(--warn-border);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.account-notice li + li {
+  margin-top: 4px;
+}
+
+.account-details {
+  margin-top: 10px;
+  font-size: 0.875rem;
+}
+
+.account-details summary {
+  cursor: pointer;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.account-form {
+  display: grid;
+  gap: 12px;
+}
+
+.account-field {
+  display: grid;
+  gap: 4px;
+}
+
+.account-field > span {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.account-field input {
+  width: 100%;
+  padding: 13px 15px;
+  border-radius: 14px;
+  border: 1.5px solid var(--btn-edge);
+  background: var(--btn-bg);
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.account-field input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.account-field small {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.account-note {
+  margin: 10px 0 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--sign-bg);
+}
+
 /* --- 체크박스 줄 --- */
 
 .check-row {

@@ -29,6 +29,14 @@ export function josa(word: string, pair: JosaPair): string {
   return hasFinalConsonant(word) ? withFinal : withoutFinal;
 }
 
+/** 닉네임이 없을 때(가입하지 않은 사람) 대본에 넣을 자리 표시 */
+export const NAME_PLACEHOLDER = '○○';
+
+/** 대본에 넣을 이름 — 없으면 '○○' (명세 8.6, 7.7) */
+export function scriptName(displayName: string | undefined): string {
+  return displayName?.trim() || NAME_PLACEHOLDER;
+}
+
 /** "{name}는" 형태의 템플릿을 채운다. {name은} 처럼 조사를 붙여 쓴다. */
 export function fillName(template: string, name: string): string {
   return template

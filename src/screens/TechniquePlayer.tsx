@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Lines } from '../components/Lines';
 import { TECHNIQUE_LABELS } from '../constants';
-import { fillName } from '../lib/josa';
+import { fillName, scriptName } from '../lib/josa';
 import { foodShape } from './menu/FoodIcon';
 import { TechniqueArt } from './menu/TechniqueArt';
 import { TECHNIQUE_SCRIPTS } from '../scripts/techniques';
@@ -40,6 +40,8 @@ export function TechniquePlayer({
   initialStep = 0,
 }: Props) {
   const script = TECHNIQUE_SCRIPTS[technique];
+  // 가입하지 않아 닉네임이 없으면 '○○'로 둔다 — 자기 이름을 넣어 말하게 한다 (명세 8.6)
+  const name = scriptName(displayName);
   const [index, setIndex] = useState(() =>
     Math.min(Math.max(0, Math.floor(initialStep)), script.steps.length - 1),
   );
@@ -106,13 +108,13 @@ export function TechniquePlayer({
           <>
             {/* 말풍선이면 글이 그림 위에, 아니면 그림 아래에 온다 */}
             {step.speech ? (
-              <p className="art-bubble">{fillName(step.text, displayName)}</p>
+              <p className="art-bubble">{fillName(step.text, name)}</p>
             ) : null}
 
             {step.art ? <TechniqueArt kind={step.art} /> : null}
 
             {step.speech ? null : (
-              <ScriptText text={fillName(step.text, displayName)} />
+              <ScriptText text={fillName(step.text, name)} />
             )}
           </>
         ) : null}

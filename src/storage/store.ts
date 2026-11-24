@@ -58,13 +58,32 @@ function read<T>(key: string, fallback: T): T {
   }
 }
 
+/**
+ * 백업·동기화(명세 7.7)가 기록이 바뀐 걸 알 수 있게 한다.
+ * 저장소는 서버를 모른다 — 듣는 쪽(sync/account.ts)이 로그인했을 때만 붙는다.
+ */
+const SYNCED_KEYS = new Set<string>([
+  `${PREFIX}checkins`,
+  `${PREFIX}journal`,
+  `${PREFIX}weeklySessions`,
+  `${PREFIX}stampTotal`,
+  `${PREFIX}closet`,
+]);
+const listeners: (() => void)[] = [];
+
+export function onDataChanged(fn: () => void): void {
+  listeners.push(fn);
+}
+
 function write(key: string, value: unknown): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
     askPersistOnce();
   } catch {
     // 저장 공간이 없거나 접근이 막힌 경우 조용히 넘긴다.
+    return;
   }
+  if (SYNCED_KEYS.has(key)) for (const fn of listeners) fn();
 }
 
 export function ensureSchemaVersion(): void {
@@ -192,6 +211,10 @@ export function oldestRecordAt(): string | null {
 export function clearAllData(): void {
   try {
     for (const key of Object.values(KEYS)) localStorage.removeItem(key);
+    // 이 기기에서 로그아웃도 한다 — 남겨 두면 다음 동기화 때 서버 기록이 다시 내려온다.
+    // 서버 기록은 그대로다. 지우려면 설정의 '계정 삭제'를 쓴다.
+    localStorage.removeItem(`${PREFIX}auth`);
+    localStorage.removeItem(`${PREFIX}syncPrefs`);
   } catch {
     // 접근이 막힌 경우 무시한다.
   }
