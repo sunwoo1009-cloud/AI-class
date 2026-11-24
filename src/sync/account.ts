@@ -40,7 +40,7 @@ export const accountsAvailable = Boolean(URL_ && KEY);
 let clientPromise: Promise<SupabaseClient> | null = null;
 
 /** 필요할 때만 불러온다 — 가입하지 않는 사람은 이 코드를 쓰지 않는다 */
-function client(): Promise<SupabaseClient> {
+export function client(): Promise<SupabaseClient> {
   if (!clientPromise) {
     clientPromise = import('@supabase/supabase-js').then(({ createClient }) =>
       createClient(URL_ ?? '', KEY ?? '', {

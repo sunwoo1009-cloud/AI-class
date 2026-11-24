@@ -3,6 +3,7 @@ import { Calendar } from './screens/Calendar';
 import { CheckInFlow } from './screens/CheckInFlow';
 import { CouponBook } from './screens/CouponBook';
 import { JoinScreen } from './screens/JoinScreen';
+import { AdminPage } from './dev/AdminPage';
 import { Boutique } from './screens/Boutique';
 import { Home } from './screens/Home';
 import { Journal } from './screens/Journal';
@@ -45,6 +46,26 @@ export function App() {
   );
 }
 
+/**
+ * ?preview=start — 운영자가 같은 브라우저에서 첫 방문 흐름을 다시 본다.
+ * 온보딩 → 선택 가입 → 인트로 → 운영자 화면으로 돌아간다.
+ * 온보딩의 '시작하기'는 설정을 저장하지 않는다 (이미 쓰던 기록·설정 그대로).
+ */
+function StartPreview() {
+  const [step, setStep] = useState<'onboarding' | 'join' | 'intro'>('onboarding');
+  const back = () => {
+    window.location.search = 'admin=1';
+  };
+  return (
+    <>
+      <div className="preview-badge">운영자 미리보기 · 저장되지 않아요</div>
+      {step === 'onboarding' ? <Onboarding onDone={() => setStep('join')} /> : null}
+      {step === 'join' ? <JoinScreen onDone={() => setStep('intro')} /> : null}
+      {step === 'intro' ? <IntroScene onDone={back} /> : null}
+    </>
+  );
+}
+
 function AppMain() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -77,6 +98,22 @@ function AppMain() {
     new URLSearchParams(window.location.search).has('screens')
   ) {
     return <ScreensGallery onBack={leaveToApp} />;
+  }
+
+  // 운영자 화면 — 화면 점검 + 운영 현황
+  if (
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).has('admin')
+  ) {
+    return <AdminPage />;
+  }
+
+  // 운영자 화면 점검 — 처음 쓰는 사람처럼 온보딩부터. 저장된 설정·기록은 건드리지 않는다.
+  if (
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('preview') === 'start'
+  ) {
+    return <StartPreview />;
   }
 
   // 개발 확인용 — ?parts=1 로 장면 부품을 따로 본다
