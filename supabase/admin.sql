@@ -40,6 +40,11 @@ $$;
 revoke all on function public.admin_stats() from public, anon;
 grant execute on function public.admin_stats() to authenticated;
 
+-- 피드백 읽기 — 운영자만 (보낸 사람도, 다른 방문자도 못 읽는다)
+drop policy if exists "운영자 읽기" on public.feedback;
+create policy "운영자 읽기" on public.feedback
+  for select to authenticated using (public.is_admin());
+
 -- 피드백 지우기 — 운영자만
 drop policy if exists "운영자 지우기" on public.feedback;
 create policy "운영자 지우기" on public.feedback

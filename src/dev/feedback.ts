@@ -60,14 +60,7 @@ function headers(): HeadersInit {
   return h;
 }
 
-export async function listFeedback(): Promise<FeedbackItem[]> {
-  const res = await fetch(
-    `${URL_}/rest/v1/feedback?select=id,body,created_at&order=created_at.desc&limit=200`,
-    { headers: headers() },
-  );
-  if (!res.ok) throw new Error(`목록을 불러오지 못했어요 (${res.status})`);
-  return (await res.json()) as FeedbackItem[];
-}
+// 받은 피드백 읽기는 운영자만 한다 — sync/admin.ts 의 listFeedbackAdmin (운영자 로그인 필요).
 
 export async function sendFeedback(body: string): Promise<void> {
   const res = await fetch(`${URL_}/rest/v1/feedback`, {

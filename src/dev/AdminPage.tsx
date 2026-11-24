@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { AuthForm } from '../screens/AccountSection';
 import { accountsAvailable, signOut } from '../sync/account';
-import { checkAdmin, deleteFeedbackItem, loadAdminStats } from '../sync/admin';
+import { checkAdmin, deleteFeedbackItem, listFeedbackAdmin, loadAdminStats } from '../sync/admin';
 import type { AdminCheck, AdminStats } from '../sync/admin';
-import { feedbackConnected, listFeedback } from './feedback';
 import type { FeedbackItem } from './feedback';
 
 /** 화면 점검 — 화면 하나만 새 탭에 띄운다 (?screens=<id>) */
@@ -84,36 +83,64 @@ export function AdminPage() {
       </header>
 
       <main className="admin-body">
-        <section className="admin-card">
-          <h2>화면 점검</h2>
-          <p className="muted">
-            이 브라우저에 저장된 기록과 설정은 건드리지 않아요.
-          </p>
-          <a className="btn btn-primary admin-wide" href={`${base}?preview=start`}>
-            처음 쓰는 사람처럼 보기 — 온보딩 → 선택 가입 → 인트로
-          </a>
-          <p className="muted admin-small">
-            끝나면 이 화면으로 돌아와요. 가입 화면에서 실제로 가입하면 진짜 계정이 생겨요.
-          </p>
-
-          {SCREEN_GROUPS.map((g) => (
-            <div key={g.title} className="admin-group">
-              <h3>{g.title}</h3>
-              <div className="admin-links">
-                {g.items.map(([id, label]) => (
-                  <a key={id} href={`${base}?screens=${id}`} target="_blank" rel="noreferrer">
-                    {label}
-                  </a>
-                ))}
-              </div>
-            </div>
-          ))}
-          <p className="muted admin-small">화면 이름을 누르면 새 탭에서 그 화면만 열려요.</p>
-        </section>
-
+        <ScreenCheckCard />
         <OpsSection />
       </main>
     </div>
+  );
+}
+
+/**
+ * 발표용 화면의 '운영자 화면' 시트 — 운영자 화면이 어떻게 생겼는지 보여준다.
+ * 화면 점검은 실제와 같고, 운영 현황은 로그인 없이 **예시 숫자**로 보여준다.
+ */
+export function AdminDemoSheet() {
+  return (
+    <div className="admin-demo">
+      <p className="pres-feedback-lead">
+        운영자만 쓰는 화면이에요. 실제 주소는 <code>?admin=1</code> 이고, 운영 현황은 운영자
+        계정으로 로그인해야 보여요.
+      </p>
+      <div className="admin-body admin-body-demo">
+        <ScreenCheckCard />
+        <section className="admin-card">
+          <h2>
+            운영 현황 <span className="admin-demo-tag">예시 숫자</span>
+          </h2>
+          <AdminData demo />
+        </section>
+      </div>
+    </div>
+  );
+}
+
+/** ① 화면 점검 — 같은 브라우저에서 처음 쓰는 사람처럼 보기, 모든 화면 하나씩 */
+function ScreenCheckCard() {
+  return (
+    <section className="admin-card">
+      <h2>화면 점검</h2>
+      <p className="muted">이 브라우저에 저장된 기록과 설정은 건드리지 않아요.</p>
+      <a className="btn btn-primary admin-wide" href={`${base}?preview=start`}>
+        처음 쓰는 사람처럼 보기 — 온보딩 → 선택 가입 → 인트로
+      </a>
+      <p className="muted admin-small">
+        끝나면 운영자 화면으로 돌아와요. 가입 화면에서 실제로 가입하면 진짜 계정이 생겨요.
+      </p>
+
+      {SCREEN_GROUPS.map((g) => (
+        <div key={g.title} className="admin-group">
+          <h3>{g.title}</h3>
+          <div className="admin-links">
+            {g.items.map(([id, label]) => (
+              <a key={id} href={`${base}?screens=${id}`} target="_blank" rel="noreferrer">
+                {label}
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
+      <p className="muted admin-small">화면 이름을 누르면 새 탭에서 그 화면만 열려요.</p>
+    </section>
   );
 }
 
@@ -170,20 +197,47 @@ function OpsSection() {
   );
 }
 
-function AdminData() {
-  const [stats, setStats] = useState<AdminStats | null>(null);
-  const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
+/** 발표용 예시 — 실제 서버 값이 아니다 */
+const DEMO_STATS: AdminStats = {
+  users: 12,
+  users_7d: 5,
+  synced_users: 9,
+  checkins: 143,
+  checkins_7d: 38,
+  journal_users: 3,
+  journals: 21,
+  feedback: 3,
+};
+const DEMO_FEEDBACK: FeedbackItem[] = [
+  { id: -1, body: '(예시) 붕어빵 쿠폰이 귀여워서 마무리까지 하게 돼요', created_at: '2026-11-25T09:10:00Z' },
+  { id: -2, body: '(예시) 느린 호흡 화면에서 붕어빵이 커지는 게 따라 하기 쉬웠어요', created_at: '2026-11-25T09:05:00Z' },
+  { id: -3, body: '(예시) 일기 질문이 하나 더 있으면 좋겠어요', created_at: '2026-11-25T08:58:00Z' },
+];
+
+/**
+ * ② 운영 현황의 숫자와 피드백.
+ * 피드백은 '피드백' 칸을 눌러야 펼쳐진다. 피드백은 운영자만 읽을 수 있다(서버 규칙).
+ * demo 면 서버를 부르지 않고 예시 값을 보여준다 (발표용 시트).
+ */
+function AdminData({ demo = false }: { demo?: boolean }) {
+  const [stats, setStats] = useState<AdminStats | null>(demo ? DEMO_STATS : null);
+  const [feedback, setFeedback] = useState<FeedbackItem[]>(demo ? DEMO_FEEDBACK : []);
+  const [showFeedback, setShowFeedback] = useState(demo);
   const [note, setNote] = useState<string | null>(null);
 
   async function load() {
+    if (demo) return;
     const r = await loadAdminStats();
     if (r.ok) setStats(r.stats);
     else setNote(r.reason);
-    if (feedbackConnected) setFeedback(await listFeedback().catch(() => []));
+    const f = await listFeedbackAdmin();
+    if (f.ok) setFeedback(f.items);
+    else setNote(f.reason);
   }
 
   useEffect(() => {
     void load();
+    // eslint 설정은 없지만, demo 는 바뀌지 않으므로 처음 한 번만 부른다
   }, []);
 
   const tiles: [string, number | undefined, string?][] = [
@@ -191,7 +245,6 @@ function AdminData() {
     ['기록을 백업한 사람', stats?.synced_users],
     ['백업된 체크인', stats?.checkins, stats ? `최근 7일 ${stats.checkins_7d}` : undefined],
     ['일기 백업을 켠 사람', stats?.journal_users, stats ? `일기 ${stats.journals}개` : undefined],
-    ['피드백', stats?.feedback],
   ];
 
   return (
@@ -204,29 +257,51 @@ function AdminData() {
             {sub ? <small>{sub}</small> : null}
           </div>
         ))}
+        {/* 피드백 — 누르면 아래에 목록이 펼쳐진다 */}
+        <button
+          className={`admin-tile admin-tile-btn${showFeedback ? ' is-open' : ''}`}
+          aria-expanded={showFeedback}
+          onClick={() => setShowFeedback((v) => !v)}
+        >
+          <span>피드백</span>
+          <b>{stats?.feedback ?? '—'}</b>
+          <small>{showFeedback ? '눌러서 접기 ▲' : '눌러서 보기 ▼'}</small>
+        </button>
       </div>
       <p className="muted admin-small">
         개인별 기록은 여기서 보여주지 않아요. 꼭 필요하면 Supabase 대시보드에서 봐요.
       </p>
 
       <div className="admin-row">
-        <h3>피드백 {feedback.length}개</h3>
-        <button className="btn admin-mini" onClick={() => void load()}>
-          새로 고침
-        </button>
-        <button className="btn admin-mini" onClick={() => void signOut().then(() => location.reload())}>
-          로그아웃
-        </button>
+        <h3>{showFeedback ? `받은 피드백 ${feedback.length}개` : ''}</h3>
+        {demo ? null : (
+          <>
+            <button className="btn admin-mini" onClick={() => void load()}>
+              새로 고침
+            </button>
+            <button
+              className="btn admin-mini"
+              onClick={() => void signOut().then(() => location.reload())}
+            >
+              로그아웃
+            </button>
+          </>
+        )}
       </div>
       {note ? <p className="admin-warn">{note}</p> : null}
-      <ul className="pres-feedback-list">
+      {showFeedback && feedback.length === 0 ? (
+        <p className="muted">아직 받은 피드백이 없어요.</p>
+      ) : null}
+      <ul className="pres-feedback-list" hidden={!showFeedback}>
         {feedback.map((f) => (
           <li key={f.id} className="admin-feedback">
             <p>{f.body}</p>
             <time dateTime={f.created_at}>{new Date(f.created_at).toLocaleString('ko-KR')}</time>
             <button
               className="btn btn-danger admin-mini"
+              disabled={demo}
               onClick={() => {
+                if (demo) return;
                 if (!window.confirm('이 피드백을 지울까요? 되돌릴 수 없어요.')) return;
                 void deleteFeedbackItem(f.id).then((r) => {
                   if (!r.ok) return setNote(r.reason);

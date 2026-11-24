@@ -9,6 +9,7 @@ import { CouponBook } from '../screens/CouponBook';
 import { Boutique } from '../screens/Boutique';
 import { AvatarParts } from './AvatarParts';
 import { AboutSheet, FeedbackSheet } from './PresentSheets';
+import { AdminDemoSheet } from './AdminPage';
 import { ExternalResource, SafetyNotice } from '../screens/Notices';
 import { OfferExtra } from '../screens/OfferExtra';
 import { Onboarding } from '../screens/Onboarding';
@@ -371,7 +372,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
 
 type Sheet =
   | { title: string; kind: 'row'; ids: string[] }
-  | { title: string; kind: 'checkin' | 'about' | 'feedback' };
+  | { title: string; kind: 'checkin' | 'about' | 'feedback' | 'admin' };
 
 const SHEETS: Sheet[] = [
   { title: '앱 설명', kind: 'about' },
@@ -385,6 +386,7 @@ const SHEETS: Sheet[] = [
     ids: ['summary', 'review', 'calendar', 'coupons', 'settings'],
   },
   { title: '아바타 꾸미기', kind: 'row', ids: ['boutique', 'avatar-parts'] },
+  { title: '운영자 화면', kind: 'admin' },
   { title: '피드백', kind: 'feedback' },
 ];
 
@@ -513,6 +515,8 @@ function SheetView({
             <CheckInFlowSheet byId={byId} />
           ) : current.kind === 'about' ? (
             <AboutSheet />
+          ) : current.kind === 'admin' ? (
+            <AdminDemoSheet />
           ) : (
             <FeedbackSheet />
           )}

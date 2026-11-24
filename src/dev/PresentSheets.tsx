@@ -1,13 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { StampCard } from '../screens/CouponBook';
-import {
-  FEEDBACK_MAX,
-  checkFeedback,
-  feedbackConnected,
-  listFeedback,
-  sendFeedback,
-} from './feedback';
-import type { FeedbackItem } from './feedback';
+import { FEEDBACK_MAX, checkFeedback, feedbackConnected, sendFeedback } from './feedback';
 
 /** 첫 번째 시트 — 앱 설명 */
 export function AboutSheet() {
@@ -51,30 +44,14 @@ export function AboutSheet() {
 
 const LAST_SENT_KEY = 'cbd:feedbackSentAt';
 
-/** 마지막 시트 — 익명 피드백. 받은 피드백은 아래 목록에 모두에게 보인다. */
+/**
+ * 마지막 시트 — 익명 피드백 보내기.
+ * 2026-11-25 변경: 받은 피드백은 모두에게 보여주지 않는다. 운영자 화면에서만 본다.
+ */
 export function FeedbackSheet() {
   const [text, setText] = useState('');
-  const [items, setItems] = useState<FeedbackItem[]>([]);
   const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  async function refresh() {
-    try {
-      setItems(await listFeedback());
-      setLoadError(null);
-    } catch (e) {
-      setLoadError((e as Error).message);
-    }
-  }
-
-  useEffect(() => {
-    if (!feedbackConnected) return;
-    void refresh();
-    // 발표 중 다른 사람이 남긴 것도 보이게 15초마다 새로 불러온다
-    const t = window.setInterval(() => void refresh(), 15_000);
-    return () => window.clearInterval(t);
-  }, []);
 
   async function submit() {
     const last = Number(localStorage.getItem(LAST_SENT_KEY)) || null;
@@ -89,7 +66,6 @@ export function FeedbackSheet() {
       localStorage.setItem(LAST_SENT_KEY, String(Date.now()));
       setText('');
       setNote('보냈어요. 고마워요!');
-      await refresh();
     } catch (e) {
       setNote((e as Error).message);
     } finally {
@@ -102,12 +78,12 @@ export function FeedbackSheet() {
       <p className="pres-feedback-lead">
         이 앱에 대한 생각을 자유롭게 남겨 주세요.
         <br />
-        이름은 남지 않아요. 남긴 글은 아래 목록에 모두에게 보여요.
+        이름은 남지 않아요. 남긴 글은 운영자만 볼 수 있어요.
       </p>
 
       {!feedbackConnected ? (
         <p className="pres-feedback-off">
-          아직 피드백 저장소가 연결되지 않았어요. 연결되면 여기에서 바로 적고 볼 수 있어요.
+          아직 피드백 저장소가 연결되지 않았어요. 연결되면 여기에서 바로 보낼 수 있어요.
         </p>
       ) : null}
 
@@ -138,28 +114,6 @@ export function FeedbackSheet() {
         </div>
       </div>
 
-      <h2 className="pres-feedback-title">
-        받은 피드백 {feedbackConnected ? `${items.length}개` : ''}
-      </h2>
-      {loadError ? <p className="pres-feedback-off">{loadError}</p> : null}
-      {feedbackConnected && items.length === 0 && !loadError ? (
-        <p className="muted">아직 남겨진 피드백이 없어요. 첫 번째로 남겨 주세요.</p>
-      ) : null}
-      <ul className="pres-feedback-list">
-        {items.map((f) => (
-          <li key={f.id}>
-            <p>{f.body}</p>
-            <time dateTime={f.created_at}>
-              {new Date(f.created_at).toLocaleString('ko-KR', {
-                month: 'numeric',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </time>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

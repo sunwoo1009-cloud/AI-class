@@ -404,6 +404,47 @@
   color: var(--text-muted);
 }
 
+/* 피드백 칸은 눌러서 목록을 펼친다 */
+.admin-tile-btn {
+  text-align: left;
+  font-family: inherit;
+  color: var(--text);
+  cursor: pointer;
+  border-color: var(--btn-edge);
+  box-shadow: 0 3px 0 var(--btn-ledge);
+}
+
+.admin-tile-btn.is-open {
+  background: var(--btn-primary-bg);
+}
+
+/* 발표용 '운영자 화면' 시트 */
+.admin-demo {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.admin-body-demo {
+  padding-top: 0;
+}
+
+.admin-demo-tag {
+  margin-left: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-size: 0.75rem;
+  vertical-align: middle;
+}
+
+.admin-demo code {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
 .admin-row {
   display: flex;
   align-items: center;

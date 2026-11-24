@@ -5,6 +5,7 @@
  * 운영자 계정으로 로그인하지 않으면 숫자도, 피드백 지우기도 거절된다.
  * 개인별 기록은 여기서 다루지 않는다 — 숫자만.
  */
+import type { FeedbackItem } from '../dev/feedback';
 import { client, friendlyError } from './account';
 
 export interface AdminStats {
@@ -35,6 +36,20 @@ export async function loadAdminStats(): Promise<{ ok: true; stats: AdminStats } 
   const { data, error } = await sb.rpc('admin_stats');
   if (error) return { ok: false, reason: friendlyError(error.message) };
   return { ok: true, stats: data as AdminStats };
+}
+
+/** 받은 피드백 — 운영자 계정으로만 읽힌다 (서버 규칙 '운영자 읽기') */
+export async function listFeedbackAdmin(): Promise<
+  { ok: true; items: FeedbackItem[] } | { ok: false; reason: string }
+> {
+  const sb = await client();
+  const { data, error } = await sb
+    .from('feedback')
+    .select('id,body,created_at')
+    .order('created_at', { ascending: false })
+    .limit(300);
+  if (error) return { ok: false, reason: friendlyError(error.message) };
+  return { ok: true, items: (data ?? []) as FeedbackItem[] };
 }
 
 export async function deleteFeedbackItem(id: number): Promise<{ ok: true } | { ok: false; reason: string }> {
