@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { REACTIONS, TECHNIQUE_LABELS } from '../constants';
-import { isEveningScene } from '../lib/devTime';
 import type { TechniqueId } from '../types';
 import { Calendar } from '../screens/Calendar';
 import { ClosingMore, ClosingRitual } from '../screens/ClosingRitual';
@@ -51,7 +50,6 @@ interface Screen {
  * 비어 있으면 sample-data.js 를 콘솔에 붙여넣어 채운다.
  */
 export function ScreensGallery({ onBack }: { onBack: () => void }) {
-  const evening = isEveningScene();
   // 기법 화면은 &step=N 으로 N번째 단계(0부터)를 바로 띄운다. 예: ?screens=tech-compassion&step=3
   const step = Number(new URLSearchParams(window.location.search).get('step')) || 0;
   const [settings, setSettings] = useState<Settings>(
@@ -67,7 +65,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
     },
     {
       id: 'home',
-      label: `홈 — 노점 (${evening ? '저녁' : '낮'})`,
+      label: '홈 — 노점',
       spec: '9절 화면 2',
       render: () => (
         <Home
@@ -322,23 +320,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
   const only = params.get('screens');
   const single = only ? byId.get(only) : undefined;
 
-  function go(k: string, v: string) {
-    const q = new URLSearchParams(window.location.search);
-    q.set(k, v);
-    window.location.search = q.toString();
-  }
-
-  const timeChips = (
-    <>
-      <button className={`gal-chip${evening ? '' : ' is-on'}`} onClick={() => go('time', '9')}>
-        낮
-      </button>
-      <button className={`gal-chip${evening ? ' is-on' : ''}`} onClick={() => go('time', '18')}>
-        저녁
-      </button>
-    </>
-  );
-
+  // 낮/저녁 버튼은 뺐다 (차이가 거의 보이지 않아서). 주소에 &time=9 / &time=18 은 그대로 먹는다.
   if (single) {
     return (
       <div className="gal">
@@ -347,8 +329,6 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
             앱으로 돌아가기
           </button>
           <span className="gal-title">{single.label}</span>
-          <span className="gal-spacer" />
-          {timeChips}
         </header>
         <div className="gal-grid" style={{ paddingTop: 20 }}>
           <Frame s={single} />
@@ -361,7 +341,6 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
     <SheetView
       byId={byId}
       onBack={onBack}
-      timeChips={timeChips}
       initialSheet={Number(params.get('sheet')) || 0}
     />
   );
@@ -401,19 +380,36 @@ const ZOOMS = [1, 0.75, 0.5] as const;
 function SheetView({
   byId,
   onBack,
-  timeChips,
   initialSheet,
 }: {
   byId: Map<string, Screen>;
   onBack: () => void;
-  timeChips: React.ReactNode;
   initialSheet: number;
 }) {
   const [sheet, setSheet] = useState(
     Math.min(Math.max(0, initialSheet), SHEETS.length - 1),
   );
-  const [zoom, setZoom] = useState<number>(0.75);
+  const [zoom, setZoom] = useState<number>(1);
   const current = SHEETS[sheet];
+
+  // 시트 내용이 옆으로 넘치는지 — 넘칠 때만 왼쪽 위에 '옆으로 넘겨 보세요'를 띄운다
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [wide, setWide] = useState(false);
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const check = () => setWide(el.scrollWidth > el.clientWidth + 4);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    if (el.firstElementChild) ro.observe(el.firstElementChild);
+    return () => ro.disconnect();
+  }, [sheet, zoom]);
+
+  function slide(dir: 1 | -1) {
+    const el = scrollerRef.current;
+    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' });
+  }
 
   function pick(n: number) {
     setSheet(n);
@@ -421,7 +417,7 @@ function SheetView({
     const q = new URLSearchParams(window.location.search);
     q.set('sheet', String(n));
     window.history.replaceState(null, '', `?${q.toString()}`);
-    window.scrollTo(0, 0);
+    scrollerRef.current?.scrollTo(0, 0);
   }
 
   // 발표 중 키보드 ← → 로 시트를 넘긴다
@@ -454,6 +450,18 @@ function SheetView({
         <span className="gal-title">
           {sheet + 1}. {current.title}
         </span>
+        {wide ? (
+          <span className="gal-slide-hint">
+            <span>↔ 화면이 옆으로 이어져요</span>
+            <button className="gal-slide" onClick={() => slide(-1)} aria-label="왼쪽으로 넘기기">
+              ◀
+            </button>
+            <button className="gal-slide" onClick={() => slide(1)} aria-label="오른쪽으로 넘기기">
+              ▶
+            </button>
+            <small>아래 가로 막대를 끌거나 Shift + 마우스 휠로도 넘겨요</small>
+          </span>
+        ) : null}
         <span className="gal-spacer" />
         <span className="gal-zoom-label">크기</span>
         {ZOOMS.map((z) => (
@@ -465,21 +473,23 @@ function SheetView({
             {Math.round(z * 100)}%
           </button>
         ))}
-        {timeChips}
       </header>
 
-      <div className="gal-sheet-body" style={{ zoom }}>
-        <h1 className="gal-sheet-title">{current.title}</h1>
-        {current.kind === 'row' ? (
-          <div className="gal-row">
-            {current.ids.map((id) => {
-              const s = byId.get(id);
-              return s ? <Frame key={id} s={s} /> : null;
-            })}
-          </div>
-        ) : (
-          <CheckInFlowSheet byId={byId} />
-        )}
+      {/* 시트 칸 — 엑셀처럼 이 안에서 위아래·옆으로 움직인다. 가로 막대는 시트 탭 바로 위에 붙는다. */}
+      <div className="gal-scroller" ref={scrollerRef}>
+        <div className="gal-sheet-body" style={{ zoom }}>
+          <h1 className="gal-sheet-title">{current.title}</h1>
+          {current.kind === 'row' ? (
+            <div className="gal-row">
+              {current.ids.map((id) => {
+                const s = byId.get(id);
+                return s ? <Frame key={id} s={s} /> : null;
+              })}
+            </div>
+          ) : (
+            <CheckInFlowSheet byId={byId} />
+          )}
+        </div>
       </div>
 
       {/* 엑셀처럼 아래에 시트 탭 */}

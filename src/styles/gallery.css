@@ -149,8 +149,69 @@
 
 /* --- 발표용 시트 보기 (?screens=1) --- */
 
+/* 위 막대 · 시트 칸 · 아래 시트 탭을 한 화면 높이에 쌓는다 (엑셀처럼) */
 .gal-sheets {
-  padding-bottom: 90px; /* 아래 시트 탭 자리 */
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 시트 칸 — 여기서 위아래·옆으로 움직인다. 가로 막대가 시트 탭 바로 위에 온다. */
+.gal-scroller {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: auto;
+  scrollbar-color: var(--sign-bg) var(--surface-alt);
+}
+
+.gal-scroller::-webkit-scrollbar {
+  height: 14px;
+  width: 12px;
+}
+
+.gal-scroller::-webkit-scrollbar-thumb {
+  background: var(--sign-bg);
+  border-radius: 999px;
+  border: 3px solid var(--surface-alt);
+}
+
+.gal-scroller::-webkit-scrollbar-track {
+  background: var(--surface-alt);
+}
+
+/* 왼쪽 위 — 옆으로 이어진다는 안내와 넘기기 버튼 */
+.gal-slide-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 6px;
+  padding: 5px 8px 5px 12px;
+  border-radius: 999px;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.gal-slide-hint small {
+  font-size: 0.75rem;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+.gal-slide {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid var(--btn-edge);
+  background: var(--btn-bg);
+  color: var(--text);
+  font-size: 0.75rem;
+  cursor: pointer;
 }
 
 .gal-zoom-label {
@@ -182,7 +243,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  overflow-x: auto;
+  width: max-content; /* 시트 칸 전체가 옆으로 움직이게 */
   padding-bottom: 16px;
 }
 
@@ -264,11 +325,7 @@
 
 /* 엑셀처럼 화면 아래에 붙은 시트 탭 */
 .gal-tabs {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 30;
+  flex: none;
   display: flex;
   align-items: flex-start;
   gap: 2px;
