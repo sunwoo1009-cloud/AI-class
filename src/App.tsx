@@ -9,6 +9,7 @@ import { Onboarding } from './screens/Onboarding';
 import { IntroScene } from './scenes/IntroScene';
 import { PartsGallery } from './scenes/PartsGallery';
 import { ScreensGallery } from './dev/ScreensGallery';
+import { leaveToApp, ReturnToPresentation } from './dev/presentReturn';
 import { Review } from './screens/Review';
 import { introOverride } from './lib/devTime';
 import { shouldShowIntro } from './lib/intro';
@@ -33,6 +34,16 @@ type View =
   | 'settings';
 
 export function App() {
+  return (
+    <>
+      <AppMain />
+      {/* 발표 화면에서 넘어왔을 때만 보이는 '발표 화면으로 돌아가기' */}
+      <ReturnToPresentation />
+    </>
+  );
+}
+
+function AppMain() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [view, setView] = useState<View>('home');
@@ -59,13 +70,7 @@ export function App() {
     typeof window !== 'undefined' &&
     new URLSearchParams(window.location.search).has('screens')
   ) {
-    return (
-      <ScreensGallery
-        onBack={() => {
-          window.location.search = '';
-        }}
-      />
-    );
+    return <ScreensGallery onBack={leaveToApp} />;
   }
 
   // 개발 확인용 — ?parts=1 로 장면 부품을 따로 본다

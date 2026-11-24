@@ -141,6 +141,27 @@
   height: 100%;
 }
 
+/* 발표 화면에서 앱으로 왔을 때만 뜨는 '발표 화면으로 돌아가기'.
+   화면 위 가운데 — 홈 메뉴(왼쪽 위)·'그만하기'(오른쪽 위)·아래 버튼들과 겹치지 않는 자리 */
+.present-return {
+  position: fixed;
+  top: calc(8px + env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 2px solid var(--sign-edge);
+  background: var(--sign-bg);
+  color: var(--sign-text);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  box-shadow: 0 3px 0 var(--sign-edge), 0 6px 14px rgba(60, 40, 20, 0.25);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 /* 서랍·배경막은 틀 안에만 머물게 */
 .gal-screen .drawer,
 .gal-screen .drawer-backdrop {

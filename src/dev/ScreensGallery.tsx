@@ -50,6 +50,10 @@ interface Screen {
  * 비어 있으면 sample-data.js 를 콘솔에 붙여넣어 채운다.
  */
 export function ScreensGallery({ onBack }: { onBack: () => void }) {
+  // 브라우저 탭에 보이는 이름. 앱으로 돌아가면 페이지가 새로 열리며 원래 이름으로 돌아간다.
+  useEffect(() => {
+    document.title = '(발표용) 퇴근길 붕어빵 한 입';
+  }, []);
   // 기법 화면은 &step=N 으로 N번째 단계(0부터)를 바로 띄운다. 예: ?screens=tech-compassion&step=3
   const step = Number(new URLSearchParams(window.location.search).get('step')) || 0;
   const [settings, setSettings] = useState<Settings>(
