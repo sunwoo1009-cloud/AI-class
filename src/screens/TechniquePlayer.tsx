@@ -16,6 +16,8 @@ interface Props {
   onDone: () => void;
   /** 명세 8.4 — '지금 바로 확인 필요' */
   onSafetyImmediate: () => void;
+  /** 개발용 모음에서 중간 단계를 바로 보려고 쓴다. 실제 흐름은 늘 0부터. */
+  initialStep?: number;
 }
 
 /** 앞선 선택에 따라 선택지를 교체한다 (명세 8.4) */
@@ -35,9 +37,12 @@ export function TechniquePlayer({
   reasonNote,
   onDone,
   onSafetyImmediate,
+  initialStep = 0,
 }: Props) {
   const script = TECHNIQUE_SCRIPTS[technique];
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(() =>
+    Math.min(Math.max(0, Math.floor(initialStep)), script.steps.length - 1),
+  );
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const step = script.steps[index];
   const isLast = index === script.steps.length - 1;

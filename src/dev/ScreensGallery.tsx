@@ -47,6 +47,8 @@ interface Screen {
  */
 export function ScreensGallery({ onBack }: { onBack: () => void }) {
   const evening = isEveningScene();
+  // 기법 화면은 &step=N 으로 N번째 단계(0부터)를 바로 띄운다. 예: ?screens=tech-compassion&step=3
+  const step = Number(new URLSearchParams(window.location.search).get('step')) || 0;
   const [settings, setSettings] = useState<Settings>(
     () => loadSettings() ?? FALLBACK_SETTINGS,
   );
@@ -108,6 +110,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           reasonNote="점수가 높을 때는 몸을 먼저 가라앉혀요."
           onDone={noop}
           onSafetyImmediate={noop}
+          initialStep={step}
         />
       ),
     },
@@ -121,6 +124,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           displayName={settings.displayName}
           onDone={noop}
           onSafetyImmediate={noop}
+          initialStep={step}
         />
       ),
     },
@@ -134,6 +138,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           displayName={settings.displayName}
           onDone={noop}
           onSafetyImmediate={noop}
+          initialStep={step}
         />
       ),
     },
@@ -147,6 +152,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           displayName={settings.displayName}
           onDone={noop}
           onSafetyImmediate={noop}
+          initialStep={step}
         />
       ),
     },
@@ -160,6 +166,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           displayName={settings.displayName}
           onDone={noop}
           onSafetyImmediate={noop}
+          initialStep={step}
         />
       ),
     },
@@ -173,6 +180,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           displayName={settings.displayName}
           onDone={noop}
           onSafetyImmediate={noop}
+          initialStep={step}
         />
       ),
     },

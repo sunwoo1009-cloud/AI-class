@@ -265,7 +265,9 @@ const compassion: TechniqueScript = {
       seconds: 30,
       text: lines(
         '같은 바람을 나에게도 돌려보세요',
-        '"나도 지금 무거운 걸 들고 있다. 내가 조금 가벼워지기를"',
+        '',
+        '나도 지금 무거운 걸 들고 있다',
+        '내가 조금 가벼워지기를',
       ),
     },
     { kind: 'text', seconds: 10, text: '숨을 한 번 길게 내쉬세요.' },
@@ -286,7 +288,13 @@ const selfDistancing: TechniqueScript = {
     {
       kind: 'text',
       seconds: 20,
-      text: '이어서 물어보세요. "{name는} 왜 화가 났을까?" 답을 찾지 않아도 돼요. 질문만 해보세요.',
+      text: lines(
+        '이어서 물어보세요',
+        '"{name는} 왜 화가 났을까?"',
+        '',
+        '답을 찾지 않아도 돼요',
+        '질문만 해보세요',
+      ),
       art: 'creamRack',
     },
     {
