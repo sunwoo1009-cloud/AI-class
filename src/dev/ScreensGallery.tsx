@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { REACTIONS, TECHNIQUE_LABELS } from '../constants';
 import { isEveningScene } from '../lib/devTime';
+import type { TechniqueId } from '../types';
 import { Calendar } from '../screens/Calendar';
 import { ClosingMore, ClosingRitual } from '../screens/ClosingRitual';
 import { Home } from '../screens/Home';
@@ -313,67 +315,271 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
     },
   ];
 
-  // ?screens=<id> 로 화면 하나만 본다. ?screens=1 이면 전부.
-  const only = new URLSearchParams(window.location.search).get('screens');
-  const shown =
-    only && screens.some((s) => s.id === only)
-      ? screens.filter((s) => s.id === only)
-      : screens;
+  const byId = new Map(screens.map((s) => [s.id, s]));
 
-  function go(param: string) {
+  // ?screens=<id> 로 화면 하나만 본다 (확인용). ?screens=1 이면 시트로 나눠 본다 (발표용).
+  const params = new URLSearchParams(window.location.search);
+  const only = params.get('screens');
+  const single = only ? byId.get(only) : undefined;
+
+  function go(k: string, v: string) {
     const q = new URLSearchParams(window.location.search);
-    q.set('screens', '1');
-    const [k, v] = param.split('=');
     q.set(k, v);
     window.location.search = q.toString();
   }
 
+  const timeChips = (
+    <>
+      <button className={`gal-chip${evening ? '' : ' is-on'}`} onClick={() => go('time', '9')}>
+        낮
+      </button>
+      <button className={`gal-chip${evening ? ' is-on' : ''}`} onClick={() => go('time', '18')}>
+        저녁
+      </button>
+    </>
+  );
+
+  if (single) {
+    return (
+      <div className="gal">
+        <header className="gal-bar">
+          <button className="gal-back" onClick={onBack}>
+            앱으로 돌아가기
+          </button>
+          <span className="gal-title">{single.label}</span>
+          <span className="gal-spacer" />
+          {timeChips}
+        </header>
+        <div className="gal-grid" style={{ paddingTop: 20 }}>
+          <Frame s={single} />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="gal">
+    <SheetView
+      byId={byId}
+      onBack={onBack}
+      timeChips={timeChips}
+      initialSheet={Number(params.get('sheet')) || 0}
+    />
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* 발표용 시트 보기 */
+
+type Sheet =
+  | { title: string; kind: 'row'; ids: string[] }
+  | { title: string; kind: 'checkin' };
+
+const SHEETS: Sheet[] = [
+  { title: '시작', kind: 'row', ids: ['intro', 'home', 'onboarding'] },
+  { title: '기법을 사용해 감정 관리하기', kind: 'checkin' },
+  { title: '오늘의 나를 기록하기', kind: 'row', ids: ['journal'] },
+  {
+    title: '메뉴',
+    kind: 'row',
+    ids: ['summary', 'review', 'calendar', 'coupons', 'settings'],
+  },
+  { title: '아바타 꾸미기', kind: 'row', ids: ['boutique', 'avatar-parts'] },
+];
+
+/** 반응 → 그 반응의 첫 기법 화면 (명세 5절) */
+const TECH_SCREEN: Record<TechniqueId, string> = {
+  slow_breathing: 'tech-breathing',
+  grounding: 'tech-grounding',
+  containment: 'tech-containment',
+  detachment: 'tech-detachment',
+  compassion: 'tech-compassion',
+  self_distancing: 'tech-distancing',
+};
+
+const ZOOMS = [1, 0.75, 0.5] as const;
+
+function SheetView({
+  byId,
+  onBack,
+  timeChips,
+  initialSheet,
+}: {
+  byId: Map<string, Screen>;
+  onBack: () => void;
+  timeChips: React.ReactNode;
+  initialSheet: number;
+}) {
+  const [sheet, setSheet] = useState(
+    Math.min(Math.max(0, initialSheet), SHEETS.length - 1),
+  );
+  const [zoom, setZoom] = useState<number>(0.75);
+  const current = SHEETS[sheet];
+
+  function pick(n: number) {
+    setSheet(n);
+    // 새로고침해도 같은 시트가 열리게 주소에 남긴다
+    const q = new URLSearchParams(window.location.search);
+    q.set('sheet', String(n));
+    window.history.replaceState(null, '', `?${q.toString()}`);
+    window.scrollTo(0, 0);
+  }
+
+  // 발표 중 키보드 ← → 로 시트를 넘긴다
+  const sheetRef = useRef(sheet);
+  sheetRef.current = sheet;
+  const pickRef = useRef(pick);
+  pickRef.current = pick;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+      const s = sheetRef.current;
+      if ((e.key === 'ArrowRight' || e.key === 'PageDown') && s < SHEETS.length - 1) {
+        pickRef.current(s + 1);
+      }
+      if ((e.key === 'ArrowLeft' || e.key === 'PageUp') && s > 0) {
+        pickRef.current(s - 1);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  return (
+    <div className="gal gal-sheets">
       <header className="gal-bar">
         <button className="gal-back" onClick={onBack}>
           앱으로 돌아가기
         </button>
         <span className="gal-title">
-          {shown.length === screens.length
-            ? `모든 화면 · ${screens.length}개`
-            : shown[0].label}
+          {sheet + 1}. {current.title}
         </span>
         <span className="gal-spacer" />
-        <button
-          className={`gal-chip${evening ? '' : ' is-on'}`}
-          onClick={() => go('time=9')}
-        >
-          낮
-        </button>
-        <button
-          className={`gal-chip${evening ? ' is-on' : ''}`}
-          onClick={() => go('time=18')}
-        >
-          저녁
-        </button>
+        <span className="gal-zoom-label">크기</span>
+        {ZOOMS.map((z) => (
+          <button
+            key={z}
+            className={`gal-chip${zoom === z ? ' is-on' : ''}`}
+            onClick={() => setZoom(z)}
+          >
+            {Math.round(z * 100)}%
+          </button>
+        ))}
+        {timeChips}
       </header>
 
-      <p className="gal-note">
-        실제 컴포넌트를 그대로 띄웁니다. 화면을 고치면 여기도 바로 반영돼요.
-        버튼을 눌러도 다른 화면으로 넘어가지 않습니다. 주간 요약·돌아보기·캘린더는
-        저장된 기록을 읽으므로, 비어 있으면{' '}
-        <code>sample-data.js</code> 를 콘솔에 붙여넣으세요.
-      </p>
+      <div className="gal-sheet-body" style={{ zoom }}>
+        <h1 className="gal-sheet-title">{current.title}</h1>
+        {current.kind === 'row' ? (
+          <div className="gal-row">
+            {current.ids.map((id) => {
+              const s = byId.get(id);
+              return s ? <Frame key={id} s={s} /> : null;
+            })}
+          </div>
+        ) : (
+          <CheckInFlowSheet byId={byId} />
+        )}
+      </div>
 
-      <div className="gal-grid">
-        {shown.map((s) => (
-          <section className="gal-item" key={s.id} id={s.id}>
-            <div className="gal-caption">
-              <b>{s.label}</b>
-              {s.spec ? <span>{s.spec}</span> : null}
-            </div>
-            <div className={`gal-frame${s.tall ? ' is-tall' : ''}`}>
-              <div className="gal-screen">{s.render()}</div>
-            </div>
-          </section>
+      {/* 엑셀처럼 아래에 시트 탭 */}
+      <nav className="gal-tabs" aria-label="시트">
+        {SHEETS.map((s, i) => (
+          <button
+            key={s.title}
+            className={`gal-tab${i === sheet ? ' is-on' : ''}`}
+            aria-current={i === sheet ? 'page' : undefined}
+            onClick={() => pick(i)}
+          >
+            {s.title}
+          </button>
         ))}
+        <span className="gal-tabs-hint">← → 키로 넘기기</span>
+      </nav>
+    </div>
+  );
+}
+
+/**
+ * 두 번째 시트 — 체크인 흐름.
+ * 반응 선택 → 하기 전 → (반응에 따라 달라지는) 기법 → 다시 평가하기 → 종결 의례 → 마무리 질문
+ * → 괜찮아요: 수고했어요 / 다른 기법 사용해보기: 다른 기법
+ */
+function CheckInFlowSheet({ byId }: { byId: Map<string, Screen> }) {
+  const [reaction, setReaction] = useState(REACTIONS[0].id);
+  const r = REACTIONS.find((x) => x.id === reaction) ?? REACTIONS[0];
+  const tech = byId.get(TECH_SCREEN[r.technique]);
+  const s = (id: string) => byId.get(id);
+
+  return (
+    <div className="gal-flow">
+      <Frame s={s('reaction')} />
+      <Arrow />
+      <Frame s={s('suds-pre')} />
+      <Arrow label={`${r.label} 선택`} />
+
+      <div className="gal-flow-tech">
+        {/* key 를 바꿔 기법 화면을 처음 단계부터 다시 띄운다 */}
+        {tech ? <Frame key={tech.id} s={tech} /> : null}
+        <div className="gal-flow-pick" role="group" aria-label="반응을 고르면 기법이 바뀌어요">
+          <span>반응 선택에 따라 기법이 달라져요 — 눌러서 바꿔 보기</span>
+          <div>
+            {REACTIONS.map((x) => (
+              <button
+                key={x.id}
+                className={`gal-chip${x.id === reaction ? ' is-on' : ''}`}
+                onClick={() => setReaction(x.id)}
+              >
+                {x.label} → {TECHNIQUE_LABELS[x.technique]}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <Arrow />
+      <Frame s={s('suds-post')} />
+      <Arrow />
+      <Frame s={s('closing')} />
+      <Arrow />
+      <Frame s={s('closing-ask')} />
+
+      <div className="gal-branch">
+        <div className="gal-branch-row">
+          <Arrow label="괜찮아요" />
+          <Frame s={s('closing-bye')} />
+        </div>
+        <div className="gal-branch-row">
+          <Arrow label="다른 기법 사용해보기" />
+          <Frame s={s('closing-more')} />
+        </div>
       </div>
     </div>
+  );
+}
+
+function Arrow({ label }: { label?: string }) {
+  return (
+    <div className="gal-arrow" aria-hidden={label ? undefined : true}>
+      {label ? <span>{label}</span> : null}
+      <svg viewBox="0 0 48 20" width="48" height="20">
+        <path d="M2 10 H40 M32 3 L42 10 L32 17" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
+  );
+}
+
+function Frame({ s }: { s?: Screen }) {
+  if (!s) return null;
+  return (
+    <section className="gal-item" id={s.id}>
+      <div className="gal-caption">
+        <b>{s.label}</b>
+        {s.spec ? <span>{s.spec}</span> : null}
+      </div>
+      <div className={`gal-frame${s.tall ? ' is-tall' : ''}`}>
+        <div className="gal-screen">{s.render()}</div>
+      </div>
+    </section>
   );
 }

@@ -146,3 +146,163 @@
 .gal-screen .drawer-backdrop {
   position: absolute;
 }
+
+/* --- 발표용 시트 보기 (?screens=1) --- */
+
+.gal-sheets {
+  padding-bottom: 90px; /* 아래 시트 탭 자리 */
+}
+
+.gal-zoom-label {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.gal-sheet-body {
+  padding: 22px 28px 40px;
+}
+
+.gal-sheet-title {
+  margin: 0 0 22px;
+  font-size: 1.75rem;
+  text-align: center;
+}
+
+/* 한 시트의 화면들 — 가로로 늘어놓고, 넘치면 줄을 바꾼다 */
+.gal-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* 체크인 흐름 — 한 줄로 이어지고 가로로 넘긴다 */
+.gal-flow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+}
+
+.gal-flow > .gal-item,
+.gal-flow-tech,
+.gal-branch {
+  flex: none;
+}
+
+/* 화살표는 화면 틀의 가운데 높이에 (설명 줄 ~28px + 틀 780px 의 절반) */
+.gal-arrow {
+  flex: none;
+  align-self: flex-start;
+  margin-top: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 64px;
+  color: var(--sign-bg);
+}
+
+.gal-arrow span {
+  max-width: 110px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.35;
+}
+
+/* 기법 자리 — 반응 고르기 칩 + 기법 화면 */
+.gal-flow-tech {
+  width: 390px;
+}
+
+.gal-flow-pick {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px dashed var(--btn-edge);
+}
+
+.gal-flow-pick > span {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.gal-flow-pick > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.gal-flow-pick .gal-chip {
+  min-height: 32px;
+  padding: 5px 10px;
+  font-size: 0.75rem;
+}
+
+/* 마무리 질문 뒤 두 갈래 — 위아래로 */
+.gal-branch {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.gal-branch-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* 엑셀처럼 화면 아래에 붙은 시트 탭 */
+.gal-tabs {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 0 16px 8px;
+  background: var(--surface-alt);
+  border-top: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.gal-tab {
+  flex: none;
+  padding: 12px 20px;
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  background: var(--surface-alt);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.gal-tab.is-on {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  box-shadow: inset 0 3px 0 var(--sign-bg);
+}
+
+.gal-tabs-hint {
+  align-self: center;
+  margin-left: auto;
+  padding-left: 16px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
