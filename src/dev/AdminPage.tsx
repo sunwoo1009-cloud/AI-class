@@ -341,7 +341,20 @@ function AdminData({ demo = false }: { demo?: boolean }) {
       </div>
       {note ? <p className="admin-warn">{note}</p> : null}
       {open === 'pre' && feedback.length === 0 ? (
-        <p className="muted">아직 받은 피드백이 없어요.</p>
+        // 숫자는 있는데 목록이 비면 — 서버의 '운영자 읽기' 규칙이 아직 없는 것
+        (stats?.feedback ?? 0) > 0 && !demo ? (
+          <p className="admin-warn">
+            피드백이 {stats?.feedback}개 있는데 내용을 읽을 권한이 없어요. Supabase SQL Editor 에서
+            ‘운영자 읽기’ 규칙(feedback 비공개 SQL)을 실행해 주세요.
+          </p>
+        ) : (
+          <p className="muted">아직 받은 피드백이 없어요.</p>
+        )
+      ) : null}
+      {open === 'post' && !reviewsError && reviews.length === 0 && (stats?.reviews ?? 0) > 0 && !demo ? (
+        <p className="admin-warn">
+          리뷰가 {stats?.reviews}개 있는데 내용을 읽을 권한이 없어요. reviews.sql 을 다시 실행해 주세요.
+        </p>
       ) : null}
 
       {/* 출시 후 리뷰 목록 */}
