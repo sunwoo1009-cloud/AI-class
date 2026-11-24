@@ -1,3 +1,5 @@
+import { sanitizeCloset, stampBalance } from '../lib/boutique';
+import type { Closet } from '../lib/boutique';
 import type {
   CheckIn,
   JournalEntry,
@@ -22,6 +24,7 @@ export const KEYS = {
   introSeen: `${PREFIX}introSeenDate`,
   stamps: `${PREFIX}stampTotal`,
   lastExport: `${PREFIX}lastExportAt`,
+  closet: `${PREFIX}closet`,
 } as const;
 
 /**
@@ -138,6 +141,22 @@ export function addStamp(): number {
   const next = loadStampTotal() + 1;
   write(KEYS.stamps, next);
   return next;
+}
+
+// --- 부티크 옷장 (명세 8.8) ---
+
+/** 산 아이템·입은 모습·쓴 도장 수 */
+export function loadCloset(): Closet {
+  return sanitizeCloset(read<unknown>(KEYS.closet, null));
+}
+
+export function saveCloset(closet: Closet): void {
+  write(KEYS.closet, closet);
+}
+
+/** 쓸 수 있는 도장 = 모은 도장 − 부티크에서 쓴 도장 */
+export function loadStampBalance(): number {
+  return stampBalance(loadStampTotal(), loadCloset());
 }
 
 /** 가져오기로 도장 수를 옮길 때 쓴다 */

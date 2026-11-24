@@ -5,6 +5,8 @@ import { ClosingMore, ClosingRitual } from '../screens/ClosingRitual';
 import { Home } from '../screens/Home';
 import { Journal } from '../screens/Journal';
 import { CouponBook } from '../screens/CouponBook';
+import { Boutique } from '../screens/Boutique';
+import { AvatarParts } from './AvatarParts';
 import { ExternalResource, SafetyNotice } from '../screens/Notices';
 import { OfferExtra } from '../screens/OfferExtra';
 import { Onboarding } from '../screens/Onboarding';
@@ -73,6 +75,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           onOpenReview={noop}
           onOpenCalendar={noop}
           onOpenCoupons={noop}
+          onOpenBoutique={noop}
           onOpenSettings={noop}
         />
       ),
@@ -279,6 +282,20 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       spec: '8.7',
       tall: true,
       render: () => <CouponBook onBack={noop} />,
+    },
+    {
+      id: 'boutique',
+      label: '부티크 — 직장인 꾸미기',
+      spec: '8.8',
+      tall: true,
+      render: () => <Boutique onBack={noop} />,
+    },
+    {
+      id: 'avatar-parts',
+      label: '아바타 — 아이템 확인용',
+      spec: '8.8',
+      tall: true,
+      render: () => <AvatarParts />,
     },
     {
       id: 'settings',

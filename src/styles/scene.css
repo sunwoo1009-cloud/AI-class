@@ -271,6 +271,34 @@
   height: auto;
 }
 
+/* 꾸민 직장인(앞모습) — 옆모습 실루엣보다 조금 넓게 */
+.intro-avatar {
+  width: 104px;
+}
+
+/* 앞모습 제자리 걷기 — 몸이 살짝 오르내리고 왼발·오른발을 번갈아 든다 (2프레임) */
+.avatar.walk {
+  animation: walker-bob 0.9s steps(1, end) infinite;
+}
+
+.avatar-leg-l.walk,
+.avatar-leg-r.walk {
+  animation: avatar-step 0.9s steps(1, end) infinite;
+}
+
+.avatar-leg-r.walk {
+  animation-delay: -0.45s;
+}
+
+@keyframes avatar-step {
+  0% {
+    transform: translateY(-4px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+}
+
 /* 걷기 — 2프레임. 벌린 자세와 모은 자세를 딱딱 바꾼다 */
 .walker-frame-a.walk,
 .walker-frame-b.walk {
@@ -383,7 +411,10 @@
   .walker-bob.walk,
   .walker-frame-a.walk,
   .walker-frame-b.walk,
-  .walker-scarf.walk {
+  .walker-scarf.walk,
+  .avatar.walk,
+  .avatar-leg-l.walk,
+  .avatar-leg-r.walk {
     animation: none;
   }
   /* 애니메이션을 끄면 두 프레임이 겹치므로 한 장만 남긴다 */

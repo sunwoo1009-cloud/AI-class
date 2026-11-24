@@ -2,7 +2,8 @@ import { useRef, useState } from 'react';
 import { Cityscape } from './Cityscape';
 import { Steam } from './Steam';
 import { StreetLamp } from './StreetLamp';
-import { Walker } from './Walker';
+import { AvatarSvg } from '../avatar/Avatar';
+import { loadCloset } from '../storage/store';
 
 interface Props {
   /** 전환이 끝나면 호출된다 */
@@ -21,6 +22,7 @@ const FADE_MS = 420;
  */
 export function IntroScene({ onDone }: Props) {
   const [leaving, setLeaving] = useState(false);
+  const [equipped] = useState(() => loadCloset().equipped);
   const doneRef = useRef(false);
 
   function leave() {
@@ -60,11 +62,10 @@ export function IntroScene({ onDone }: Props) {
         </svg>
       </div>
 
-      {/* 걸어가는 사람 */}
-      <div className="intro-walker" aria-hidden="true">
-        <svg viewBox="0 0 64 118">
-          <Walker />
-        </svg>
+      {/* 걸어가는 사람 — 부티크에서 꾸민 모습 그대로 (명세 8.8).
+          아무것도 안 꾸몄으면 실루엣이다. 제자리에서 다리를 번갈아 든다. */}
+      <div className="intro-walker intro-avatar" aria-hidden="true">
+        <AvatarSvg equipped={equipped} silhouette="var(--figure)" walking />
       </div>
 
       {/* 오른쪽 끝 — 노점이 가깝다는 암시 */}

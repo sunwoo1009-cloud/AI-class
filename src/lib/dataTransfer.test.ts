@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildExport, parseImport } from './dataTransfer';
 import type { Snapshot } from './dataTransfer';
+import { emptyCloset } from './boutique';
 import type { CheckIn, JournalEntry } from '../types';
 
 const empty: Snapshot = {
@@ -9,6 +10,7 @@ const empty: Snapshot = {
   weeklySessions: [],
   journal: [],
   stampTotal: 0,
+  closet: emptyCloset(),
 };
 
 const checkIn = (id: string, sudsPre = 5): CheckIn => ({
@@ -36,6 +38,11 @@ const full: Snapshot = {
   weeklySessions: [{ weekStart: '2026-10-19', sessions: 20 }],
   journal: [entry('2026-10-20')],
   stampTotal: 13,
+  closet: {
+    spent: 3,
+    owned: ['skin-2', 'top-hoodie'],
+    equipped: { skin: 'skin-2', top: 'top-hoodie' },
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -135,6 +142,22 @@ describe('쿠폰 도장 수 옮기기', () => {
     const bad = JSON.stringify({ checkIns: [], stampTotal: -3 });
     const r2 = parseImport(bad, { ...empty, stampTotal: 4 });
     if (r2.ok) expect(r2.merged.stampTotal).toBe(4);
+  });
+});
+
+describe('부티크 옷장 옮기기', () => {
+  it('내보내기에 옷장이 들어가고, 빈 기기로 그대로 온다', () => {
+    const r = parseImport(buildExport(full, false), empty);
+    if (!r.ok) throw new Error('실패');
+    expect(r.merged.closet.owned).toEqual(['skin-2', 'top-hoodie']);
+    expect(r.merged.closet.equipped.top).toBe('top-hoodie');
+    expect(r.merged.closet.spent).toBe(3);
+  });
+
+  it('옷장이 없는 옛 파일은 기기 옷장을 그대로 둔다', () => {
+    const device = { ...empty, closet: full.closet };
+    const r = parseImport(JSON.stringify({ checkIns: [] }), device);
+    if (r.ok) expect(r.merged.closet).toEqual(full.closet);
   });
 });
 

@@ -3,7 +3,7 @@ import type { CSSProperties, KeyboardEvent } from 'react';
 import { TECHNIQUE_LABELS } from '../constants';
 import { couponView, STAMPS_PER_CARD } from '../lib/coupon';
 import type { CouponView } from '../lib/coupon';
-import { addStamp, loadStampTotal } from '../storage/store';
+import { addStamp, loadStampBalance } from '../storage/store';
 import { TAIYAKI_BODY, TAIYAKI_TAIL } from './menu/FoodIcon';
 import type { TechniqueId } from '../types';
 
@@ -28,7 +28,8 @@ export function ClosingRitual({ onReady, onMore, initialPhase = 'breath' }: Prop
   const rafRef = useRef<number | null>(null);
 
   // 화면에 들어올 때의 도장 수를 붙잡아 둔다. 화면이 바뀌어도 흔들리지 않는다.
-  const [base] = useState(() => loadStampTotal());
+  // 부티크에서 쓴 만큼 뺀 '쓸 수 있는 도장'을 보여준다 (명세 8.8).
+  const [base] = useState(() => loadStampBalance());
   const savedRef = useRef(false);
   const stamped = phase === 'closed' || phase === 'ask' || phase === 'bye';
   const view = couponView(base, stamped);

@@ -1,4 +1,6 @@
 import { REACTIONS } from '../constants';
+import { mergeCloset, sanitizeCloset } from './boutique';
+import type { Closet } from './boutique';
 import { SCHEMA_VERSION } from '../storage/store';
 import type {
   CheckIn,
@@ -16,6 +18,8 @@ export interface Snapshot {
   journal: JournalEntry[];
   /** 쿠폰 도장 수 (명세 8.7). 기기를 바꿔도 0부터 다시 시작하지 않게 함께 옮긴다. */
   stampTotal: number;
+  /** 부티크 옷장 (명세 8.8) — 산 아이템·입은 모습·쓴 도장 */
+  closet: Closet;
 }
 
 export type ImportOutcome =
@@ -48,6 +52,7 @@ export function buildExport(snap: Snapshot, includeJournal: boolean): string {
     checkIns: snap.checkIns,
     weeklySessions: snap.weeklySessions,
     stampTotal: snap.stampTotal,
+    closet: snap.closet,
   };
   if (includeJournal) payload.journal = snap.journal;
   return JSON.stringify(payload, null, 2);
@@ -159,7 +164,7 @@ export function parseImport(raw: string, current: Snapshot): ImportOutcome {
     return { ok: false, reason: 'JSON 파일이 아니에요.' };
   }
 
-  const known = ['checkIns', 'journal', 'weeklySessions', 'settings', 'stampTotal'];
+  const known = ['checkIns', 'journal', 'weeklySessions', 'settings', 'stampTotal', 'closet'];
   if (!known.some((k) => k in parsed)) {
     return {
       ok: false,
@@ -234,6 +239,11 @@ export function parseImport(raw: string, current: Snapshot): ImportOutcome {
     merged: {
       settings,
       stampTotal: Math.max(current.stampTotal, incomingStamps),
+      // 옷장이 없는 옛 파일이면 기기 것을 그대로 둔다
+      closet:
+        'closet' in parsed
+          ? mergeCloset(current.closet, sanitizeCloset(parsed.closet))
+          : current.closet,
       checkIns: [...current.checkIns, ...newCheckIns],
       journal: [...current.journal, ...newJournal].sort((a, b) =>
         a.date < b.date ? 1 : -1,

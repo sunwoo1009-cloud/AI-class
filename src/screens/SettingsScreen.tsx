@@ -5,6 +5,8 @@ import type { Snapshot } from '../lib/dataTransfer';
 import {
   clearAllData,
   loadCheckIns,
+  loadCloset,
+  saveCloset,
   loadJournal,
   loadLastExportAt,
   loadSettings,
@@ -44,6 +46,7 @@ function snapshot(): Snapshot {
     weeklySessions: loadWeeklySessions(),
     journal: loadJournal(),
     stampTotal: loadStampTotal(),
+    closet: loadCloset(),
   };
 }
 
@@ -105,6 +108,7 @@ export function SettingsScreen({
     saveJournal(merged.journal);
     writeWeeklySessions(merged.weeklySessions);
     saveStampTotal(merged.stampTotal);
+    saveCloset(merged.closet);
     if (merged.settings) {
       saveSettings(merged.settings);
       onChangeSettings(merged.settings);
@@ -231,7 +235,7 @@ export function SettingsScreen({
 
       <h2 style={{ marginTop: 22 }}>모든 데이터 삭제</h2>
       <p className="muted">
-        체크인, 일기, 회기 수, 쿠폰 도장, 표시 이름을 모두 지워요. 되돌릴 수 없어요. 기관
+        체크인, 일기, 회기 수, 쿠폰 도장, 꾸민 직장인, 표시 이름을 모두 지워요. 되돌릴 수 없어요. 기관
         공용 기기에서 쓰셨다면 나가기 전에 지우세요.
       </p>
       {confirmingReset ? (

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { couponView, STAMPS_PER_CARD } from '../lib/coupon';
-import { loadStampTotal } from '../storage/store';
+import { loadStampBalance } from '../storage/store';
 import { TAIYAKI_BODY, TAIYAKI_TAIL } from './menu/FoodIcon';
 
 interface Props {
@@ -14,7 +14,8 @@ interface Props {
  * 8.7 원칙대로 **목표·남은 칸·연속 기록은 보여주지 않는다** — 모은 것만 보여준다.
  */
 export function CouponBook({ onBack }: Props) {
-  const view = useMemo(() => couponView(loadStampTotal()), []);
+  // 부티크에서 쓴 도장은 빠진다 (명세 8.8)
+  const view = useMemo(() => couponView(loadStampBalance()), []);
 
   return (
     <div className="app app-paper">
@@ -26,10 +27,14 @@ export function CouponBook({ onBack }: Props) {
       </div>
 
       <h1>모은 붕어빵 쿠폰</h1>
-      <p className="muted">마무리를 한 번 마칠 때마다 도장이 하나 찍혀요</p>
+      <p className="muted">
+        마무리를 한 번 마칠 때마다 도장이 하나 찍혀요
+        <br />
+        도장으로 메뉴의 부티크에서 직장인을 꾸밀 수 있어요
+      </p>
 
       <p className="coupon-count" style={{ margin: '4px 0 16px' }}>
-        도장 {view.total}개 · 다 채운 쿠폰 {view.cards}장
+        쓸 수 있는 도장 {view.total}개 · 다 채운 쿠폰 {view.cards}장
       </p>
 
       <h2>지금 쿠폰</h2>
