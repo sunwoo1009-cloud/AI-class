@@ -24,7 +24,7 @@ export function SudsSlider({ mode, onSubmit }: Props) {
     <div className="app">
       <div className="topbar">
         <span className="topbar-title">
-          {mode === 'pre' ? '개입 전' : '다시 평정'}
+          {mode === 'pre' ? '하기 전' : '다시 평가하기'}
         </span>
       </div>
 

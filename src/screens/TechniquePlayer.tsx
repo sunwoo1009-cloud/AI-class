@@ -69,7 +69,9 @@ export function TechniquePlayer({
   return (
     <div className="app">
       <div className="topbar">
-        <span className="topbar-title">{TECHNIQUE_LABELS[technique]}</span>
+        <span className="topbar-title topbar-title-strong">
+          {TECHNIQUE_LABELS[technique]}
+        </span>
         <button className="btn-quiet" onClick={onDone}>
           그만하기
         </button>
@@ -135,11 +137,22 @@ export function TechniquePlayer({
         ) : null}
       </div>
 
-      {step.kind !== 'choice' ? (
-        <button className="btn" style={{ textAlign: 'center' }} onClick={advance}>
-          다음
+      {/* 이전은 대본 안에서 한 칸 뒤로. 첫 칸에서는 돌아갈 곳이 없다.
+          선택 화면은 고르는 것이 '다음'이라 이전만 둔다. */}
+      <div className="btn-row step-nav">
+        <button
+          className="btn step-prev"
+          onClick={() => setIndex((i) => i - 1)}
+          disabled={index === 0}
+        >
+          이전
         </button>
-      ) : null}
+        {step.kind !== 'choice' ? (
+          <button className="btn btn-primary step-next" onClick={advance}>
+            다음
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }

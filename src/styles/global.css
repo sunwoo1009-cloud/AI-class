@@ -104,55 +104,77 @@ button {
   color: inherit;
 }
 
+/* 말랑한 입체 버튼.
+   아래 받침(4px)이 두께를 만들고, 안쪽 위는 밝게·아래는 살짝 어둡게 해서
+   가운데가 부푼 것처럼 보인다. 누르면 받침만큼 내려앉는다. */
 .btn {
   display: block;
   width: 100%;
   padding: 16px 18px;
-  border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
+  margin-bottom: 4px; /* 받침 그림자 자리 */
+  border-radius: 20px;
+  background: var(--btn-bg);
+  border: 1.5px solid var(--btn-edge);
+  color: var(--btn-text);
   text-align: left;
   font-size: 1rem;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  box-shadow:
+    0 4px 0 var(--btn-ledge),
+    inset 0 2px 0 var(--btn-glow),
+    inset 0 -4px 8px var(--btn-sink);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn:active {
-  background: var(--surface-alt);
+  background: var(--btn-press);
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 var(--btn-ledge),
+    inset 0 2px 0 var(--btn-glow),
+    inset 0 -2px 6px var(--btn-sink);
 }
 
-.btn:disabled {
+/* 못 누르는 버튼은 납작하게 — 받침도 빛도 없이 점선만 */
+.btn:disabled,
+.btn:disabled:active {
   color: var(--text-muted);
   background: transparent;
+  border-color: var(--border);
   border-style: dashed;
+  box-shadow: none;
+  transform: none;
   cursor: default;
-  opacity: 0.6;
-}
-
-.btn:disabled:active {
-  background: transparent;
+  opacity: 0.7;
 }
 
 .btn + .btn {
   margin-top: 10px;
 }
 
+/* 지금 누를 주 버튼만 버터 옐로우. 못 누를 땐 위의 납작한 모양으로 돌아간다. */
 .btn-primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-text);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
   text-align: center;
-  font-weight: 600;
+  font-weight: 650;
   padding: 18px;
+  box-shadow:
+    0 4px 0 var(--btn-primary-ledge),
+    inset 0 2px 0 var(--btn-glow),
+    inset 0 -4px 8px var(--btn-primary-sink);
 }
 
 .btn-primary:active {
-  background: var(--accent);
-  filter: brightness(0.94);
-}
-
-.btn-primary:disabled {
-  opacity: 0.4;
+  background: var(--btn-primary-bg);
+  filter: brightness(0.97);
+  box-shadow:
+    0 1px 0 var(--btn-primary-ledge),
+    inset 0 2px 0 var(--btn-glow),
+    inset 0 -2px 6px var(--btn-primary-sink);
 }
 
 .btn-quiet {
@@ -173,6 +195,16 @@ button {
 
 .btn-row > .btn {
   margin-top: 0;
+}
+
+/* 기법 화면 아래 — 이전은 좁게, 다음은 넓게 */
+.step-nav > .step-prev {
+  flex: 1;
+  text-align: center;
+}
+
+.step-nav > .step-next {
+  flex: 2;
 }
 
 /* --- 선택 토글 (반응 선택) --- */
@@ -423,6 +455,13 @@ button {
 .topbar-title {
   font-size: 0.875rem;
   color: var(--text-muted);
+}
+
+/* 기법 화면 — 지금 하는 기법 이름을 또렷하게 */
+.topbar-title-strong {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
 }
 
 /* --- 기법 화면 --- */
@@ -1116,8 +1155,6 @@ input[type='range'] {
 }
 
 .btn-danger {
-  background: var(--surface);
-  border-color: var(--border);
   color: #a8443a;
   text-align: center;
   font-weight: 600;

@@ -27,6 +27,20 @@
   --sign-text: #fff7e8;
   --stamp-ink: #b2452f;
 
+  /* 버튼 — 기본은 아이보리 + 갈색 테두리, 지금 누를 주 버튼만 버터 옐로우.
+     아래 받침(ledge)과 안쪽 빛으로 말랑하게 부푼 느낌을 낸다. */
+  --btn-bg: #fffaf0;
+  --btn-edge: #9a7a55;
+  --btn-text: #33302a;
+  --btn-ledge: #d6c09c;
+  --btn-glow: rgba(255, 255, 255, 0.95);
+  --btn-sink: rgba(140, 105, 60, 0.1);
+  --btn-press: #f6eddc;
+  --btn-primary-bg: #f8e08e;
+  --btn-primary-text: #3b2c17;
+  --btn-primary-ledge: #d3b660;
+  --btn-primary-sink: rgba(170, 125, 30, 0.16);
+
   --radius: 14px;
   --radius-lg: 20px;
   --gutter: 20px;
@@ -60,6 +74,18 @@
     --sign-edge: #6f5435;
     --sign-text: #f3e7d4;
     --stamp-ink: #cf6a54;
+
+    --btn-bg: #312b24;
+    --btn-edge: #9c8263;
+    --btn-text: #ece6dc;
+    --btn-ledge: #14120f;
+    --btn-glow: rgba(255, 255, 255, 0.07);
+    --btn-sink: rgba(0, 0, 0, 0.18);
+    --btn-press: #2a251f;
+    --btn-primary-bg: #e6cb72;
+    --btn-primary-text: #2a2112;
+    --btn-primary-ledge: #7d6830;
+    --btn-primary-sink: rgba(110, 80, 10, 0.2);
   }
 }
 
@@ -86,4 +112,16 @@
   --sign-edge: #6f5435;
   --sign-text: #f3e7d4;
   --stamp-ink: #cf6a54;
+
+  --btn-bg: #312b24;
+  --btn-edge: #9c8263;
+  --btn-text: #ece6dc;
+  --btn-ledge: #14120f;
+  --btn-glow: rgba(255, 255, 255, 0.07);
+  --btn-sink: rgba(0, 0, 0, 0.18);
+  --btn-press: #2a251f;
+  --btn-primary-bg: #e6cb72;
+  --btn-primary-text: #2a2112;
+  --btn-primary-ledge: #7d6830;
+  --btn-primary-sink: rgba(110, 80, 10, 0.2);
 }

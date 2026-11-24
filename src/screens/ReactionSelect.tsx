@@ -41,7 +41,9 @@ export function ReactionSelect({ onSubmit, onCancel }: Props) {
 
       <h1 className="h1-oneline">지금 남아 있는 반응에 이름을 붙여보세요</h1>
       <p className="muted">
-        한 개 또는 두 개를 고르세요. 먼저 고른 것이 주 반응이에요.
+        한 개 또는 두 개를 고르세요
+        <br />
+        먼저 고른 것이 주 반응이에요
       </p>
 
       <div className="menu-board">
