@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Calendar } from './screens/Calendar';
 import { CheckInFlow } from './screens/CheckInFlow';
 import { CouponBook } from './screens/CouponBook';
+import { JoinScreen } from './screens/JoinScreen';
 import { Boutique } from './screens/Boutique';
 import { Home } from './screens/Home';
 import { Journal } from './screens/Journal';
@@ -49,6 +50,8 @@ function AppMain() {
   const [loaded, setLoaded] = useState(false);
   const [view, setView] = useState<View>('home');
   const [showIntro, setShowIntro] = useState(false);
+  /** 온보딩을 방금 마쳤으면 선택 가입 화면을 한 번 보여준다 */
+  const [joining, setJoining] = useState(false);
 
   useEffect(() => {
     ensureSchemaVersion();
@@ -106,6 +109,20 @@ function AppMain() {
           };
           saveSettings(next);
           setSettings(next);
+          // 온보딩 다음에는 선택 가입 화면 (명세 7.7)
+          setJoining(true);
+        }}
+      />
+    );
+  }
+
+  if (joining) {
+    return (
+      <JoinScreen
+        onDone={() => {
+          // 가입했으면 닉네임이 설정에 들어와 있다
+          setSettings(loadSettings());
+          setJoining(false);
         }}
       />
     );

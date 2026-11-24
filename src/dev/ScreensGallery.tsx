@@ -12,6 +12,7 @@ import { AboutSheet, FeedbackSheet } from './PresentSheets';
 import { ExternalResource, SafetyNotice } from '../screens/Notices';
 import { OfferExtra } from '../screens/OfferExtra';
 import { Onboarding } from '../screens/Onboarding';
+import { JoinScreen } from '../screens/JoinScreen';
 import { ReactionSelect } from '../screens/ReactionSelect';
 import { Review } from '../screens/Review';
 import { SettingsScreen } from '../screens/SettingsScreen';
@@ -90,6 +91,13 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       label: '온보딩',
       spec: '9절 화면 1',
       render: () => <Onboarding onDone={noop} />,
+    },
+    {
+      id: 'join',
+      label: '선택 가입',
+      spec: '7.7',
+      tall: true,
+      render: () => <JoinScreen onDone={noop} />,
     },
     {
       id: 'reaction',
@@ -360,7 +368,8 @@ type Sheet =
 
 const SHEETS: Sheet[] = [
   { title: '앱 설명', kind: 'about' },
-  { title: '시작', kind: 'row', ids: ['intro', 'home', 'onboarding'] },
+  // 처음 여는 순서대로: 온보딩 → 선택 가입 → (다음부터 열 때마다) 인트로 → 홈
+  { title: '시작', kind: 'row', ids: ['onboarding', 'join', 'intro', 'home'] },
   { title: '기법을 사용해 감정 관리하기', kind: 'checkin' },
   { title: '오늘의 나를 기록하기', kind: 'row', ids: ['journal'] },
   {

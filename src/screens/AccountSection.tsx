@@ -47,17 +47,10 @@ function Notice() {
 export function AccountSection({ onChangeSettings, onReset }: Props) {
   const [account, setAccount] = useState<Account | null>(null);
   const [loading, setLoading] = useState(accountsAvailable);
-  const [mode, setMode] = useState<Mode>('intro');
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const [prefs, setPrefs] = useState(loadSyncPrefs);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-
-  // 입력 칸
-  const [nickname, setNickname] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [agreed, setAgreed] = useState(false);
 
   useEffect(() => {
     if (!accountsAvailable) return;
@@ -73,7 +66,6 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
     setPrefs(loadSyncPrefs());
     const s = loadSettings();
     if (s) onChangeSettings(s);
-    setPassword('');
     startAutoSync();
   }
 
@@ -183,7 +175,6 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
               void run(async () => {
                 await signOut();
                 setAccount(null);
-                setMode('intro');
                 setNote('로그아웃했어요. 이 기기의 기록은 그대로예요');
               })
             }
@@ -215,7 +206,6 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
                   if (!r.ok) return setNote(r.reason);
                   setConfirmingDelete(false);
                   setAccount(null);
-                  setMode('intro');
                   setNote('계정과 서버 기록을 지웠어요. 이 기기의 기록은 남겨 두었어요');
                 })
               }
@@ -258,7 +248,56 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
         가입하지 않아도 모든 기능을 쓸 수 있어요. 가입하면 기록을 서버에 백업하고 다른
         기기에서도 이어서 쓸 수 있어요. 서버에 맡기기 싫으면 지금처럼 기기에만 저장하세요.
       </p>
+      <AuthForm
+        onSignedIn={async (message) => {
+          await afterLogin();
+          setNote(message);
+        }}
+      />
+      {note ? <p className="account-note">{note}</p> : null}
+    </section>
+  );
+}
 
+/**
+ * 가입·로그인 칸. 설정(AccountSection)과 온보딩 다음 가입 화면(JoinScreen)이 함께 쓴다.
+ * - initialMode: 처음 보여줄 칸 (intro = '로그인'·'가입하기' 버튼 두 개)
+ * - allowCancel: 칸 아래 '그만두기'를 둘지. 가입 화면에는 따로 '가입하지 않고 시작하기'가 있다.
+ */
+export function AuthForm({
+  initialMode = 'intro',
+  allowCancel = true,
+  onSignedIn,
+}: {
+  initialMode?: Mode;
+  allowCancel?: boolean;
+  onSignedIn: (message: string) => void | Promise<void>;
+}) {
+  const [mode, setMode] = useState<Mode>(initialMode);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const [nickname, setNickname] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [agreed, setAgreed] = useState(false);
+
+  async function run(fn: () => Promise<void>) {
+    setBusy(true);
+    setNote(null);
+    try {
+      await fn();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function afterLogin(message: string) {
+    setPassword('');
+    await onSignedIn(message);
+  }
+
+  return (
+    <>
       {mode === 'intro' ? (
         <div className="btn-row">
           <button className="btn" style={{ textAlign: 'center' }} onClick={() => setMode('login')}>
@@ -291,8 +330,7 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
               if (mode === 'login') {
                 const r = await signIn(email, password);
                 if (!r.ok) return setNote(r.reason);
-                await afterLogin();
-                setNote('로그인했어요. 기록을 맞췄어요');
+                await afterLogin('로그인했어요. 기록을 맞췄어요');
                 return;
               }
               const r = await signUp(nickname, email, password);
@@ -301,8 +339,7 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
                 setMode('sent');
                 return;
               }
-              await afterLogin();
-              setNote('가입했어요. 기록을 백업했어요');
+              await afterLogin('가입했어요. 기록을 백업했어요');
             });
           }}
         >
@@ -361,17 +398,19 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
           ) : null}
 
           <div className="btn-row">
-            <button
-              type="button"
-              className="btn"
-              style={{ textAlign: 'center' }}
-              onClick={() => {
-                setMode('intro');
-                setNote(null);
-              }}
-            >
-              그만두기
-            </button>
+            {allowCancel ? (
+              <button
+                type="button"
+                className="btn"
+                style={{ textAlign: 'center' }}
+                onClick={() => {
+                  setMode('intro');
+                  setNote(null);
+                }}
+              >
+                그만두기
+              </button>
+            ) : null}
             <button
               type="submit"
               className="btn btn-primary"
@@ -384,11 +423,15 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
             <button type="button" className="btn-quiet" onClick={() => setMode('signup')}>
               아직 계정이 없어요 — 가입하기
             </button>
-          ) : null}
+          ) : (
+            <button type="button" className="btn-quiet" onClick={() => setMode('login')}>
+              이미 계정이 있어요 — 로그인
+            </button>
+          )}
         </form>
       ) : null}
 
       {note ? <p className="account-note">{note}</p> : null}
-    </section>
+    </>
   );
 }
