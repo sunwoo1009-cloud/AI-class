@@ -4,6 +4,7 @@ import { Calendar } from '../screens/Calendar';
 import { ClosingMore, ClosingRitual } from '../screens/ClosingRitual';
 import { Home } from '../screens/Home';
 import { Journal } from '../screens/Journal';
+import { CouponBook } from '../screens/CouponBook';
 import { ExternalResource, SafetyNotice } from '../screens/Notices';
 import { OfferExtra } from '../screens/OfferExtra';
 import { Onboarding } from '../screens/Onboarding';
@@ -71,6 +72,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           onOpenSummary={noop}
           onOpenReview={noop}
           onOpenCalendar={noop}
+          onOpenCoupons={noop}
           onOpenSettings={noop}
         />
       ),
@@ -270,6 +272,13 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       spec: '7.3',
       tall: true,
       render: () => <Journal onDone={noop} />,
+    },
+    {
+      id: 'coupons',
+      label: '붕어빵 쿠폰 모음',
+      spec: '8.7',
+      tall: true,
+      render: () => <CouponBook onBack={noop} />,
     },
     {
       id: 'settings',

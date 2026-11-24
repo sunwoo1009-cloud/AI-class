@@ -6,6 +6,7 @@ interface Props {
   onOpenSummary: () => void;
   onOpenReview: () => void;
   onOpenCalendar: () => void;
+  onOpenCoupons: () => void;
   onOpenSettings: () => void;
   /**
    * 주간 요약에 자원 제안 카드가 떠 있는가 (명세 7.2).
@@ -21,6 +22,7 @@ export function MenuDrawer({
   onOpenSummary,
   onOpenReview,
   onOpenCalendar,
+  onOpenCoupons,
   onOpenSettings,
   escalated = false,
 }: Props) {
@@ -43,6 +45,7 @@ export function MenuDrawer({
     { label: '주간 요약', sub: '지금 괜찮은가', onClick: onOpenSummary, dot: escalated },
     { label: '돌아보기', sub: '나아지고 있나', onClick: onOpenReview },
     { label: '캘린더', sub: '그날 뭘 했나', onClick: onOpenCalendar },
+    { label: '붕어빵 쿠폰', sub: '모은 도장', onClick: onOpenCoupons },
     { label: '설정', onClick: onOpenSettings },
   ];
 

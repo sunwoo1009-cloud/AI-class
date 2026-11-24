@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Calendar } from './screens/Calendar';
 import { CheckInFlow } from './screens/CheckInFlow';
+import { CouponBook } from './screens/CouponBook';
 import { Home } from './screens/Home';
 import { Journal } from './screens/Journal';
 import { Onboarding } from './screens/Onboarding';
@@ -26,6 +27,7 @@ type View =
   | 'review'
   | 'calendar'
   | 'journal'
+  | 'coupons'
   | 'settings';
 
 export function App() {
@@ -111,6 +113,8 @@ export function App() {
       return <Calendar onBack={home} />;
     case 'journal':
       return <Journal onDone={home} />;
+    case 'coupons':
+      return <CouponBook onBack={home} />;
     case 'settings':
       return (
         <SettingsScreen
@@ -131,6 +135,7 @@ export function App() {
           onOpenSummary={() => setView('summary')}
           onOpenReview={() => setView('review')}
           onOpenCalendar={() => setView('calendar')}
+          onOpenCoupons={() => setView('coupons')}
           onOpenJournal={() => setView('journal')}
           onOpenSettings={() => setView('settings')}
         />
