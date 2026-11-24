@@ -107,8 +107,7 @@ export function AdminDemoSheet() {
   return (
     <div className="admin-demo">
       <p className="pres-feedback-lead">
-        운영자만 쓰는 화면이에요. 실제 주소는 <code>?admin=1</code> 이고, 운영 현황은 운영자
-        계정으로 로그인해야 보여요.
+        운영자만 쓰는 화면이에요. 운영 현황은 운영자 계정으로 로그인해야 보여요.
       </p>
       <div className="admin-body admin-body-demo">
         <ScreenCheckCard />
