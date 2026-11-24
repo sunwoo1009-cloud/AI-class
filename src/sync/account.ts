@@ -166,6 +166,22 @@ export async function signOut(): Promise<void> {
   await sb.auth.signOut();
 }
 
+export const NICKNAME_MAX = 20;
+
+/** 로그인한 뒤 닉네임 바꾸기 — 계정 정보와 기기의 부를 이름을 함께 바꾼다 */
+export async function updateNickname(
+  nickname: string,
+): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const name = nickname.trim();
+  if (!name) return { ok: false, reason: '닉네임을 적어 주세요' };
+  if (name.length > NICKNAME_MAX) return { ok: false, reason: `${NICKNAME_MAX}자까지 적을 수 있어요` };
+  const sb = await client();
+  const { error } = await sb.auth.updateUser({ data: { nickname: name } });
+  if (error) return { ok: false, reason: friendlyError(error.message) };
+  adoptNickname(name);
+  return { ok: true };
+}
+
 /** 가입할 때 정한 닉네임을 자기 거리두기 기법에서 부를 이름으로 쓴다 */
 function adoptNickname(nickname: string): void {
   const name = nickname.trim();

@@ -1615,6 +1615,23 @@ input[type='range'] {
   color: var(--text-muted);
 }
 
+/* 닉네임 바꾸기 — 칸과 버튼을 한 줄에 */
+.account-inline-input {
+  flex: 1;
+  min-width: 0;
+  padding: 13px 15px;
+  border-radius: 14px;
+  border: 1.5px solid var(--btn-edge);
+  background: var(--btn-bg);
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.btn.account-inline-btn {
+  width: auto;
+  padding: 13px 18px;
+}
+
 .account-note {
   margin: 10px 0 0;
   font-size: 0.875rem;

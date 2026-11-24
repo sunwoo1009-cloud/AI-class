@@ -26,8 +26,11 @@ import type { Settings } from '../types';
 /** 모든 콜백을 받아 삼키는 빈 함수 */
 const noop = () => undefined;
 
+/** 발표 화면의 예시 닉네임 — 기법 화면에서 "슈붕파는 지금 화가 나 있다"처럼 보인다 */
+const EXAMPLE_NICKNAME = '슈붕파';
+
 const FALLBACK_SETTINGS: Settings = {
-  displayName: '선우',
+  displayName: EXAMPLE_NICKNAME,
   onboardedAt: new Date().toISOString(),
 };
 
@@ -59,7 +62,11 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
   // 기법 화면은 &step=N 으로 N번째 단계(0부터)를 바로 띄운다. 예: ?screens=tech-compassion&step=3
   const step = Number(new URLSearchParams(window.location.search).get('step')) || 0;
   const [settings, setSettings] = useState<Settings>(
-    () => loadSettings() ?? FALLBACK_SETTINGS,
+    // 닉네임이 없으면(가입 안 함) 발표 화면에서는 예시 닉네임을 쓴다
+    () => {
+      const s = loadSettings();
+      return s?.displayName ? s : FALLBACK_SETTINGS;
+    },
   );
 
   const screens: Screen[] = [
@@ -603,9 +610,9 @@ function Frame({ s }: { s?: Screen }) {
   if (!s) return null;
   return (
     <section className="gal-item" id={s.id}>
+      {/* 명세 절 번호(9절 화면 1, 7.7 등)는 발표에 필요 없어 보이지 않는다 — 코드에만 남긴다 */}
       <div className="gal-caption">
         <b>{s.label}</b>
-        {s.spec ? <span>{s.spec}</span> : null}
       </div>
       <div className={`gal-frame${s.tall ? ' is-tall' : ''}`}>
         <div className="gal-screen">{s.render()}</div>
