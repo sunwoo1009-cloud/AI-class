@@ -299,7 +299,7 @@ function AdminData({ demo = false }: { demo?: boolean }) {
         >
           <span>출시 전 피드백</span>
           <b>{stats?.feedback ?? '—'}</b>
-          <small>발표용 화면 · {open === 'pre' ? '접기 ▲' : '보기 ▼'}</small>
+          <small>발표 때 받은 글 · {open === 'pre' ? '접기 ▲' : '보기 ▼'}</small>
         </button>
         <button
           className={`admin-tile admin-tile-btn${open === 'post' ? ' is-open' : ''}`}
@@ -350,7 +350,9 @@ function AdminData({ demo = false }: { demo?: boolean }) {
       {open === 'post' && !reviewsError && reviews.length === 0 ? (
         <p className="muted">아직 받은 리뷰가 없어요.</p>
       ) : null}
-      <ul className="pres-feedback-list" hidden={open !== 'post'}>
+      {/* hidden 속성은 목록의 display:grid 에 덮여 안 먹는다 — 고른 목록만 그린다 */}
+      {open === 'post' ? (
+      <ul className="pres-feedback-list">
         {reviews.map((v) => (
           <li key={v.id} className="admin-feedback">
             <p className="admin-stars" aria-label={`${v.rating}점`}>
@@ -376,9 +378,11 @@ function AdminData({ demo = false }: { demo?: boolean }) {
           </li>
         ))}
       </ul>
+      ) : null}
 
-      {/* 출시 전 피드백 목록 */}
-      <ul className="pres-feedback-list" hidden={open !== 'pre'}>
+      {/* 출시 전 피드백 목록 — 발표 때 학생들이 보낸 글. 별점은 없다 */}
+      {open === 'pre' ? (
+      <ul className="pres-feedback-list">
         {feedback.map((f) => (
           <li key={f.id} className="admin-feedback">
             <p>{f.body}</p>
@@ -400,6 +404,7 @@ function AdminData({ demo = false }: { demo?: boolean }) {
           </li>
         ))}
       </ul>
+      ) : null}
     </>
   );
 }
