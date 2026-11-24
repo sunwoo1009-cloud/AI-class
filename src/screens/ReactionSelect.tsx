@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Lines } from '../components/Lines';
 import { REACTIONS, reactionInfo, won } from '../constants';
 import type { ReactionType } from '../types';
 import { FoodIcon } from './menu/FoodIcon';
@@ -39,7 +40,14 @@ export function ReactionSelect({ onSubmit, onCancel }: Props) {
         </button>
       </div>
 
-      <h1 className="h1-oneline">지금 남아 있는 반응에 이름을 붙여보세요</h1>
+      {/* 화면 폭이 아니라 칸 너비에 맞춰 한 줄로 줄인다 — 틀 안에서도 넘치지 않게 */}
+      <div className="lines-box">
+        <Lines
+          as="h1"
+          text="지금 남아 있는 반응에 이름을 붙여보세요"
+          base="1.35rem"
+        />
+      </div>
       <p className="muted">
         한 개 또는 두 개를 고르세요
         <br />

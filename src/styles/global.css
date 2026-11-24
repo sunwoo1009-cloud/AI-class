@@ -242,22 +242,31 @@ button {
 
 /* --- 노점 메뉴판 (반응 선택 화면) --- */
 
+/* 메뉴판은 칸들이 담긴 쟁반 — 바깥은 받침, 안쪽은 오목하게 */
 .menu-board {
   margin: 16px 0 14px;
-  padding: 14px 12px 16px;
-  border-radius: 12px;
+  padding: 16px 12px 18px;
+  border-radius: 22px;
   background: var(--board-bg);
-  border: 1px solid var(--board-edge);
+  border: 1.5px solid var(--board-edge);
+  box-shadow:
+    0 5px 0 var(--board-edge),
+    inset 0 3px 8px rgba(90, 65, 30, 0.14),
+    inset 0 -2px 0 rgba(255, 255, 255, 0.35);
 }
 
-/* 위쪽 나무 간판 */
+/* 위쪽 나무 간판 — 도톰한 나무 블록 */
 .menu-sign {
   width: fit-content;
-  margin: 0 auto 16px;
+  margin: 0 auto 18px;
   padding: 7px 26px;
-  border-radius: 8px;
+  border-radius: 14px;
   background: var(--sign-bg);
   border: 2px solid var(--sign-edge);
+  box-shadow:
+    0 4px 0 var(--sign-edge),
+    inset 0 2px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.14);
   color: var(--sign-text);
   font-family: 'Jua', inherit;
   font-size: 1.375rem;
@@ -281,12 +290,30 @@ button {
   justify-content: center;
   min-height: 168px;
   padding: 18px 8px 12px;
-  border-radius: 6px;
+  margin-bottom: 4px; /* 받침 자리 */
+  border-radius: 18px;
   background: var(--strip-bg);
-  border: 1px solid var(--strip-edge);
-  box-shadow: 0 1px 3px rgba(60, 45, 25, 0.18);
+  border: 1.5px solid var(--btn-edge);
+  /* 기본 버튼과 같은 말랑한 입체 — 받침 + 안쪽 빛 */
+  box-shadow:
+    0 4px 0 var(--btn-ledge),
+    inset 0 2px 0 var(--btn-glow),
+    inset 0 -5px 10px var(--btn-sink);
   color: var(--strip-text);
   text-align: center;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.menu-strip:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 var(--btn-ledge),
+    inset 0 2px 0 var(--btn-glow),
+    inset 0 -3px 8px var(--btn-sink);
 }
 
 .strip-icon {
@@ -320,22 +347,25 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
-/* 고른 띠 */
+/* 고른 띠 — 활성은 버터 옐로우. 눌린 채로 조금 내려앉아 있다. */
 .menu-strip[aria-pressed='true'] {
-  background: var(--accent-soft);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
-  color: var(--text);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  transform: translateY(2px);
+  box-shadow:
+    0 2px 0 var(--btn-primary-ledge),
+    inset 0 2px 0 var(--btn-glow),
+    inset 0 -5px 10px var(--btn-primary-sink);
 }
 
-/* 연한 초록 바탕에서는 muted 색이 어두운 모드에서 AA(4.5:1)에 못 미친다 */
+/* 노란 바탕에서는 흐린 글자 대신 본문색을 쓴다 */
 .menu-strip[aria-pressed='true'] .strip-item,
 .menu-strip[aria-pressed='true'] .strip-price {
-  color: var(--text);
+  color: var(--btn-primary-text);
 }
 
 .menu-strip[aria-pressed='true'] .strip-price {
-  border-top-color: var(--accent);
+  border-top-color: var(--btn-primary-ledge);
 }
 
 /* 몇 번째로 골랐는지 찍는 도장 */
@@ -346,8 +376,9 @@ button {
   transform: translateX(-50%);
   padding: 3px 10px;
   border-radius: 999px;
-  background: var(--accent);
-  color: var(--accent-text);
+  background: var(--sign-bg);
+  color: var(--sign-text);
+  box-shadow: 0 2px 0 var(--sign-edge);
   font-size: 0.6875rem;
   font-weight: 650;
   white-space: nowrap;
