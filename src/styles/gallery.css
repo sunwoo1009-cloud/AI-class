@@ -141,6 +141,152 @@
   height: 100%;
 }
 
+/* --- 앱 설명 시트 --- */
+
+.pres-about {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 56px;
+  max-width: 1000px;
+  margin: 10px auto 0;
+  padding: 36px 44px;
+  border-radius: 28px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  box-shadow: 0 6px 0 var(--btn-ledge);
+}
+
+.pres-about-art svg {
+  display: block;
+  width: 200px;
+  height: auto;
+}
+
+.pres-about-list {
+  margin: 0;
+  display: grid;
+  gap: 26px;
+}
+
+.pres-about-list dt {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--sign-bg);
+  color: var(--sign-text);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.pres-about-list dd {
+  margin: 0;
+  font-size: 1.375rem;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+.pres-about-name {
+  font-size: 2.25rem !important;
+  font-weight: 700;
+}
+
+/* --- 피드백 시트 --- */
+
+.pres-feedback {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.pres-feedback-lead {
+  text-align: center;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  margin-bottom: 18px;
+}
+
+.pres-feedback-off {
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1.5px dashed var(--btn-edge);
+  background: var(--warn-surface);
+  text-align: center;
+}
+
+.pres-feedback-form textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1.5px solid var(--btn-edge);
+  background: var(--btn-bg);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  resize: vertical;
+  box-shadow: inset 0 2px 6px rgba(140, 105, 60, 0.08);
+}
+
+.pres-feedback-form textarea:disabled {
+  opacity: 0.6;
+}
+
+.pres-feedback-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.pres-feedback-count {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.pres-feedback-note {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--sign-bg);
+}
+
+.btn.pres-feedback-send {
+  width: auto;
+  margin-left: auto;
+  padding: 12px 22px;
+}
+
+.pres-feedback-title {
+  margin: 28px 0 12px;
+  font-size: 1.25rem;
+}
+
+.pres-feedback-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.pres-feedback-list li {
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  box-shadow: 0 3px 0 var(--btn-ledge);
+}
+
+.pres-feedback-list p {
+  margin: 0 0 6px;
+  white-space: pre-wrap;
+  font-size: 1.0625rem;
+}
+
+.pres-feedback-list time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
 /* 발표 화면에서 앱으로 왔을 때만 뜨는 '발표 화면으로 돌아가기'.
    화면 위 가운데 — 홈 메뉴(왼쪽 위)·'그만하기'(오른쪽 위)·아래 버튼들과 겹치지 않는 자리 */
 .present-return {

@@ -35,7 +35,12 @@ jobs:
       - run: npx tsc -b
       - run: npx vitest run
 
+      # 발표용 '피드백' 시트의 Supabase 연결 정보. Secrets 가 비어 있으면
+      # 피드백 칸만 '아직 연결되지 않았어요'로 나오고 나머지는 그대로 빌드된다.
       - run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - uses: actions/configure-pages@v5
 

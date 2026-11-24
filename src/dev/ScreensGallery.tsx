@@ -8,6 +8,7 @@ import { Journal } from '../screens/Journal';
 import { CouponBook } from '../screens/CouponBook';
 import { Boutique } from '../screens/Boutique';
 import { AvatarParts } from './AvatarParts';
+import { AboutSheet, FeedbackSheet } from './PresentSheets';
 import { ExternalResource, SafetyNotice } from '../screens/Notices';
 import { OfferExtra } from '../screens/OfferExtra';
 import { Onboarding } from '../screens/Onboarding';
@@ -355,9 +356,10 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
 
 type Sheet =
   | { title: string; kind: 'row'; ids: string[] }
-  | { title: string; kind: 'checkin' };
+  | { title: string; kind: 'checkin' | 'about' | 'feedback' };
 
 const SHEETS: Sheet[] = [
+  { title: '앱 설명', kind: 'about' },
   { title: '시작', kind: 'row', ids: ['intro', 'home', 'onboarding'] },
   { title: '기법을 사용해 감정 관리하기', kind: 'checkin' },
   { title: '오늘의 나를 기록하기', kind: 'row', ids: ['journal'] },
@@ -367,6 +369,7 @@ const SHEETS: Sheet[] = [
     ids: ['summary', 'review', 'calendar', 'coupons', 'settings'],
   },
   { title: '아바타 꾸미기', kind: 'row', ids: ['boutique', 'avatar-parts'] },
+  { title: '피드백', kind: 'feedback' },
 ];
 
 /** 반응 → 그 반응의 첫 기법 화면 (명세 5절) */
@@ -490,8 +493,12 @@ function SheetView({
                 return s ? <Frame key={id} s={s} /> : null;
               })}
             </div>
-          ) : (
+          ) : current.kind === 'checkin' ? (
             <CheckInFlowSheet byId={byId} />
+          ) : current.kind === 'about' ? (
+            <AboutSheet />
+          ) : (
+            <FeedbackSheet />
           )}
         </div>
       </div>
