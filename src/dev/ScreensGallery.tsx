@@ -393,7 +393,7 @@ const SHEETS: Sheet[] = [
     ids: ['summary', 'review', 'calendar', 'coupons', 'rate', 'settings'],
   },
   { title: '아바타 꾸미기', kind: 'row', ids: ['boutique', 'avatar-parts'] },
-  { title: '운영자 화면', kind: 'admin' },
+  { title: '관리자 화면', kind: 'admin' },
   { title: '피드백', kind: 'feedback' },
 ];
 

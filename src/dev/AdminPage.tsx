@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { AvatarSvg, PREVIEW_VIEWBOX } from '../avatar/Avatar';
 import { AuthForm } from '../screens/AccountSection';
+import { JoinScreen } from '../screens/JoinScreen';
+import { Onboarding } from '../screens/Onboarding';
+import { IntroScene } from '../scenes/IntroScene';
 import { loadCloset } from '../storage/store';
 import { accountsAvailable, currentAccount, signOut } from '../sync/account';
 import type { Account } from '../sync/account';
@@ -71,7 +74,8 @@ const SCREEN_GROUPS: { title: string; items: [id: string, label: string][] }[] =
 
 const base = import.meta.env.BASE_URL;
 
-type Tab = 'screens' | 'ops';
+/** preview 는 발표용 시트에서만 쓴다 (실제 화면은 ?preview=start 로 이동) */
+type Tab = 'preview' | 'screens' | 'ops';
 type Gate = 'loading' | 'not-set-up' | 'not-signed-in' | 'not-admin' | 'admin';
 
 /**
@@ -187,15 +191,21 @@ function AdminShell({
         <b className="admin-brand">퇴근길 붕어빵 한 입</b>
 
         <nav className="admin-menu" aria-label="관리자 메뉴">
-          {/* 처음 쓰는 사람처럼 보기 — 누르면 바로 그 화면(온보딩)으로 간다 */}
-          <a
-            className="admin-menu-item"
-            href={`${base}?preview=start`}
-            target={demo ? '_blank' : undefined}
-            rel={demo ? 'noreferrer' : undefined}
-          >
-            처음 쓰는 사람처럼 보기
-          </a>
+          {/* 처음 쓰는 사람처럼 보기 — 실제 화면은 바로 온보딩으로 이동,
+              발표용 시트에서는 시트 안에서 화면이 바뀐다 */}
+          {demo ? (
+            <button
+              className={`admin-menu-item${tab === 'preview' ? ' is-on' : ''}`}
+              aria-current={tab === 'preview' ? 'page' : undefined}
+              onClick={() => pick('preview')}
+            >
+              처음 쓰는 사람처럼 보기
+            </button>
+          ) : (
+            <a className="admin-menu-item" href={`${base}?preview=start`}>
+              처음 쓰는 사람처럼 보기
+            </a>
+          )}
           <button
             className={`admin-menu-item${tab === 'screens' ? ' is-on' : ''}`}
             aria-current={tab === 'screens' ? 'page' : undefined}
@@ -238,6 +248,8 @@ function AdminShell({
       <main className="admin-body">
         <p className="admin-welcome">관리자님, 환영합니다.</p>
 
+        {tab === 'preview' ? <DemoPreview onDone={() => pick('ops')} /> : null}
+
         {tab === 'screens' ? <ScreenCheckCard /> : null}
 
         {tab === 'ops' ? (
@@ -256,6 +268,46 @@ function AdminShell({
 /** 발표용 예시의 프로필 모습 */
 const DEMO_LOOK = { skin: 'skin-1', hair: 'hair-wave', top: 'top-vest' };
 
+const PREVIEW_STEPS = [
+  ['onboarding', '온보딩'],
+  ['join', '선택 가입'],
+  ['intro', '인트로'],
+] as const;
+type PreviewStep = (typeof PREVIEW_STEPS)[number][0];
+
+/**
+ * 발표용 시트 안에서 '처음 쓰는 사람처럼 보기' — 새 탭 없이 휴대폰 틀 안에서
+ * 온보딩 → 선택 가입 → 인트로가 이어진다. 아무것도 저장하지 않는다.
+ */
+function DemoPreview({ onDone }: { onDone: () => void }) {
+  const [step, setStep] = useState<PreviewStep>('onboarding');
+  return (
+    <section className="admin-card admin-preview">
+      <div className="admin-preview-steps" aria-label="진행 단계">
+        {PREVIEW_STEPS.map(([id, label], i) => (
+          <button
+            key={id}
+            className={`admin-preview-step${step === id ? ' is-on' : ''}`}
+            onClick={() => setStep(id)}
+          >
+            {i + 1}. {label}
+          </button>
+        ))}
+      </div>
+      <p className="muted admin-small" style={{ textAlign: 'center' }}>
+        화면 속 버튼을 누르면 다음 단계로 넘어가요. 아무것도 저장되지 않아요.
+      </p>
+      <div className="gal-frame admin-preview-frame">
+        <div className="gal-screen">
+          {step === 'onboarding' ? <Onboarding onDone={() => setStep('join')} /> : null}
+          {step === 'join' ? <JoinScreen onDone={() => setStep('intro')} /> : null}
+          {step === 'intro' ? <IntroScene onDone={onDone} /> : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /**
  * 발표용 화면의 '운영자 화면' 시트 — 운영자 화면이 어떻게 생겼는지 보여준다.
  * 화면 점검은 실제와 같고, 운영 현황은 로그인 없이 **예시 숫자**로 보여준다.
@@ -264,7 +316,7 @@ export function AdminDemoSheet() {
   return (
     <div className="admin-demo">
       <p className="pres-feedback-lead">
-        운영자만 쓰는 화면이에요. 운영 현황은 운영자 계정으로 로그인해야 보여요.
+        관리자만 쓰는 화면이에요. 운영 현황은 관리자 계정으로 로그인해야 보여요.
       </p>
       <div className="admin-demo-frame">
         <AdminShell account={{ nickname: '관리자', email: 'admin@example.org' }} demo />

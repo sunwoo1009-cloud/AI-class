@@ -420,6 +420,38 @@
   font-weight: 700;
 }
 
+/* 발표용 시트 안의 '처음 쓰는 사람처럼 보기' — 휴대폰 틀 하나 */
+.admin-preview-steps {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.admin-preview-step {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.admin-preview-step.is-on {
+  border-color: var(--btn-edge);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-weight: 700;
+}
+
+.admin-preview-frame {
+  width: 390px;
+  max-width: 100%;
+  margin: 10px auto 0;
+}
+
 /* 발표용 시트 안에 관리자 화면 틀을 넣을 때 */
 .admin-demo-frame {
   border-radius: 20px;
