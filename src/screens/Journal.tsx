@@ -84,16 +84,14 @@ export function Journal({ onDone }: Props) {
   return (
     <div className="app app-paper">
       {/* 명세 7.3 — 스크롤해도 사라지지 않게 고정한다 */}
-      <div className="journal-notice">
-        내담자를 알아볼 수 있는 정보는 쓰지 마세요. 오늘의 나에 대해 써주세요.
-      </div>
+      <div className="journal-notice">오늘의 나에 대해 써주세요</div>
 
       <div className="topbar">
         <button className="btn-quiet" onClick={onDone}>
           그만두기
         </button>
         <span className="topbar-title">
-          {existing ? '오늘 일기 수정' : '하루 정리하기'}
+          {existing ? '오늘 일기 수정' : '하루 끝 일기'}
         </span>
       </div>
 
@@ -110,7 +108,7 @@ export function Journal({ onDone }: Props) {
             </div>
           ) : null}
           <div className="stat-row">
-            <span className="stat-label">SUDS 개입 전 / 재평정</span>
+            <span className="stat-label">하기 전 / 재평가</span>
             <span className="stat-value">
               {avg(checkIns.map((c) => c.sudsPre))} / {avg(posts) ?? '—'}
             </span>

@@ -96,6 +96,34 @@ body:has(.app-paper) {
 .app-paper .journal-notice {
   margin: 0 calc(1.5px - 20px);
   border-top: 1px solid var(--warn-border);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* 종이 화면 안의 카드와 입력 칸 — 도톰한 종이 한 장.
+   무늬 종이를 크림색으로 한 겹 덮어 결만 살짝 비치게 하고,
+   아래 받침과 안쪽 빛으로 말랑하게 부푼 느낌을 낸다. */
+.app-paper .card,
+.app-paper .journal-field textarea {
+  border: 1.5px solid #d2b993;
+  border-radius: 20px;
+  background:
+    linear-gradient(rgba(255, 250, 240, 0.82), rgba(255, 250, 240, 0.82)),
+    #fffaf0 url('/images/paper-tile.png') center / 160% auto;
+  box-shadow:
+    0 4px 0 #e2cfae,
+    0 8px 14px rgba(130, 95, 55, 0.1),
+    inset 0 2px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -4px 8px rgba(140, 105, 60, 0.07);
+}
+
+.app-paper .journal-field textarea {
+  margin-bottom: 4px; /* 받침 자리 */
+}
+
+.app-paper .journal-field textarea:focus {
+  border-color: var(--btn-edge);
 }
 
 /* 반드시 한 줄에 들어가야 하는 제목.

@@ -65,11 +65,11 @@ export function WeeklySummary({ onBack }: Props) {
               <span className="stat-value">{summary.checkInCount}회</span>
             </div>
             <div className="stat-row">
-              <span className="stat-label">SUDS 개입 전 평균</span>
+              <span className="stat-label">하기 전 평균 점수</span>
               <span className="stat-value">{summary.avgSudsPre ?? '—'}</span>
             </div>
             <div className="stat-row">
-              <span className="stat-label">재평정 평균</span>
+              <span className="stat-label">재평가 평균</span>
               <span className="stat-value">{summary.avgSudsPost ?? '—'}</span>
             </div>
             <div className="stat-row">

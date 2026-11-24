@@ -31,8 +31,7 @@ export function Review({ onBack }: Props) {
 
       <h1>기법을 썼을 때 얼마나 내려갔나</h1>
       <p className="muted">
-        개입 전 점수에서 재평정 점수를 뺀 값이에요. 사례 난이도와 덜 얽혀 있어서,
-        조절이 늘었는지 보기에 적당해요.
+        하기 전 점수에서 재평가 점수를 뺀 값이에요
       </p>
 
       {shown.length === 0 ? (
@@ -60,7 +59,7 @@ export function Review({ onBack }: Props) {
                 />
               </div>
               <div className="muted" style={{ fontSize: '0.75rem', marginTop: 4 }}>
-                재평정 {b.ratingCount}회
+                재평가 {b.ratingCount}회
                 {b.sessionsPerWeek !== null
                   ? ` · 주당 회기 ${b.sessionsPerWeek}회`
                   : ''}
@@ -70,7 +69,7 @@ export function Review({ onBack }: Props) {
 
           {!review.comparable ? (
             <p className="muted" style={{ marginBottom: 0 }}>
-              구간을 견주려면 각 구간에 재평정이 {REVIEW.minRatingsPerBucket}회
+              구간을 견주려면 각 구간에 재평가가 {REVIEW.minRatingsPerBucket}회
               이상 있어야 해요.
             </p>
           ) : null}
