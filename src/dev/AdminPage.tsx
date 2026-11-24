@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
+import { AvatarSvg, PREVIEW_VIEWBOX } from '../avatar/Avatar';
 import { AuthForm } from '../screens/AccountSection';
-import { accountsAvailable, signOut } from '../sync/account';
+import { loadCloset } from '../storage/store';
+import { accountsAvailable, currentAccount, signOut } from '../sync/account';
+import type { Account } from '../sync/account';
 import {
   checkAdmin,
   deleteFeedbackItem,
@@ -9,7 +12,7 @@ import {
   listReviewsAdmin,
   loadAdminStats,
 } from '../sync/admin';
-import type { AdminCheck, AdminStats, AppReviewItem } from '../sync/admin';
+import type { AdminStats, AppReviewItem } from '../sync/admin';
 import { averageRating } from '../lib/appReview';
 import type { FeedbackItem } from './feedback';
 
@@ -68,36 +71,190 @@ const SCREEN_GROUPS: { title: string; items: [id: string, label: string][] }[] =
 
 const base = import.meta.env.BASE_URL;
 
+type Tab = 'screens' | 'ops';
+type Gate = 'loading' | 'not-set-up' | 'not-signed-in' | 'not-admin' | 'admin';
+
 /**
- * 운영자 화면 (?admin=1).
- * ① 화면 점검 — 같은 브라우저에서도 온보딩부터 다시 지나가 보기, 모든 화면 하나씩 보기
- * ② 운영 현황 — 운영자 계정으로 로그인하면 숫자와 피드백 (개인별 기록은 보여주지 않는다)
+ * 관리자 화면 (?admin=1).
+ * - 들어오면 먼저 로그인. 관리자 계정이면 "관리자님, 환영합니다."
+ * - 위쪽 메뉴: 처음 쓰는 사람처럼 보기(바로 이동) · 화면 점검 · 운영 현황
+ * - 오른쪽 위: 👑 + 프로필 + 관리자 계정
+ * 개인별 기록은 보여주지 않는다 — 숫자와 피드백·리뷰만.
  */
 export function AdminPage() {
+  const [gate, setGate] = useState<Gate>(accountsAvailable ? 'loading' : 'not-set-up');
+  const [account, setAccount] = useState<Account | null>(null);
+
   useEffect(() => {
-    document.title = '(운영자) 퇴근길 붕어빵 한 입';
+    document.title = '(관리자) 퇴근길 붕어빵 한 입';
   }, []);
 
+  async function refresh() {
+    setGate('loading');
+    const g = await checkAdmin();
+    setAccount(await currentAccount());
+    setGate(g);
+  }
+
+  useEffect(() => {
+    if (accountsAvailable) void refresh();
+  }, []);
+
+  if (gate === 'admin' && account) {
+    return (
+      <AdminShell
+        account={account}
+        onLogout={() => void signOut().then(() => window.location.reload())}
+      />
+    );
+  }
+
+  /* 로그인 전 — 로그인 화면 */
   return (
-    <div className="admin">
-      <header className="admin-bar">
-        <b>운영자 화면</b>
-        <span className="gal-spacer" />
-        <a className="gal-back" href={`${base}?screens=1`}>
-          발표용 화면
-        </a>
-        <a className="gal-back" href={base}>
-          앱 열기
-        </a>
+    <div className="admin admin-login-page">
+      <div className="admin-login">
+        <p className="admin-login-brand">퇴근길 붕어빵 한 입</p>
+        <h1>관리자 로그인</h1>
+
+        {gate === 'loading' ? <p className="muted">확인하는 중…</p> : null}
+
+        {gate === 'not-set-up' ? (
+          <p className="admin-warn">
+            서버에 관리자 설정이 아직 없어요. Supabase SQL Editor 에서 admin.sql 을 실행해 주세요.
+          </p>
+        ) : null}
+
+        {gate === 'not-signed-in' ? (
+          <AuthForm
+            initialMode="login"
+            allowCancel={false}
+            allowSwitch={false}
+            onSignedIn={() => void refresh()}
+          />
+        ) : null}
+
+        {gate === 'not-admin' ? (
+          <>
+            <p className="admin-warn">
+              이 계정은 관리자로 등록되지 않았어요. admin.sql 맨 아래 줄로 내 계정을 관리자로 넣어
+              주세요.
+            </p>
+            <button
+              className="btn"
+              style={{ textAlign: 'center' }}
+              onClick={() => void signOut().then(refresh)}
+            >
+              다른 계정으로 로그인
+            </button>
+          </>
+        ) : null}
+
+        <p className="admin-small" style={{ textAlign: 'center', marginTop: 18 }}>
+          <a href={base}>앱 열기</a> · <a href={`${base}?screens=1`}>발표용 화면</a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/** 관리자 화면의 틀 — 위쪽 메뉴, 오른쪽 위 계정, 환영 문구, 고른 화면 */
+function AdminShell({
+  account,
+  onLogout,
+  demo = false,
+}: {
+  account: Account;
+  onLogout?: () => void;
+  demo?: boolean;
+}) {
+  const [tab, setTab] = useState<Tab>(() => {
+    if (demo) return 'ops';
+    const t = new URLSearchParams(window.location.search).get('tab');
+    return t === 'screens' ? 'screens' : 'ops';
+  });
+
+  function pick(t: Tab) {
+    setTab(t);
+    if (demo) return;
+    const q = new URLSearchParams(window.location.search);
+    q.set('tab', t);
+    window.history.replaceState(null, '', `?${q.toString()}`);
+  }
+
+  return (
+    <div className={`admin${demo ? ' admin-is-demo' : ''}`}>
+      <header className="admin-top">
+        <b className="admin-brand">퇴근길 붕어빵 한 입</b>
+
+        <nav className="admin-menu" aria-label="관리자 메뉴">
+          {/* 처음 쓰는 사람처럼 보기 — 누르면 바로 그 화면(온보딩)으로 간다 */}
+          <a
+            className="admin-menu-item"
+            href={`${base}?preview=start`}
+            target={demo ? '_blank' : undefined}
+            rel={demo ? 'noreferrer' : undefined}
+          >
+            처음 쓰는 사람처럼 보기
+          </a>
+          <button
+            className={`admin-menu-item${tab === 'screens' ? ' is-on' : ''}`}
+            aria-current={tab === 'screens' ? 'page' : undefined}
+            onClick={() => pick('screens')}
+          >
+            화면 점검
+          </button>
+          <button
+            className={`admin-menu-item${tab === 'ops' ? ' is-on' : ''}`}
+            aria-current={tab === 'ops' ? 'page' : undefined}
+            onClick={() => pick('ops')}
+          >
+            운영 현황
+          </button>
+        </nav>
+
+        <div className="admin-account">
+          <span className="admin-crown" aria-hidden="true">
+            👑
+          </span>
+          <span className="admin-profile" aria-hidden="true">
+            <AvatarSvg
+              viewBox={PREVIEW_VIEWBOX.skin}
+              equipped={demo ? DEMO_LOOK : loadCloset().equipped}
+              mannequin
+            />
+          </span>
+          <span className="admin-who">
+            <b>{account.nickname || '관리자'}</b>
+            <small>{account.email}</small>
+          </span>
+          {onLogout ? (
+            <button className="btn admin-mini" onClick={onLogout}>
+              로그아웃
+            </button>
+          ) : null}
+        </div>
       </header>
 
       <main className="admin-body">
-        <ScreenCheckCard />
-        <OpsSection />
+        <p className="admin-welcome">관리자님, 환영합니다.</p>
+
+        {tab === 'screens' ? <ScreenCheckCard /> : null}
+
+        {tab === 'ops' ? (
+          <section className="admin-card">
+            <h2>
+              운영 현황 {demo ? <span className="admin-demo-tag">예시 숫자</span> : null}
+            </h2>
+            <AdminData demo={demo} />
+          </section>
+        ) : null}
       </main>
     </div>
   );
 }
+
+/** 발표용 예시의 프로필 모습 */
+const DEMO_LOOK = { skin: 'skin-1', hair: 'hair-wave', top: 'top-vest' };
 
 /**
  * 발표용 화면의 '운영자 화면' 시트 — 운영자 화면이 어떻게 생겼는지 보여준다.
@@ -109,30 +266,21 @@ export function AdminDemoSheet() {
       <p className="pres-feedback-lead">
         운영자만 쓰는 화면이에요. 운영 현황은 운영자 계정으로 로그인해야 보여요.
       </p>
-      <div className="admin-body admin-body-demo">
-        <ScreenCheckCard />
-        <section className="admin-card">
-          <h2>
-            운영 현황 <span className="admin-demo-tag">예시 숫자</span>
-          </h2>
-          <AdminData demo />
-        </section>
+      <div className="admin-demo-frame">
+        <AdminShell account={{ nickname: '관리자', email: 'admin@example.org' }} demo />
       </div>
     </div>
   );
 }
 
-/** ① 화면 점검 — 같은 브라우저에서 처음 쓰는 사람처럼 보기, 모든 화면 하나씩 */
+/** 화면 점검 — 모든 화면을 하나씩 새 탭에서 연다. 저장된 기록·설정은 건드리지 않는다. */
 function ScreenCheckCard() {
   return (
     <section className="admin-card">
       <h2>화면 점검</h2>
-      <p className="muted">이 브라우저에 저장된 기록과 설정은 건드리지 않아요.</p>
-      <a className="btn btn-primary admin-wide" href={`${base}?preview=start`}>
-        처음 쓰는 사람처럼 보기 — 온보딩 → 선택 가입 → 인트로
-      </a>
-      <p className="muted admin-small">
-        끝나면 운영자 화면으로 돌아와요. 가입 화면에서 실제로 가입하면 진짜 계정이 생겨요.
+      <p className="muted">
+        화면 이름을 누르면 새 탭에서 그 화면만 열려요. 이 브라우저에 저장된 기록과 설정은
+        건드리지 않아요.
       </p>
 
       {SCREEN_GROUPS.map((g) => (
@@ -147,60 +295,6 @@ function ScreenCheckCard() {
           </div>
         </div>
       ))}
-      <p className="muted admin-small">화면 이름을 누르면 새 탭에서 그 화면만 열려요.</p>
-    </section>
-  );
-}
-
-/** 운영 현황 — 운영자 계정으로 로그인해야 보인다 */
-function OpsSection() {
-  const [check, setCheck] = useState<AdminCheck | 'loading'>(
-    accountsAvailable ? 'loading' : 'not-set-up',
-  );
-
-  async function refresh() {
-    setCheck('loading');
-    setCheck(await checkAdmin());
-  }
-
-  useEffect(() => {
-    if (accountsAvailable) void refresh();
-  }, []);
-
-  return (
-    <section className="admin-card">
-      <h2>운영 현황</h2>
-      {check === 'loading' ? <p className="muted">확인하는 중…</p> : null}
-
-      {check === 'not-set-up' ? (
-        <p className="admin-warn">
-          서버에 운영자 설정이 아직 없어요. Supabase SQL Editor 에서 admin.sql 을 실행해 주세요.
-        </p>
-      ) : null}
-
-      {check === 'not-signed-in' ? (
-        <>
-          <p className="muted">운영자 계정으로 로그인하면 숫자와 피드백을 볼 수 있어요.</p>
-          <AuthForm initialMode="login" allowCancel={false} onSignedIn={() => void refresh()} />
-        </>
-      ) : null}
-
-      {check === 'not-admin' ? (
-        <>
-          <p className="admin-warn">
-            이 계정은 운영자로 등록되지 않았어요. admin.sql 맨 아래 줄로 내 계정을 운영자로 넣어 주세요.
-          </p>
-          <button
-            className="btn"
-            style={{ textAlign: 'center' }}
-            onClick={() => void signOut().then(refresh)}
-          >
-            다른 계정으로 로그인
-          </button>
-        </>
-      ) : null}
-
-      {check === 'admin' ? <AdminData /> : null}
     </section>
   );
 }
@@ -345,7 +439,7 @@ function AdminData({ demo = false }: { demo?: boolean }) {
         (stats?.feedback ?? 0) > 0 && !demo ? (
           <p className="admin-warn">
             피드백이 {stats?.feedback}개 있는데 내용을 읽을 권한이 없어요. Supabase SQL Editor 에서
-            ‘운영자 읽기’ 규칙(feedback 비공개 SQL)을 실행해 주세요.
+            피드백을 관리자만 읽게 하는 SQL을 실행해 주세요.
           </p>
         ) : (
           <p className="muted">아직 받은 피드백이 없어요.</p>

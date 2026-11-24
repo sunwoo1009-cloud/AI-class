@@ -290,7 +290,153 @@
   color: var(--text-muted);
 }
 
-/* --- 운영자 화면 (?admin=1) --- */
+/* --- 관리자 화면 (?admin=1) — 로그인 · 위쪽 메뉴 · 계정 --- */
+
+.admin-login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.admin-login {
+  width: min(100%, 420px);
+  padding: 28px 26px 22px;
+  border-radius: 24px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  box-shadow: 0 6px 0 var(--btn-ledge);
+}
+
+.admin-login-brand {
+  margin: 0 0 4px;
+  font-weight: 700;
+  color: var(--sign-bg);
+}
+
+.admin-login h1 {
+  margin: 0 0 18px;
+}
+
+.admin-login a {
+  color: var(--text-muted);
+  text-underline-offset: 3px;
+}
+
+.admin-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 10px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.admin-brand {
+  font-size: 1.0625rem;
+  white-space: nowrap;
+}
+
+.admin-menu {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.admin-menu-item {
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.admin-menu-item:hover {
+  background: var(--surface-alt);
+}
+
+.admin-menu-item.is-on {
+  background: var(--sign-bg);
+  color: var(--sign-text);
+}
+
+.admin-account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.admin-crown {
+  font-size: 1.375rem;
+  line-height: 1;
+  /* 노란 왕관 — 그림 글자가 없는 환경에서도 노랗게 */
+  color: #f2c94c;
+}
+
+.admin-profile {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1.5px solid var(--btn-edge);
+  background: #f6ead6;
+}
+
+.admin-profile svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.admin-who {
+  display: grid;
+  line-height: 1.25;
+}
+
+.admin-who b {
+  font-size: 0.875rem;
+}
+
+.admin-who small {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.admin-welcome {
+  margin: 0;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+/* 발표용 시트 안에 관리자 화면 틀을 넣을 때 */
+.admin-demo-frame {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+  box-shadow: 0 6px 18px rgba(90, 65, 30, 0.12);
+}
+
+.admin-is-demo {
+  min-height: 0;
+}
+
+.admin-is-demo .admin-top {
+  position: static;
+}
+
+/* --- 관리자 화면 (?admin=1) --- */
 
 .admin {
   min-height: 100vh;

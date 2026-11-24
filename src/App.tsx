@@ -50,7 +50,7 @@ export function App() {
 
 /**
  * ?preview=start — 운영자가 같은 브라우저에서 첫 방문 흐름을 다시 본다.
- * 온보딩 → 선택 가입 → 인트로 → 운영자 화면으로 돌아간다.
+ * 온보딩 → 선택 가입 → 인트로 → 관리자 화면으로 돌아간다.
  * 온보딩의 '시작하기'는 설정을 저장하지 않는다 (이미 쓰던 기록·설정 그대로).
  */
 function StartPreview() {
@@ -60,7 +60,7 @@ function StartPreview() {
   };
   return (
     <>
-      <div className="preview-badge">운영자 미리보기 · 저장되지 않아요</div>
+      <div className="preview-badge">관리자 미리보기 · 저장되지 않아요</div>
       {step === 'onboarding' ? <Onboarding onDone={() => setStep('join')} /> : null}
       {step === 'join' ? <JoinScreen onDone={() => setStep('intro')} /> : null}
       {step === 'intro' ? <IntroScene onDone={back} /> : null}

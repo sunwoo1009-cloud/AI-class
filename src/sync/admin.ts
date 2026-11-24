@@ -47,7 +47,7 @@ export async function deleteReviewItem(id: number): Promise<{ ok: true } | { ok:
   const sb = await client();
   const { error, count } = await sb.from('reviews').delete({ count: 'exact' }).eq('id', id);
   if (error) return { ok: false, reason: friendlyError(error.message) };
-  if (count === 0) return { ok: false, reason: '지우지 못했어요 (운영자 권한을 확인해 주세요)' };
+  if (count === 0) return { ok: false, reason: '지우지 못했어요 (관리자 권한을 확인해 주세요)' };
   return { ok: true };
 }
 
@@ -88,6 +88,6 @@ export async function deleteFeedbackItem(id: number): Promise<{ ok: true } | { o
   const sb = await client();
   const { error, count } = await sb.from('feedback').delete({ count: 'exact' }).eq('id', id);
   if (error) return { ok: false, reason: friendlyError(error.message) };
-  if (count === 0) return { ok: false, reason: '지우지 못했어요 (운영자 권한을 확인해 주세요)' };
+  if (count === 0) return { ok: false, reason: '지우지 못했어요 (관리자 권한을 확인해 주세요)' };
   return { ok: true };
 }

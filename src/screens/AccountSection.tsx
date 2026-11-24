@@ -310,10 +310,13 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
 export function AuthForm({
   initialMode = 'intro',
   allowCancel = true,
+  allowSwitch = true,
   onSignedIn,
 }: {
   initialMode?: Mode;
   allowCancel?: boolean;
+  /** 로그인 ↔ 가입 전환 링크를 둘지 (관리자 로그인에는 가입이 없다) */
+  allowSwitch?: boolean;
   onSignedIn: (message: string) => void | Promise<void>;
 }) {
   const [mode, setMode] = useState<Mode>(initialMode);
@@ -462,7 +465,7 @@ export function AuthForm({
               {busy ? '잠시만요…' : mode === 'signup' ? '가입하기' : '로그인'}
             </button>
           </div>
-          {mode === 'login' ? (
+          {!allowSwitch ? null : mode === 'login' ? (
             <button type="button" className="btn-quiet" onClick={() => setMode('signup')}>
               아직 계정이 없어요 — 가입하기
             </button>
