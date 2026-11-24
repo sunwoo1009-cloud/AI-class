@@ -87,13 +87,13 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
     },
     {
       id: 'suds-pre',
-      label: 'SUDS — 개입 전',
+      label: 'SUDS — 하기 전',
       spec: '6.2',
       render: () => <SudsSlider mode="pre" onSubmit={noop} />,
     },
     {
       id: 'suds-post',
-      label: 'SUDS — 재평정',
+      label: 'SUDS — 다시 평가하기',
       spec: '6.4',
       render: () => <SudsSlider mode="post" onSubmit={noop} />,
     },
