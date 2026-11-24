@@ -49,7 +49,7 @@
   --gutter: 20px;
   --max-width: 430px;
 
-  --font: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
+  --font: 'Wonju', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
     'Malgun Gothic', 'Noto Sans KR', system-ui, sans-serif;
 }
 

@@ -11,3 +11,10 @@ https://fonts.google.com/specimen/Jua
 ```
 curl "https://fonts.googleapis.com/css2?family=Jua&text=<쓸 글자>"
 ```
+
+# wonju-regular.otf · wonju-bold.otf
+
+앱 전체 기본 글씨인 **원주체** Regular(400)·Bold(700).
+사용자가 무료 글꼴로 받아 넣었다 (2026-11-24, 원본 파일명 `원주체 Regular.otf` / `원주체 Bold.otf`).
+한글 11,172자를 모두 담고 있어 부분집합으로 자르지 않았다 (각 약 530 KB).
+‹ › ✕ ⋮ 같은 기호는 들어 있지 않아 시스템 글꼴로 넘어간다.

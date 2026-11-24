@@ -13,6 +13,37 @@
   font-display: swap;
 }
 
+/* 앱 전체 기본 글씨 — 원주체. 사용자가 받아 넣은 무료 글꼴(src/fonts/README.md).
+   굵기는 두 가지뿐이다: 400(Regular)·700(Bold).
+   CSS 가 600·650 을 요청하면 Bold, 300·500 은 Regular 가 쓰인다.
+   한글 11,172자를 모두 담고 있다. ‹ › ✕ ⋮ 같은 기호만 시스템 글꼴로 넘어간다. */
+@font-face {
+  font-family: 'Wonju';
+  src: url('../fonts/wonju-regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  /* 원주체는 같은 크기에서 글자가 기존 시스템 글꼴보다 작게 그려진다.
+     화면마다 맞춰둔 글자 크기를 그대로 두고 보이는 크기만 맞춘다. */
+  size-adjust: 112%;
+}
+
+@font-face {
+  font-family: 'Wonju';
+  src: url('../fonts/wonju-bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 112%;
+}
+
+/* 입력 칸은 기본으로 글꼴을 물려받지 않는다 */
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
 
 * {
   box-sizing: border-box;

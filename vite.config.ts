@@ -17,6 +17,7 @@ export default defineConfig({
         globPatterns: [
           '**/*.{js,css,html}',
           'assets/*.woff2',
+          'assets/*.otf', // 원주체 Regular·Bold — 오프라인에서도 같은 글씨로
           'images/stall-bg.png',
           'images/paper-tile.png',
         ],
