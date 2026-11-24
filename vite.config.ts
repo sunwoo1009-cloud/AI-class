@@ -13,7 +13,7 @@ export default defineConfig({
       workbox: {
         // 기본값은 js/css/html 뿐이라 글꼴과 노점 사진이 빠졌다.
         // 둘 다 없으면 오프라인에서 간판 글씨와 홈 배경이 사라진다.
-        // 붕어빵 무늬 종이(paper-tile)도 체크인 화면 배경이라 같이 넣는다.
+        // 무늬 종이(paper-tile)도 체크인 화면 배경이라 같이 넣는다.
         globPatterns: [
           '**/*.{js,css,html}',
           'assets/*.woff2',

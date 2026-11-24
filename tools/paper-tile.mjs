@@ -1,7 +1,7 @@
 // 화면 배경 시안(design/screen-bg-source.png)에서 카드 안쪽 무늬만 잘라
 // 세로로 이어 붙일 수 있는 타일(public/images/paper-tile.png)을 만든다.
 //
-// 자르는 범위는 위아래 끝 줄에 그림(붕어빵·김·점)이 걸리지 않는 줄을 골랐다.
+// 자르는 범위는 위아래 끝 줄에 그림(김·점·줄)이 걸리지 않는 줄을 골랐다.
 // 위쪽은 카드 둥근 모서리가 걸려서, 그 부분만 가운데의 빈 종이로 덮는다.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { decodePng, encodePng } from './png.mjs';
