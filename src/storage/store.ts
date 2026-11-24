@@ -18,6 +18,7 @@ export const KEYS = {
   checkIns: `${PREFIX}checkins`,
   journal: `${PREFIX}journal`,
   weeklySessions: `${PREFIX}weeklySessions`,
+  /** 2026-11-24 부터 안 쓴다 (인트로가 열 때마다 나온다). 전체 삭제 때 옛 값을 지우려고 남겨둔다. */
   introSeen: `${PREFIX}introSeenDate`,
   stamps: `${PREFIX}stampTotal`,
   lastExport: `${PREFIX}lastExportAt`,
@@ -123,17 +124,6 @@ export function loadJournal(): JournalEntry[] {
 
 export function saveJournal(list: JournalEntry[]): void {
   write(KEYS.journal, list);
-}
-
-// --- 인트로 (퇴근길 장면을 오늘 봤는지) ---
-
-/** 인트로를 마지막으로 본 날짜. YYYY-MM-DD, 본 적 없으면 null */
-export function loadIntroSeenDate(): string | null {
-  return read<string | null>(KEYS.introSeen, null);
-}
-
-export function saveIntroSeenDate(dateKey: string): void {
-  write(KEYS.introSeen, dateKey);
 }
 
 // --- 쿠폰 도장 (명세 8.7) ---

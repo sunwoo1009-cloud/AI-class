@@ -8,8 +8,8 @@ import { IntroScene } from './scenes/IntroScene';
 import { PartsGallery } from './scenes/PartsGallery';
 import { ScreensGallery } from './dev/ScreensGallery';
 import { Review } from './screens/Review';
-import { isEveningScene, introOverride } from './lib/devTime';
-import { markIntroSeen, shouldShowIntroNow } from './lib/intro';
+import { introOverride } from './lib/devTime';
+import { shouldShowIntro } from './lib/intro';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { WeeklySummary } from './screens/WeeklySummary';
 import {
@@ -40,11 +40,10 @@ export function App() {
     setSettings(loadedSettings);
     // 인트로 판단은 앱을 열 때 한 번만 한다
     setShowIntro(
-      shouldShowIntroNow(
-        loadedSettings !== null,
-        isEveningScene(),
-        introOverride(),
-      ),
+      shouldShowIntro({
+        onboarded: loadedSettings !== null,
+        override: introOverride(),
+      }),
     );
     setLoaded(true);
   }, []);
@@ -79,16 +78,9 @@ export function App() {
     );
   }
 
-  // 인트로 — 퇴근길. 온보딩을 마친 사람에게만, 5시 이후 하루 한 번
+  // 인트로 — 퇴근길. 온보딩을 마친 사람에게, 앱을 열 때마다
   if (settings && showIntro) {
-    return (
-      <IntroScene
-        onDone={() => {
-          markIntroSeen();
-          setShowIntro(false);
-        }}
-      />
-    );
+    return <IntroScene onDone={() => setShowIntro(false)} />;
   }
 
   if (!settings) {
