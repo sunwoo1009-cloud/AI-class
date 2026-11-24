@@ -28,7 +28,7 @@ export function SpeechBubble({ onCheckIn, onJournal }: Props) {
         >
           하나 먹어야지~
           <span className="bubble-btn-sub">
-            여러 단계를 거치며 오늘의 나를 기록하기
+            기법을 사용해 감정 관리하기
           </span>
         </button>
 
@@ -40,7 +40,7 @@ export function SpeechBubble({ onCheckIn, onJournal }: Props) {
           }}
         >
           아니야, 다음에 먹을래!
-          <span className="bubble-btn-sub">간단하게 하루 정리하기</span>
+          <span className="bubble-btn-sub">오늘의 나를 기록하기</span>
         </button>
       </div>
     </div>
