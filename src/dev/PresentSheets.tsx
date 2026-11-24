@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AvatarSvg } from '../avatar/Avatar';
+import { StampCard } from '../screens/CouponBook';
 import {
   FEEDBACK_MAX,
   checkFeedback,
@@ -13,16 +13,9 @@ import type { FeedbackItem } from './feedback';
 export function AboutSheet() {
   return (
     <div className="pres-about">
+      {/* 앱의 붕어빵 쿠폰 — 열 칸 중 세 칸에 도장 */}
       <div className="pres-about-art" aria-hidden="true">
-        <AvatarSvg
-          equipped={{
-            skin: 'skin-1',
-            hair: 'hair-wave',
-            top: 'top-vest',
-            bottom: 'bottom-slacks',
-            shoes: 'shoes-sneakers',
-          }}
-        />
+        <StampCard filled={3} />
       </div>
 
       <dl className="pres-about-list">

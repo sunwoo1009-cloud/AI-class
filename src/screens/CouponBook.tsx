@@ -67,7 +67,7 @@ export function CouponBook({ onBack }: Props) {
 }
 
 /** 보기만 하는 쿠폰 한 장. 마무리 화면의 쿠폰과 같은 모양이다. */
-function StampCard({ filled, mini = false }: { filled: number; mini?: boolean }) {
+export function StampCard({ filled, mini = false }: { filled: number; mini?: boolean }) {
   return (
     <div
       className={`coupon is-static${mini ? ' is-mini' : ''}`}

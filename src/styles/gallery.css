@@ -157,10 +157,13 @@
   box-shadow: 0 6px 0 var(--btn-ledge);
 }
 
-.pres-about-art svg {
-  display: block;
-  width: 200px;
-  height: auto;
+.pres-about-art {
+  flex: none;
+  width: 330px;
+}
+
+.pres-about-art .coupon {
+  width: 100%;
 }
 
 .pres-about-list {
