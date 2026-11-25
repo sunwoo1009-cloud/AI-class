@@ -6,6 +6,8 @@ import { foodShape } from './menu/FoodIcon';
 import { TechniqueArt } from './menu/TechniqueArt';
 import { TECHNIQUE_SCRIPTS } from '../scripts/techniques';
 import type { ScriptOption, ScriptStep } from '../scripts/techniques';
+import { resolveOptions, toggleChoice } from '../lib/choice';
+import type { ChoiceAnswers } from '../lib/choice';
 import type { TechniqueId } from '../types';
 
 interface Props {
@@ -18,17 +20,6 @@ interface Props {
   onSafetyImmediate: () => void;
   /** 개발용 모음에서 중간 단계를 바로 보려고 쓴다. 실제 흐름은 늘 0부터. */
   initialStep?: number;
-}
-
-/** 앞선 선택에 따라 선택지를 교체한다 (명세 8.4) */
-function resolveOptions(
-  step: Extract<ScriptStep, { kind: 'choice' }>,
-  answers: Record<string, string>,
-): ScriptOption[] {
-  for (const v of step.variants ?? []) {
-    if (answers[v.whenChoiceId] === v.whenValue) return v.options;
-  }
-  return step.options;
 }
 
 export function TechniquePlayer({
@@ -45,7 +36,7 @@ export function TechniquePlayer({
   const [index, setIndex] = useState(() =>
     Math.min(Math.max(0, Math.floor(initialStep)), script.steps.length - 1),
   );
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<ChoiceAnswers>({});
   const step = script.steps[index];
   const isLast = index === script.steps.length - 1;
 
@@ -64,14 +55,29 @@ export function TechniquePlayer({
     return () => clearTimeout(timer);
   }, [index, step]);
 
-  function pick(choiceId: string, option: ScriptOption) {
+  function pick(step: Extract<ScriptStep, { kind: 'choice' }>, option: ScriptOption) {
+    // '지금 바로 확인 필요'는 여러 개 고르기에서도 누르는 즉시 안내로 간다 (명세 8.4)
     if (option.action === 'safety_immediate') {
       onSafetyImmediate();
       return;
     }
-    setAnswers((prev) => ({ ...prev, [choiceId]: option.id }));
+    if (step.multiple) {
+      setAnswers((prev) => ({
+        ...prev,
+        [step.choiceId]: toggleChoice(
+          prev[step.choiceId] ?? [],
+          option,
+          resolveOptions(step, prev),
+        ),
+      }));
+      return;
+    }
+    setAnswers((prev) => ({ ...prev, [step.choiceId]: [option.id] }));
     advance();
   }
+
+  // 여러 개 고르기 단계에서 하나 이상 골랐는가
+  const picked = step.kind === 'choice' ? (answers[step.choiceId] ?? []) : [];
 
   return (
     <div className="app app-paper">
@@ -130,22 +136,32 @@ export function TechniquePlayer({
         {step.kind === 'choice' ? (
           <div>
             <ScriptText text={step.text} className="script-choice-text" />
-            {resolveOptions(step, answers).map((o) => (
-              <button
-                key={o.id}
-                className="btn"
-                style={{ textAlign: 'center' }}
-                onClick={() => pick(step.choiceId, o)}
-              >
-                {o.label}
-              </button>
-            ))}
+            {step.multiple ? (
+              <p className="choice-hint">여러 개 골라도 돼요</p>
+            ) : null}
+            {resolveOptions(step, answers).map((o) => {
+              const on = step.multiple && picked.includes(o.id);
+              return (
+                <button
+                  key={o.id}
+                  className={`btn choice-btn${on ? ' is-picked' : ''}${
+                    o.action === 'safety_immediate' ? ' is-urgent' : ''
+                  }`}
+                  aria-pressed={step.multiple && !o.action ? on : undefined}
+                  onClick={() => pick(step, o)}
+                >
+                  {on ? <span className="choice-check" aria-hidden="true">✓</span> : null}
+                  {o.label}
+                </button>
+              );
+            })}
           </div>
         ) : null}
       </div>
 
       {/* 이전은 대본 안에서 한 칸 뒤로. 첫 칸에서는 돌아갈 곳이 없다.
-          선택 화면은 고르는 것이 '다음'이라 이전만 둔다. */}
+          하나만 고르는 선택 화면은 고르는 것이 '다음'이라 이전만 둔다.
+          여러 개 고르기는 하나 이상 고르면 '다음'이 눌린다. */}
       <div className="btn-row step-nav">
         <button
           className="btn step-prev"
@@ -154,8 +170,12 @@ export function TechniquePlayer({
         >
           이전
         </button>
-        {step.kind !== 'choice' ? (
-          <button className="btn btn-primary step-next" onClick={advance}>
+        {step.kind !== 'choice' || step.multiple ? (
+          <button
+            className="btn btn-primary step-next"
+            onClick={advance}
+            disabled={step.kind === 'choice' && picked.length === 0}
+          >
             다음
           </button>
         ) : null}

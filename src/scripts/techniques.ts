@@ -5,8 +5,10 @@ import type { TechniqueId } from '../types';
 export interface ScriptOption {
   id: string;
   label: string;
-  /** 명세 8.4 — '지금 바로 확인 필요' */
+  /** 명세 8.4 — '지금 바로 확인 필요'. 여러 개 고르기에서도 누르는 즉시 안내로 간다. */
   action?: 'safety_immediate';
+  /** 여러 개 고르기에서 다른 것과 함께 고를 수 없는 선택지 (예: '정하지 않음') */
+  exclusive?: boolean;
 }
 
 export type ScriptStep =
@@ -32,7 +34,9 @@ export type ScriptStep =
       text: string;
       choiceId: string;
       options: ScriptOption[];
-      /** 앞선 선택에 따라 선택지를 교체한다 */
+      /** 여러 개를 골라 '다음'으로 넘어간다 (2026-11-25, 8.4) */
+      multiple?: boolean;
+      /** 앞선 선택에 따라 선택지를 교체한다 (앞에서 고른 것 중에 whenValue 가 있으면) */
       variants?: {
         whenChoiceId: string;
         whenValue: string;
@@ -181,6 +185,7 @@ const detachment: TechniqueScript = {
         '어떤 종류인지 골라보세요',
       ),
       choiceId: 'thought_kind',
+      multiple: true,
       options: [
         { id: 'missed', label: '내가 놓친 것 같은 부분' },
         { id: 'client_safety', label: '내담자 안전에 대한 걱정' },
@@ -193,11 +198,12 @@ const detachment: TechniqueScript = {
       seconds: 15,
       text: '이 생각을 다룰 시간을 정해 두세요.',
       choiceId: 'when_to_handle',
+      multiple: true,
       options: [
         { id: 'today_record', label: '오늘 기록 시간' },
         { id: 'supervision', label: '수퍼비전·사례회의' },
         { id: 'ask_colleague', label: '동료에게 물어보기' },
-        { id: 'undecided', label: '정하지 않음' },
+        { id: 'undecided', label: '정하지 않음', exclusive: true },
       ],
       // 명세 8.4 — '내담자 안전에 대한 걱정'을 골랐다면
       // '정하지 않음' 대신 '지금 바로 확인 필요'를 보여준다.
