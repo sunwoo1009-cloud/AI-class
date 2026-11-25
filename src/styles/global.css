@@ -376,6 +376,15 @@ button {
   letter-spacing: 0.06em;
 }
 
+/* 간판 아래 — 가격은 꾸밈이고 결제가 없다는 안내 */
+.menu-free-note {
+  margin: -6px 0 14px;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--strip-text);
+}
+
 /* 종이 띠를 두 칸씩 늘어놓는다 */
 .menu-strips {
   display: grid;
