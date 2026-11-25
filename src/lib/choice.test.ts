@@ -1,7 +1,36 @@
 import { describe, expect, it } from 'vitest';
 import { TECHNIQUE_SCRIPTS } from '../scripts/techniques';
 import type { ScriptOption } from '../scripts/techniques';
-import { resolveOptions, toggleChoice } from './choice';
+import { expandSteps, resolveOptions, toggleChoice } from './choice';
+
+describe('expandSteps — 고른 것마다 후속 화면 (명세 8.4)', () => {
+  const steps = TECHNIQUE_SCRIPTS.detachment.steps;
+  const texts = (answers: Record<string, string[]>) =>
+    expandSteps(steps, answers).map((s) => (s.kind === 'text' ? s.text.split('\n')[0] : s.kind));
+
+  it('아무것도 안 골랐으면 원래 단계 그대로', () => {
+    expect(expandSteps(steps, {})).toHaveLength(steps.length);
+  });
+
+  it('고른 것마다 2번 질문 바로 뒤에 화면이 하나씩, 선택지 순서대로', () => {
+    const t = texts({ thought_kind: ['missed'], when_to_handle: ['ask_colleague', 'today_record'] });
+    expect(t.slice(2, 5)).toEqual([
+      '이 생각은 오늘 상담 기록을 쓸 때 다시 보기로 해요',
+      '물어볼 동료를 한 명 떠올려 보세요',
+      '이제 잠깐 자리에서 일어나 보세요',
+    ]);
+  });
+
+  it("'정하지 않음'도 자기 화면이 있다", () => {
+    const t = texts({ thought_kind: ['missed'], when_to_handle: ['undecided'] });
+    expect(t[2]).toBe('정하지 않아도 돼요');
+  });
+
+  it('안전 걱정으로 선택지가 바뀌어도 후속 화면이 붙는다', () => {
+    const t = texts({ thought_kind: ['client_safety'], when_to_handle: ['supervision'] });
+    expect(t[2]).toBe('다음 수퍼비전에 가져갈 질문으로 남겨 두세요');
+  });
+});
 
 const opts: ScriptOption[] = [
   { id: 'a', label: 'A' },

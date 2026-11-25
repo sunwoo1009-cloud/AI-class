@@ -9,6 +9,8 @@ export interface ScriptOption {
   action?: 'safety_immediate';
   /** 여러 개 고르기에서 다른 것과 함께 고를 수 없는 선택지 (예: '정하지 않음') */
   exclusive?: boolean;
+  /** 이걸 고르면 선택 단계 바로 뒤에 나오는 화면 문구 (명세 8.4, 2026-11-25) */
+  followUp?: string;
 }
 
 export type ScriptStep =
@@ -174,6 +176,33 @@ const containment: TechniqueScript = {
 };
 
 /** 명세 8.4 심리적 분리 (약 90초) */
+/** 심리적 분리 2번 — 다룰 시간 선택지와 각각의 후속 화면 (명세 8.4, 2026-11-25) */
+const WHEN_TODAY: ScriptOption = {
+  id: 'today_record',
+  label: '오늘 상담을 정리하는 시간',
+  followUp: lines(
+    '이 생각은 오늘 상담 기록을 쓸 때 다시 보기로 해요',
+    '그때까지 여기 내려놓아요',
+    '아니면 퇴근할 때 하루 끝 일기에 적어도 돼요',
+  ),
+};
+const WHEN_SUPERVISION: ScriptOption = {
+  id: 'supervision',
+  label: '수퍼비전·사례회의',
+  followUp: lines('다음 수퍼비전에 가져갈 질문으로 남겨 두세요', '한 줄로 적어 두면 잊지 않아요'),
+};
+const WHEN_COLLEAGUE: ScriptOption = {
+  id: 'ask_colleague',
+  label: '동료에게 물어보기',
+  followUp: lines('물어볼 동료를 한 명 떠올려 보세요', '언제 물어볼지도 생각해 보세요'),
+};
+const WHEN_UNDECIDED: ScriptOption = {
+  id: 'undecided',
+  label: '정하지 않음',
+  exclusive: true,
+  followUp: lines('정하지 않아도 돼요', "다시 떠오르면 '나중에'라고만 말해 보세요"),
+};
+
 const detachment: TechniqueScript = {
   id: 'detachment',
   steps: [
@@ -199,12 +228,8 @@ const detachment: TechniqueScript = {
       text: '이 생각을 다룰 시간을 정해 두세요.',
       choiceId: 'when_to_handle',
       multiple: true,
-      options: [
-        { id: 'today_record', label: '오늘 기록 시간' },
-        { id: 'supervision', label: '수퍼비전·사례회의' },
-        { id: 'ask_colleague', label: '동료에게 물어보기' },
-        { id: 'undecided', label: '정하지 않음', exclusive: true },
-      ],
+      // 고른 것마다 바로 뒤에 맞는 화면이 하나씩 나온다 (followUp, 2026-11-25)
+      options: [WHEN_TODAY, WHEN_SUPERVISION, WHEN_COLLEAGUE, WHEN_UNDECIDED],
       // 명세 8.4 — '내담자 안전에 대한 걱정'을 골랐다면
       // '정하지 않음' 대신 '지금 바로 확인 필요'를 보여준다.
       variants: [
@@ -212,9 +237,9 @@ const detachment: TechniqueScript = {
           whenChoiceId: 'thought_kind',
           whenValue: 'client_safety',
           options: [
-            { id: 'today_record', label: '오늘 기록 시간' },
-            { id: 'supervision', label: '수퍼비전·사례회의' },
-            { id: 'ask_colleague', label: '동료에게 물어보기' },
+            WHEN_TODAY,
+            WHEN_SUPERVISION,
+            WHEN_COLLEAGUE,
             {
               id: 'immediate',
               label: '지금 바로 확인 필요',

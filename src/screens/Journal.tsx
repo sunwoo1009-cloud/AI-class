@@ -84,7 +84,11 @@ export function Journal({ onDone }: Props) {
   return (
     <div className="app app-paper">
       {/* 명세 7.3 — 스크롤해도 사라지지 않게 고정한다 */}
-      <div className="journal-notice">오늘의 나에 대해 써주세요</div>
+      <div className="journal-notice">
+        오늘의 나에 대해 써주세요
+        {/* 2026-11-25 다시 넣음 — 심리적 분리에서 사례 생각을 일기로 넘길 수 있게 되었다 */}
+        <span className="journal-notice-sub">내담자를 알아볼 수 있는 정보는 쓰지 마세요</span>
+      </div>
 
       <div className="topbar">
         <button className="btn-quiet" onClick={onDone}>

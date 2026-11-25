@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Lines } from '../components/Lines';
 import { TECHNIQUE_LABELS } from '../constants';
 import { fillName, scriptName } from '../lib/josa';
@@ -6,7 +6,7 @@ import { foodShape } from './menu/FoodIcon';
 import { TechniqueArt } from './menu/TechniqueArt';
 import { TECHNIQUE_SCRIPTS } from '../scripts/techniques';
 import type { ScriptOption, ScriptStep } from '../scripts/techniques';
-import { resolveOptions, toggleChoice } from '../lib/choice';
+import { expandSteps, resolveOptions, toggleChoice } from '../lib/choice';
 import type { ChoiceAnswers } from '../lib/choice';
 import type { TechniqueId } from '../types';
 
@@ -37,8 +37,10 @@ export function TechniquePlayer({
     Math.min(Math.max(0, Math.floor(initialStep)), script.steps.length - 1),
   );
   const [answers, setAnswers] = useState<ChoiceAnswers>({});
-  const step = script.steps[index];
-  const isLast = index === script.steps.length - 1;
+  // 고른 선택지의 후속 화면을 끼워 넣은 실제 단계 목록 (명세 8.4)
+  const steps = useMemo(() => expandSteps(script.steps, answers), [script, answers]);
+  const step = steps[Math.min(index, steps.length - 1)];
+  const isLast = index >= steps.length - 1;
 
   function advance() {
     if (isLast) onDone();
@@ -91,7 +93,7 @@ export function TechniquePlayer({
       </div>
 
       <div className="progress">
-        {script.steps.map((s, i) => (
+        {steps.map((s, i) => (
           <div key={i} className={`progress-dot${i < index ? ' done' : ''}`}>
             {i === index && s.kind !== 'choice' ? (
               <div

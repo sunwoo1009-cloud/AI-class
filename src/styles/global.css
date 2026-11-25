@@ -122,6 +122,15 @@ body:has(.app-paper) {
   text-align: center;
 }
 
+/* 둘째 줄 — 내담자 정보 쓰지 않기 (작게, 진한 색) */
+.journal-notice-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--stamp-ink);
+}
+
 /* 종이 화면 안의 카드와 입력 칸 — 도톰한 종이 한 장.
    무늬 종이를 크림색으로 한 겹 덮어 결만 살짝 비치게 하고,
    아래 받침과 안쪽 빛으로 말랑하게 부푼 느낌을 낸다. */
