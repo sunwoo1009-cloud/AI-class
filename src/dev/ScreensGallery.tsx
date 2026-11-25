@@ -175,13 +175,8 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       label: '기법 — 심리적 분리 (선택지)',
       spec: '8.4',
       render: () => (
-        <TechniquePlayer
-          technique="detachment"
-          displayName={settings.displayName}
-          onDone={noop}
-          onSafetyImmediate={noop}
-          initialStep={step}
-        />
+        // '지금 바로 확인 필요'를 누르면 발표 화면 안에서도 위기 절차 안내로 넘어간다
+        <DetachmentWithSafety displayName={settings.displayName} initialStep={step} />
       ),
     },
     {
@@ -614,6 +609,41 @@ function Arrow({ label }: { label?: string }) {
         <path d="M2 10 H40 M32 3 L42 10 L32 17" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </div>
+  );
+}
+
+/**
+ * 발표 화면의 심리적 분리 — 실제 앱처럼 '지금 바로 확인 필요'를 누르면
+ * 위기 절차 안내가 나온다. 안내에서 다음을 누르면 기법 처음으로 돌아간다(발표용이라 종결 의례 대신).
+ */
+function DetachmentWithSafety({
+  displayName,
+  initialStep,
+}: {
+  displayName: string;
+  initialStep: number;
+}) {
+  const [safety, setSafety] = useState(false);
+  const [round, setRound] = useState(0);
+  if (safety) {
+    return (
+      <SafetyNotice
+        onNext={() => {
+          setSafety(false);
+          setRound((r) => r + 1);
+        }}
+      />
+    );
+  }
+  return (
+    <TechniquePlayer
+      key={round}
+      technique="detachment"
+      displayName={displayName}
+      onDone={noop}
+      onSafetyImmediate={() => setSafety(true)}
+      initialStep={round === 0 ? initialStep : 0}
+    />
   );
 }
 
