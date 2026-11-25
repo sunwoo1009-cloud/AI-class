@@ -57,7 +57,7 @@ export function ReactionSelect({ onSubmit, onCancel }: Props) {
       <div className="menu-board">
         <p className="menu-sign">메뉴판</p>
         {/* 가격표 때문에 실제 결제로 오해하지 않게 (2026-11-25) */}
-        <p className="menu-free-note">가격은 메뉴판 꾸밈이에요. 실제로 결제하지 않아요</p>
+        <p className="menu-free-note">실제로 결제되지 않아요</p>
 
         <div className="menu-strips">
           {REACTIONS.map((r) => {
