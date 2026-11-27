@@ -28,7 +28,10 @@ import {
 import type { RawEvent, Session } from '../lib/sessionCalendar';
 import { readCalLinkRaw, writeCalLinkRaw } from '../storage/store';
 
-const CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined)?.trim();
+/** 구글 OAuth 클라이언트 ID — 비밀값이 아니다(브라우저에 그대로 보인다). 환경 변수가 있으면 그것을 쓴다. */
+const DEFAULT_CLIENT_ID = '197072890877-34bu509vetamb20h37d5qacfk2r3rkb3.apps.googleusercontent.com';
+const CLIENT_ID =
+  (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined)?.trim() || DEFAULT_CLIENT_ID;
 export const calendarAvailable = Boolean(CLIENT_ID);
 
 /** 일정 읽기·쓰기 (회기 일정을 읽고, 알림 일정을 만든다) */
