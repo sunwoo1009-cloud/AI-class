@@ -119,8 +119,9 @@ Deno.serve(async (req) => {
   if (!text) return json({ error: "empty" }, 400, origin);
   if (text.length > MAX_CHARS) text = text.slice(0, MAX_CHARS);
 
-  const key = Deno.env.get("OPENROUTER_API_KEY");
-  if (!key) return json({ error: "key" }, 500, origin);
+  // 붙여 넣을 때 섞인 공백·따옴표는 떼어 낸다
+  const key = (Deno.env.get("OPENROUTER_API_KEY") ?? "").trim().replace(/^["']|["']$/g, "");
+  if (!key) return json({ error: "no-key" }, 500, origin);
 
   try {
     const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -147,10 +148,17 @@ Deno.serve(async (req) => {
       }),
     });
 
-    if (r.status === 401) return json({ error: "key" }, 500, origin);
-    if (r.status === 402) return json({ error: "credits" }, 502, origin);
-    if (r.status === 429) return json({ error: "busy" }, 429, origin);
-    if (!r.ok) return json({ error: `api-${r.status}` }, 502, origin);
+    if (!r.ok) {
+      // OpenRouter 가 알려 준 이유만 돌려준다 (키 값은 들어 있지 않다)
+      let reason = "";
+      try {
+        reason = String((await r.json())?.error?.message ?? "").slice(0, 200);
+      } catch {
+        // 이유를 못 읽어도 상태 번호는 돌려준다
+      }
+      const code = r.status === 401 ? "key-rejected" : r.status === 402 ? "credits" : r.status === 429 ? "busy" : `api-${r.status}`;
+      return json({ error: code, reason, keyStart: key.slice(0, 6) }, 502, origin);
+    }
 
     const data = await r.json();
     const reactions = parseReactions(data?.choices?.[0]?.message?.content);
