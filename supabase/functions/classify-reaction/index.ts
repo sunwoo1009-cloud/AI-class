@@ -45,7 +45,13 @@ Map it to the closest of these six reaction types:
 
 Return the best match first. Add a second type only if the note clearly expresses it too.
 Return an empty list if the note does not describe an emotional or bodily reaction at all.
-Reply only with JSON like {"reactions":["anger"]}. Never repeat or quote the note.`;
+
+Also set "caseInfo" to true if the note contains information about the client rather than the counselor's own reaction:
+a name or nickname, age, school, grade, workplace, address, family details, or specific facts of what happened to the client.
+The counselor's own feelings, body sensations, thoughts, or images replaying in their mind are NOT case info
+(for example "a self-harm scene keeps replaying and I feel scared" is not case info). When unsure, set false.
+
+Reply only with JSON like {"reactions":["anger"],"caseInfo":false}. Never repeat or quote the note.`;
 
 const SCHEMA = {
   type: "object",
@@ -54,8 +60,9 @@ const SCHEMA = {
       type: "array",
       items: { type: "string", enum: [...REACTIONS] },
     },
+    caseInfo: { type: "boolean" },
   },
-  required: ["reactions"],
+  required: ["reactions", "caseInfo"],
   additionalProperties: false,
 };
 
@@ -85,19 +92,21 @@ function rateLimited(ip: string): boolean {
 }
 
 /** 모델 답에서 JSON 을 꺼낸다 — 코드 블록이나 앞뒤 글이 붙어 와도 */
-function parseReactions(content: unknown): string[] {
-  if (typeof content !== "string") return [];
+function parseAnswer(content: unknown): { reactions: string[]; caseInfo: boolean } {
+  if (typeof content !== "string") return { reactions: [], caseInfo: false };
   const tryParse = (s: string) => {
     try {
       const v = JSON.parse(s);
-      return Array.isArray(v?.reactions) ? (v.reactions as unknown[]) : null;
+      return Array.isArray(v?.reactions) ? (v as { reactions: unknown[]; caseInfo?: unknown }) : null;
     } catch {
       return null;
     }
   };
-  const direct = tryParse(content.trim());
-  const found = direct ?? tryParse(content.match(/\{[\s\S]*\}/)?.[0] ?? "") ?? [];
-  return found.filter((r): r is string => typeof r === "string");
+  const v = tryParse(content.trim()) ?? tryParse(content.match(/\{[\s\S]*\}/)?.[0] ?? "");
+  return {
+    reactions: (v?.reactions ?? []).filter((r): r is string => typeof r === "string"),
+    caseInfo: v?.caseInfo === true,
+  };
 }
 
 Deno.serve(async (req) => {
@@ -161,7 +170,7 @@ Deno.serve(async (req) => {
     }
 
     const data = await r.json();
-    const reactions = parseReactions(data?.choices?.[0]?.message?.content);
+    const { reactions, caseInfo } = parseAnswer(data?.choices?.[0]?.message?.content);
     const clean = [...new Set(reactions)]
       .filter((x): x is (typeof REACTIONS)[number] => (REACTIONS as readonly string[]).includes(x))
       .slice(0, 2);
@@ -170,7 +179,8 @@ Deno.serve(async (req) => {
     console.log(
       JSON.stringify({ in: data?.usage?.prompt_tokens, out: data?.usage?.completion_tokens, n: clean.length }),
     );
-    return json({ reactions: clean }, 200, origin);
+    // caseInfo — 글에 내담자 정보가 섞였는지 (2026-11-27). 앱이 지우고 다시 적으라고 알린다.
+    return json({ reactions: clean, caseInfo }, 200, origin);
   } catch {
     return json({ error: "unknown" }, 500, origin);
   }

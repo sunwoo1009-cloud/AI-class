@@ -3325,6 +3325,90 @@ small,
   text-wrap: pretty;
 }
 
+/* --- 반응 적기 — 사례 정보 경고 (2026-11-27) --- */
+.case-warn {
+  margin: 8px 0 4px;
+  padding: 10px 12px;
+  border: 1.5px solid #d9897b;
+  border-radius: 12px;
+  background: #fbe9e4;
+  color: #6e2a20;
+  animation: case-warn-in 260ms ease both;
+}
+
+.case-warn p {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+
+.case-warn b {
+  font-size: 0.92rem;
+}
+
+.case-warn span {
+  font-size: 0.82rem;
+}
+
+.btn-quiet.case-warn-go {
+  margin-top: 4px;
+  padding: 6px 0 0;
+  font-size: 0.8rem;
+  color: #6e2a20;
+}
+
+@keyframes case-warn-in {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-warn {
+    animation: none;
+  }
+}
+
+/* --- 기법 음성 안내 · 진동 박자 켜기 (2026-11-27) --- */
+.guide-toggles {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin: -2px 0 6px;
+}
+
+.guide-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 4px 11px;
+  border: 1.5px solid var(--btn-edge);
+  border-radius: 999px;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.guide-chip.is-on {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-weight: 700;
+  box-shadow: 0 2px 0 var(--btn-primary-ledge);
+}
+
 /* --- 다 채운 쿠폰 — 펼친 링 바인더 앨범 (2026-11-27, 사용자 참고 사진) --- */
 .album {
   margin-top: 8px;

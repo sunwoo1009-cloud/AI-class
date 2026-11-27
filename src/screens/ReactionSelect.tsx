@@ -5,6 +5,7 @@ import { FoodIcon } from './menu/FoodIcon';
 import { BackButton, Toast, Tooltip } from '../components/ui';
 import { guessReactions } from '../lib/emotionGuess';
 import { aiAvailable, aiGuess } from '../lib/aiGuess';
+import { findCaseInfo } from '../lib/caseInfo';
 
 interface Props {
   onSubmit: (reactions: ReactionType[]) => void;
@@ -47,17 +48,39 @@ export function ReactionSelect({ onSubmit, onCancel, demoText }: Props) {
     [],
   );
 
+  /** 사례 정보가 섞였다는 경고 (2026-11-27). device = 보내기 전에 기기에서 잡음, ai = AI 가 같은 호출에서 봄 */
+  const [caseWarn, setCaseWarn] = useState<{ by: 'device' | 'ai'; what: string[] } | null>(null);
+  /** AI 가 사례 정보라고 봤지만 사용자가 '그래도 찾기'를 누를 때 쓸, 이미 받은 답 */
+  const pending = useRef<ReactionType[] | null>(null);
+
+  function show(ids: ReactionType[], device: boolean) {
+    setFromDevice(device);
+    setFound(ids);
+    setShowAll(ids.length === 0);
+    setCaseWarn(null);
+    window.scrollTo({ top: 0 });
+  }
+
   async function judge() {
     const t = text.trim();
     if (!t || busy) return;
+    // 1) 보내기 전에 기기에서 — 나이·학교·학년·전화번호가 있으면 AI 에 보내지 않는다
+    const local = findCaseInfo(t);
+    if (local.length) {
+      setCaseWarn({ by: 'device', what: local });
+      return;
+    }
     setBusy(true);
     const fromAi = await aiGuess(t);
     setBusy(false);
-    const ids = fromAi ?? guessReactions(t).map((g) => g.id);
-    setFromDevice(fromAi === null);
-    setFound(ids);
-    setShowAll(ids.length === 0);
-    window.scrollTo({ top: 0 });
+    // 2) AI 가 같은 호출에서 사례 정보가 섞였다고 보면 메뉴 대신 경고
+    if (fromAi?.caseInfo) {
+      pending.current = fromAi.reactions;
+      setCaseWarn({ by: 'ai', what: [] });
+      return;
+    }
+    if (fromAi) show(fromAi.reactions, false);
+    else show(guessReactions(t).map((g) => g.id), true);
   }
 
   function pay(id: ReactionType) {
@@ -157,7 +180,10 @@ export function ReactionSelect({ onSubmit, onCancel, demoText }: Props) {
           rows={3}
           maxLength={200}
           placeholder="예: 가슴이 계속 두근거려요"
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+            setCaseWarn(null);
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -166,6 +192,28 @@ export function ReactionSelect({ onSubmit, onCancel, demoText }: Props) {
           }}
         />
       </label>
+      {caseWarn ? (
+        <div className="case-warn" role="alert">
+          <p>
+            <b>사례 정보가 들어간 것 같아요</b>
+            <span>
+              {caseWarn.by === 'device'
+                ? `${caseWarn.what.join('·')} 같은 정보는 지우고 내 반응만 적어 주세요`
+                : '그 부분을 지우고 내 반응만 적어 주세요'}
+            </span>
+          </p>
+          {caseWarn.by === 'ai' && pending.current ? (
+            // AI 가 잘못 봤을 수 있다 — 이미 받은 답으로 넘어간다(다시 보내지 않는다)
+            <button
+              type="button"
+              className="btn-quiet case-warn-go"
+              onClick={() => pending.current && show(pending.current, false)}
+            >
+              내 반응만 적었어요, 그대로 찾기
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       <p className="feel-note">
         {aiAvailable ? '메뉴를 찾기 위해 AI를 활용해요' : '적은 글은 메뉴를 찾는 데만 써요'}
       </p>

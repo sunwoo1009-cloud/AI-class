@@ -32,7 +32,17 @@ export function cleanAiReactions(raw: unknown): ReactionType[] | null {
   return out.slice(0, 2);
 }
 
-export async function aiGuess(text: string): Promise<ReactionType[] | null> {
+/** 서버가 글에 내담자 정보가 섞였다고 봤는지 (2026-11-27). 옛 함수는 이 값을 안 보내므로 없으면 false. */
+export function aiCaseInfo(raw: unknown): boolean {
+  return Boolean(raw && typeof raw === 'object' && (raw as { caseInfo?: unknown }).caseInfo === true);
+}
+
+export interface AiAnswer {
+  reactions: ReactionType[];
+  caseInfo: boolean;
+}
+
+export async function aiGuess(text: string): Promise<AiAnswer | null> {
   if (!aiAvailable) return null;
   const t = text.trim().slice(0, 200);
   if (!t) return null;
@@ -50,7 +60,9 @@ export async function aiGuess(text: string): Promise<ReactionType[] | null> {
       signal: ctrl.signal,
     });
     if (!r.ok) return null;
-    return cleanAiReactions(await r.json());
+    const raw: unknown = await r.json();
+    const reactions = cleanAiReactions(raw);
+    return reactions ? { reactions, caseInfo: aiCaseInfo(raw) } : null;
   } catch {
     return null;
   } finally {

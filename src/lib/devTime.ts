@@ -1,4 +1,5 @@
 import { isEveningWindow } from './date';
+import { cachedSunset, duskBySunset } from './weather';
 
 /**
  * 개발·확인용 강제 파라미터.
@@ -45,9 +46,16 @@ export function sceneNow(
   return forced;
 }
 
-/** 명세 7.3 의 5시 분기를, 강제 파라미터를 반영해서 판단한다 */
-export function isEveningScene(search?: string, now?: Date): boolean {
-  return isEveningWindow(sceneNow(search ?? currentSearch(), now));
+/**
+ * 노점 장면을 노을로 그릴지.
+ * 2026-11-27 — 받아 둔 그날 실제 일몰 시각이 있으면 "일몰 40분 전부터"(lib/weather.ts duskBySunset).
+ * 없으면 예전처럼 17시. ?time= 강제 파라미터가 있으면 늘 17시 기준(확인용).
+ */
+export function isEveningScene(search?: string, now?: Date, sunset: string | undefined = cachedSunset()): boolean {
+  const s = search ?? currentSearch();
+  if (parseTimeOverride(s) !== null) return isEveningWindow(sceneNow(s, now));
+  const t = now ?? new Date();
+  return duskBySunset(sunset, t) ?? isEveningWindow(t);
 }
 
 export function introOverride(search: string = currentSearch()): boolean | null {

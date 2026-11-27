@@ -39,6 +39,8 @@ export const KEYS = {
   /** 인트로 날씨 (2026-11-27, lib/weather.ts) — 받은 날씨 1시간 보관, 설정에서 고른 지역(뭉갠 좌표) */
   weather: `${PREFIX}weather`,
   weatherPlace: `${PREFIX}weatherPlace`,
+  /** 기법 음성 안내·진동 박자 켬 (2026-11-27, lib/guide.ts) */
+  guide: `${PREFIX}guide`,
 } as const;
 
 /**

@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { cleanAiReactions } from './aiGuess';
+import { aiCaseInfo, cleanAiReactions } from './aiGuess';
+
+describe('aiCaseInfo — 사례 정보가 섞였다는 서버 표시', () => {
+  it('true 일 때만 true', () => {
+    expect(aiCaseInfo({ reactions: [], caseInfo: true })).toBe(true);
+    expect(aiCaseInfo({ reactions: [], caseInfo: false })).toBe(false);
+  });
+  it('옛 함수(표시 없음)·이상한 값은 false', () => {
+    expect(aiCaseInfo({ reactions: ['anger'] })).toBe(false);
+    expect(aiCaseInfo({ caseInfo: 'yes' })).toBe(false);
+    expect(aiCaseInfo(null)).toBe(false);
+  });
+});
 
 describe('cleanAiReactions — 서버 답을 믿을 수 있는 모양으로', () => {
   it('아는 반응만, 겹치지 않게, 두 개까지', () => {

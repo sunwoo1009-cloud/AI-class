@@ -56,6 +56,8 @@ interface Cached {
   at: string;
   lat: number;
   lon: number;
+  /** 그날 일몰 시각 — 그 지역 시각 "YYYY-MM-DDTHH:mm" (2026-11-27) */
+  sunset?: string;
 }
 
 /** 저장해 둔 날씨가 아직 쓸 만한가 (같은 곳, 1시간 안) */
@@ -88,6 +90,29 @@ export function lastWeather(): Weather {
   return c && (WEATHERS as string[]).includes(c.kind) ? c.kind : 'clear';
 }
 
+/** 노을로 바꾸는 때 — 일몰 이만큼 전부터 (해가 기울며 하늘이 물드는 때) */
+export const DUSK_BEFORE_MIN = 40;
+
+/**
+ * 지금이 노을(저녁) 장면인가 — 실제 일몰 기준 (순수 함수, 2026-11-27).
+ * sunset 이 오늘 것이면 "일몰 40분 전 ~ 자정", 없거나 다른 날 것이면 null (부르는 쪽이 옛 기준 17시를 쓴다).
+ * sunset 은 그 지역 시각 "YYYY-MM-DDTHH:mm" — 기기 시각으로 읽는다(같은 나라 안이라 같다).
+ */
+export function duskBySunset(sunset: string | undefined, now: Date): boolean | null {
+  if (!sunset) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(sunset);
+  if (!m) return null;
+  const [y, mo, d, h, mi] = m.slice(1).map(Number);
+  if (y !== now.getFullYear() || mo !== now.getMonth() + 1 || d !== now.getDate()) return null;
+  const at = new Date(y, mo - 1, d, h, mi).getTime() - DUSK_BEFORE_MIN * 60 * 1000;
+  return now.getTime() >= at;
+}
+
+/** 저장해 둔 오늘 일몰 시각 (없으면 undefined) */
+export function cachedSunset(): string | undefined {
+  return readJson<Cached>(CACHE_KEY)?.sunset;
+}
+
 /** 오늘 날씨. 1시간 안에 받은 게 있으면 그걸 쓰고, 없으면 Open-Meteo 에 묻는다. */
 export async function fetchWeather(): Promise<Weather> {
   const place = loadWeatherPlace();
@@ -97,19 +122,28 @@ export async function fetchWeather(): Promise<Weather> {
   const ctrl = new AbortController();
   const timer = window.setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
+    // 같은 요청에 그날 일몰 시각도 받는다 — 노점이 실제 해 질 녘에 노을로 바뀌게 (요청 수는 늘지 않는다)
     const url =
       `https://api.open-meteo.com/v1/forecast?latitude=${place.lat}&longitude=${place.lon}` +
-      '&current=weather_code&timezone=auto';
+      '&current=weather_code&daily=sunset&forecast_days=1&timezone=auto';
     const r = await fetch(url, { signal: ctrl.signal });
     if (!r.ok) return lastWeather();
-    const data = (await r.json()) as { current?: { weather_code?: unknown } };
+    const data = (await r.json()) as { current?: { weather_code?: unknown }; daily?: { sunset?: unknown[] } };
     const code = data.current?.weather_code;
     if (typeof code !== 'number') return lastWeather();
     const kind = weatherFromCode(code);
+    const ss = data.daily?.sunset?.[0];
+    const sunset = typeof ss === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(ss) ? ss.slice(0, 16) : undefined;
     try {
       localStorage.setItem(
         CACHE_KEY,
-        JSON.stringify({ kind, at: new Date().toISOString(), lat: place.lat, lon: place.lon } satisfies Cached),
+        JSON.stringify({
+          kind,
+          at: new Date().toISOString(),
+          lat: place.lat,
+          lon: place.lon,
+          sunset,
+        } satisfies Cached),
       );
     } catch {
       // 저장 못 해도 이번 장면에는 쓴다

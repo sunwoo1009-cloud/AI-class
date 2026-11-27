@@ -10,6 +10,17 @@ import { expandSteps, resolveOptions, toggleChoice } from '../lib/choice';
 import type { ChoiceAnswers } from '../lib/choice';
 import type { TechniqueId } from '../types';
 import { BackButton } from '../components/ui';
+import {
+  buzz,
+  hapticAvailable,
+  keepScreenOn,
+  loadGuidePrefs,
+  saveGuidePrefs,
+  speak,
+  speechAvailable,
+  stopSpeaking,
+} from '../lib/guide';
+import type { GuidePrefs } from '../lib/guide';
 
 interface Props {
   technique: TechniqueId;
@@ -85,6 +96,46 @@ export function TechniquePlayer({
   // 여러 개 고르기 단계에서 하나 이상 골랐는가
   const picked = step.kind === 'choice' ? (answers[step.choiceId] ?? []) : [];
 
+  /* ---------- 음성 안내 · 진동 박자 · 화면 꺼짐 막기 (2026-11-27) ---------- */
+  const [guide, setGuide] = useState<GuidePrefs>(loadGuidePrefs);
+  const stepText =
+    step.kind === 'text' ? fillName(step.text, name) : step.kind === 'choice' ? step.text : null;
+
+  // 기법 도중에는 화면이 꺼지지 않게, 나가면 읽던 것도 멈춘다
+  useEffect(() => {
+    const release = keepScreenOn();
+    return () => {
+      release();
+      stopSpeaking();
+    };
+  }, []);
+
+  // 단계가 바뀌면 그 글을 읽는다 (호흡 단계는 들이쉬고·내쉬고를 따로 읽는다)
+  useEffect(() => {
+    if (!guide.voice) return;
+    // 호흡 단계는 BreathingCircle 이 먼저(자식 effect 가 먼저 돈다) "들이쉬고"를 읽으므로 끊지 않는다
+    if (stepText) speak(stepText);
+    else if (step.kind !== 'breathing') stopSpeaking();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index, guide.voice]);
+
+  function toggleGuide(key: keyof GuidePrefs) {
+    const next = { ...guide, [key]: !guide[key] };
+    setGuide(next);
+    saveGuidePrefs(next);
+    // 아이폰은 누른 그 순간에 한 번 읽어야 소리가 열린다
+    if (key === 'voice') {
+      if (next.voice) speak(stepText ?? (step.kind === 'breathing' ? '숨에 맞춰 따라 해 보세요' : ''));
+      else stopSpeaking();
+    }
+    if (key === 'haptic' && next.haptic) buzz(60);
+  }
+
+  function onBreathPhase(phase: 'in' | 'out') {
+    if (guide.voice) speak(phase === 'in' ? '들이쉬고' : '내쉬고');
+    if (guide.haptic) buzz(phase === 'in' ? 90 : [40, 60, 40]);
+  }
+
   return (
     <div className="app app-paper">
       <div className="topbar">
@@ -117,6 +168,32 @@ export function TechniquePlayer({
         ))}
       </div>
 
+      {/* 음성 안내 · 진동 박자 켜기 (2026-11-27). 진동은 지원하는 기기(주로 안드로이드)에서만 보인다 */}
+      {speechAvailable || hapticAvailable ? (
+        <div className="guide-toggles">
+          {speechAvailable ? (
+            <button
+              type="button"
+              className={`guide-chip${guide.voice ? ' is-on' : ''}`}
+              aria-pressed={guide.voice}
+              onClick={() => toggleGuide('voice')}
+            >
+              <span aria-hidden="true">{guide.voice ? '🔊' : '🔈'}</span> 소리로 듣기
+            </button>
+          ) : null}
+          {hapticAvailable ? (
+            <button
+              type="button"
+              className={`guide-chip${guide.haptic ? ' is-on' : ''}`}
+              aria-pressed={guide.haptic}
+              onClick={() => toggleGuide('haptic')}
+            >
+              <span aria-hidden="true">📳</span> 진동으로 박자
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="script">
         {index === 0 && reasonNote ? (
           <p className="script-reason">{reasonNote}</p>
@@ -142,6 +219,7 @@ export function TechniquePlayer({
             cycles={step.cycles}
             inhaleSec={step.inhaleSec}
             exhaleSec={step.exhaleSec}
+            onPhase={onBreathPhase}
           />
         ) : null}
 
@@ -221,23 +299,38 @@ function BreathingCircle({
   cycles,
   inhaleSec,
   exhaleSec,
+  onPhase,
 }: {
   cycles: number;
   inhaleSec: number;
   exhaleSec: number;
+  /** 들숨·날숨이 바뀔 때마다 (음성·진동 박자, 2026-11-27) */
+  onPhase?: (phase: 'in' | 'out') => void;
 }) {
   const cycleSec = inhaleSec + exhaleSec;
   const [phase, setPhase] = useState<'in' | 'out'>('in');
+  const onPhaseRef = useRef(onPhase);
+  onPhaseRef.current = onPhase;
 
   useEffect(() => {
     const started = Date.now();
-    const id = setInterval(() => {
+    let last: 'in' | 'out' | null = null;
+    const tick = () => {
       const elapsed = (Date.now() - started) / 1000;
+      // 정해진 횟수가 끝나면 더 알리지 않는다
+      if (elapsed >= cycleSec * cycles) return;
       const within = elapsed % cycleSec;
-      setPhase(within < inhaleSec ? 'in' : 'out');
-    }, 200);
+      const now = within < inhaleSec ? 'in' : 'out';
+      if (now !== last) {
+        last = now;
+        setPhase(now);
+        onPhaseRef.current?.(now);
+      }
+    };
+    tick();
+    const id = setInterval(tick, 200);
     return () => clearInterval(id);
-  }, [cycleSec, inhaleSec]);
+  }, [cycleSec, inhaleSec, cycles]);
 
   return (
     <div className="breath">

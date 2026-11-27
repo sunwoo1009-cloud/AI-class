@@ -1,5 +1,33 @@
 import { describe, expect, it } from 'vitest';
-import { cacheFresh, coarse, parseWeatherOverride, weatherFromCode } from './weather';
+import { cacheFresh, coarse, duskBySunset, parseWeatherOverride, weatherFromCode } from './weather';
+import { isEveningScene } from './devTime';
+
+describe('실제 일몰 기준 노을 (2026-11-27)', () => {
+  const day = (h: number, m = 0) => new Date(2026, 10, 27, h, m);
+  it('일몰 40분 전부터 노을', () => {
+    expect(duskBySunset('2026-11-27T17:15', day(16, 34))).toBe(false);
+    expect(duskBySunset('2026-11-27T17:15', day(16, 35))).toBe(true);
+    expect(duskBySunset('2026-11-27T17:15', day(22))).toBe(true);
+  });
+  it('여름처럼 일몰이 늦으면 5시가 넘어도 아직 낮', () => {
+    const june = new Date(2026, 5, 21, 18, 0);
+    expect(duskBySunset('2026-06-21T19:57', june)).toBe(false);
+  });
+  it('다른 날 것이거나 없으면 판단하지 않는다(null)', () => {
+    expect(duskBySunset('2026-11-26T17:15', day(18))).toBeNull();
+    expect(duskBySunset(undefined, day(18))).toBeNull();
+    expect(duskBySunset('엉뚱', day(18))).toBeNull();
+  });
+  it('장면 판단 — 일몰이 있으면 그걸, 없으면 17시', () => {
+    expect(isEveningScene('', day(16, 50), '2026-11-27T17:15')).toBe(true);
+    expect(isEveningScene('', day(16, 50), undefined)).toBe(false);
+    expect(isEveningScene('', day(17, 5), undefined)).toBe(true);
+  });
+  it('?time= 확인용은 늘 17시 기준', () => {
+    expect(isEveningScene('?time=16', day(12), '2026-11-27T15:00')).toBe(false);
+    expect(isEveningScene('?time=18', day(12), '2026-11-27T20:00')).toBe(true);
+  });
+});
 
 describe('날씨 코드 → 네 가지', () => {
   it('맑음', () => {
