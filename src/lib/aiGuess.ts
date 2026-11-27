@@ -1,5 +1,6 @@
 import { REACTIONS } from '../constants';
 import type { ReactionType } from '../types';
+import { baseUrl } from '../dev/feedback';
 
 /**
  * 반응 선택 AI 판단 (명세 6.1, 2026-11-27).
@@ -9,7 +10,8 @@ import type { ReactionType } from '../types';
  * 실패하면(함수가 아직 없음·인터넷 끊김·10초 넘음·한도) null 을 돌려준다 —
  * 화면은 기기 안 판단(lib/emotionGuess.ts)으로 넘어간다.
  */
-const URL_ = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim();
+// 배포 비밀값이 '…supabase.co/rest/v1/' 로 들어가 있어서 꼬리를 떼야 한다 (feedback·account 와 같은 처리)
+const URL_ = baseUrl(import.meta.env.VITE_SUPABASE_URL as string | undefined);
 const KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim();
 
 export const aiAvailable = Boolean(URL_ && KEY);
