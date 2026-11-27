@@ -217,7 +217,9 @@ export function MyPage({ settings, onChangeSettings, onOpen, onBack, demo = fals
       <section className="card my-cases">
         <h2>사례 종류 비율</h2>
         <p className="muted" style={{ marginTop: 0 }}>
-          오늘 본 회기를 종류마다 한 번씩 눌러 세요. 날짜와 종류만 남아요.
+          오늘 본 회기를 종류마다 한 번씩 눌러 세요.
+          <br />
+          날짜와 종류만 남아요.
         </p>
         <div className="case-grid">
           {CASE_KINDS.map((k) => {

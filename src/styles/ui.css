@@ -3096,3 +3096,132 @@
 .card.cal-sheet-card {
   margin-bottom: 10px;
 }
+
+/* ================================================================== */
+/* 2026-11-27 (오후) — 내담자 정보 경고 · 일기 안내 화면 · 줄바꿈 */
+
+/* --- 반응 적기: AI 에 보내므로 내담자 정보 경고를 크게 --- */
+.feel-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 14px 0 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #f6e1d9;
+  border: 1.5px solid #c9765f;
+  color: #5e2414;
+}
+
+.feel-warn-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--stamp-ink);
+  color: #fff;
+  font-weight: 800;
+}
+
+.feel-warn p {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.feel-warn b {
+  font-size: 1.02rem;
+}
+
+.feel-warn span {
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.feel-source {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: var(--accent);
+}
+
+/* --- 하루 끝 일기: 안내만 있는 화면 → 서서히 사라짐 → 쓰는 화면 --- */
+.app.jr-intro {
+  min-height: 100vh;
+  min-height: 100dvh;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  animation: jr-fade 600ms ease-out both;
+}
+
+.gal-screen .app.jr-intro {
+  min-height: 100%;
+}
+
+.app.jr-intro.is-fading {
+  animation: jr-out 700ms ease-in both;
+}
+
+.jr-intro-main {
+  margin: 0 0 12px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.jr-intro-sub {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+  color: var(--stamp-ink);
+}
+
+.app.jr-write {
+  animation: jr-fade 500ms ease-out both;
+}
+
+@keyframes jr-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* --- 줄바꿈 — 낱말 단위(keep-all)는 global.css. 여기서는 줄 길이를 고르게 --- */
+/* 제목·짧은 안내: 줄 길이를 맞춰 한 낱말만 다음 줄로 떨어지지 않게 */
+h1,
+h2,
+h3,
+.bsheet-title,
+.coach-title,
+.coach-text,
+.feel-note,
+.feel-hint,
+.home-nudge p,
+.callink-off,
+.snackbar-text,
+.banner-text,
+.jr-intro-main,
+.jr-intro-sub,
+.journal-question,
+.pulse-q legend,
+.onb-hint,
+.suds-hint,
+.script-text {
+  text-wrap: balance;
+}
+
+/* 본문: 마지막 줄에 한 낱말만 남지 않게 */
+p,
+li,
+small,
+.muted,
+.journal-body {
+  text-wrap: pretty;
+}

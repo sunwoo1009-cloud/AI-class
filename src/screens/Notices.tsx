@@ -34,7 +34,10 @@ export function ExternalResource({
       </div>
 
       <p className="muted">
-        오늘 회기 후 부담이 기법으로 내려가지 않았어요. 혼자 더 붙들고 있기보다
+        오늘 회기 후 부담이 기법으로 내려가지 않았어요.
+        <br />
+        혼자 더 붙들고 있기보다
+        <br />
         나눌 수 있는 자리를 찾는 쪽이 나아요.
       </p>
 

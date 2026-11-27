@@ -367,6 +367,11 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       ),
     },
     {
+      id: 'journal-intro',
+      label: '하루 끝 일기 — 들어올 때 안내',
+      render: () => <Journal onDone={noop} />,
+    },
+    {
       id: 'journal-list',
       label: '하루 끝 일기 — 그동안 쓴 일기',
       tall: true,
@@ -387,7 +392,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       label: '하루 끝 일기',
       spec: '7.3',
       tall: true,
-      render: () => <Journal onDone={noop} />,
+      render: () => <Journal onDone={noop} skipIntro />,
     },
     {
       id: 'coupons',
@@ -505,7 +510,7 @@ const SHEETS: Sheet[] = [
   // 처음 여는 순서대로: 온보딩 → 선택 가입 → (다음부터 열 때마다) 인트로 → 홈
   { title: '시작', kind: 'row', ids: ['onboarding', 'join', 'calendar-link-start', 'intro', 'home'] },
   { title: '기법을 사용해 감정 관리하기', kind: 'checkin' },
-  { title: '오늘의 나를 기록하기', kind: 'row', ids: ['journal', 'journal-list'] },
+  { title: '오늘의 나를 기록하기', kind: 'row', ids: ['journal-intro', 'journal', 'journal-list'] },
   // 2026-11-27 — 주간 요약·돌아보기·캘린더·쿠폰은 마이페이지 안으로
   {
     title: '마이페이지',

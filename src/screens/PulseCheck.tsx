@@ -104,12 +104,18 @@ export function PulseCheck({ onBack, demo = false, startAtResult = false }: Prop
           <div className="card card-note">
             <p style={{ marginTop: 0, fontWeight: 700 }}>조기 신호일 수 있어요</p>
             <p className="muted" style={{ marginBottom: 6 }}>
-              업무 부담이 쌓이고 있다는 신호일 수 있어요. 혼자 견디기보다 수퍼비전이나 동료와
-              나눌 자리를 찾아보세요.
+              업무 부담이 쌓이고 있다는 신호일 수 있어요.
+              <br />
+              혼자 견디기보다
+              <br />
+              수퍼비전이나 동료와 나눌 자리를 찾아보세요.
             </p>
             <p className="muted" style={{ marginBottom: 0 }}>
-              이 점검은 진단이 아니에요. 우울이나 외상 후 반응이 의심되면 전문가의 평가와 상담을
-              받는 것이 안전해요.
+              이 점검은 진단이 아니에요.
+              <br />
+              우울이나 외상 후 반응이 의심되면
+              <br />
+              전문가의 평가와 상담을 받는 것이 안전해요.
             </p>
           </div>
         ) : (

@@ -210,7 +210,9 @@ export function SettingsScreen({
 
       <h2 style={{ marginTop: 22 }}>데이터 내보내기</h2>
       <p className="muted">
-        백업하거나 기기를 바꿀 때 쓰세요. 파일은 이 기기에 저장되고 어디로도 전송되지 않아요.
+        백업하거나 기기를 바꿀 때 쓰세요.
+        <br />
+        파일은 이 기기에 저장되고 어디로도 전송되지 않아요.
       </p>
       <label className="check-row">
         <input

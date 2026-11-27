@@ -42,7 +42,7 @@ export function SudsSlider({ mode, onSubmit, onBack }: Props) {
       <div className="suds-current-anchor">{anchorFor(value)}</div>
 
       {/* 처음 보는 사람이 막대를 움직일 수 있다는 걸 알게 */}
-      <p className="suds-hint">{mode === 'pre' ? '막대를 좌우로 옮겨 1~10까지 선택하세요' : '막대를 좌우로 옮겨 선택하세요'}</p>
+      <p className="suds-hint">{mode === 'pre' ? '막대를 좌우로 옮겨 0~10까지 선택하세요' : '막대를 좌우로 옮겨 선택하세요'}</p>
 
       <input
         type="range"

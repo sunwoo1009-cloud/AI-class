@@ -113,8 +113,11 @@ export function CalendarLink({ variant, onBack, onDone, demo = false }: Props) {
 
       <h1>상담이 끝나면 알려 드릴까요?</h1>
       <p className="muted">
-        캘린더 앱에 그날의 상담 회기 시간을 넣어 두면, 회기가 끝나는 시각에 알림이 와요. 이 앱을
-        닫아 두어도 캘린더 앱이 알려 줘요.
+        캘린더 앱에 그날의 상담 회기 시간을 넣어 두면
+        <br />
+        회기가 끝나는 시각에 알림이 와요.
+        <br />
+        이 앱을 닫아 두어도 캘린더 앱이 알려 줘요.
       </p>
 
       {/* 알림이 어떻게 보이는지 */}
@@ -138,7 +141,11 @@ export function CalendarLink({ variant, onBack, onDone, demo = false }: Props) {
         <li>
           캘린더 앱에 회기를 넣을 때 <b>제목에 ‘{kw.trim() || '상담'}’</b>을 넣어 주세요 (예: {kw.trim() || '상담'} 3회기)
         </li>
-        <li>회기가 끝나는 시각에 알림이 와요. 누르면 이 앱으로 와요</li>
+        <li>
+          회기가 끝나는 시각에 알림이 와요
+          <br />
+          알림 속 주소를 누르면 이 앱으로 와요
+        </li>
       </ol>
 
       <Accordion

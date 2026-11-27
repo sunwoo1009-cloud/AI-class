@@ -279,8 +279,13 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
     <section className="account">
       <h2>기록 백업·동기화 (선택)</h2>
       <p className="muted">
-        가입하지 않아도 모든 기능을 쓸 수 있어요. 가입하면 기록을 서버에 백업하고 다른
-        기기에서도 이어서 쓸 수 있어요. 서버에 맡기기 싫으면 지금처럼 기기에만 저장하세요.
+        가입하지 않아도 모든 기능을 쓸 수 있어요.
+        <br />
+        가입하면 기록을 서버에 백업하고
+        <br />
+        다른 기기에서도 이어서 쓸 수 있어요.
+        <br />
+        서버에 맡기기 싫으면 지금처럼 기기에만 저장하세요.
       </p>
       <AuthForm
         onSignedIn={async (message) => {
@@ -476,7 +481,11 @@ export function AuthForm({
                   checked={agreed}
                   onChange={(e) => setAgreed(e.target.checked)}
                 />
-                <span>위 내용을 읽었고, 기록을 서버에 백업하는 데 동의해요</span>
+                <span>
+                  위 내용을 읽었고,
+                  <br />
+                  기록을 서버에 백업하는 데 동의해요
+                </span>
               </label>
             </>
           ) : null}

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { reactionInfo } from '../constants';
 import { checkInsForDate } from '../lib/calendar';
 import { toDateKey } from '../lib/date';
@@ -13,7 +13,13 @@ import { BackButton } from '../components/ui';
 
 interface Props {
   onDone: () => void;
+  /** 발표용 — 안내 화면을 건너뛰고 쓰는 화면부터 */
+  skipIntro?: boolean;
 }
+
+/** 안내 화면이 머무는 시간과 사라지는 시간 */
+const INTRO_HOLD_MS = 1800;
+const INTRO_FADE_MS = 700;
 
 type PromptId = 'drain' | 'response' | 'let_go';
 
@@ -36,7 +42,7 @@ export function promptQuestion(id: PromptId, date: string): string {
 }
 
 /** 명세 7.3 / 9절 화면 10 */
-export function Journal({ onDone }: Props) {
+export function Journal({ onDone, skipIntro = false }: Props) {
   const today = toDateKey(new Date());
   const existing = useMemo(() => journalForDate(today), [today]);
   const checkIns = useMemo(() => checkInsForDate(loadCheckIns(), today), [today]);
@@ -47,6 +53,21 @@ export function Journal({ onDone }: Props) {
     return base;
   });
   const [saved, setSaved] = useState(false);
+  /**
+   * 2026-11-27 — 들어오면 안내 두 줄만 있는 화면이 먼저 나오고, 서서히 사라진(fade) 뒤 쓰는 화면이 나온다.
+   * 'show' → 'fading' → 'done'. 누르면 바로 넘어간다.
+   */
+  const [intro, setIntro] = useState<'show' | 'fading' | 'done'>(skipIntro ? 'done' : 'show');
+  useEffect(() => {
+    if (intro === 'show') {
+      const t = window.setTimeout(() => setIntro('fading'), INTRO_HOLD_MS);
+      return () => window.clearTimeout(t);
+    }
+    if (intro === 'fading') {
+      const t = window.setTimeout(() => setIntro('done'), INTRO_FADE_MS);
+      return () => window.clearTimeout(t);
+    }
+  }, [intro]);
   /** 지금 보고 있는 질문 (밀어서 넘긴다) */
   const [slide, setSlide] = useState(0);
   const swipeRef = useRef<HTMLDivElement>(null);
@@ -107,11 +128,28 @@ export function Journal({ onDone }: Props) {
     );
   }
 
+  if (intro !== 'done') {
+    return (
+      <div
+        className={'app app-paper jr-intro' + (intro === 'fading' ? ' is-fading' : '')}
+        onClick={() => setIntro('done')}
+        role="button"
+        tabIndex={0}
+        aria-label="안내를 넘기고 일기 쓰기"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') setIntro('done');
+        }}
+      >
+        <p className="jr-intro-main">오늘의 나에 대해 써주세요</p>
+        <p className="jr-intro-sub">내담자를 알아볼 수 있는 정보는 쓰지 마세요</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="app app-paper">
+    <div className="app app-paper jr-write">
       {/* 명세 7.3 — 스크롤해도 사라지지 않게 고정한다 */}
-      {/* 2026-11-27 — 들어오면 문구가 서서히 나타난다(fade) */}
-      <div className="journal-notice jr-fade">
+      <div className="journal-notice">
         오늘의 나에 대해 써주세요
         {/* 2026-11-25 다시 넣음 — 심리적 분리에서 사례 생각을 일기로 넘길 수 있게 되었다 */}
         <span className="journal-notice-sub">내담자를 알아볼 수 있는 정보는 쓰지 마세요</span>
