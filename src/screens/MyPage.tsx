@@ -29,7 +29,15 @@ import {
 } from '../storage/store';
 import type { Settings } from '../types';
 
-export type MyPageTarget = 'journalList' | 'summary' | 'review' | 'calendar' | 'coupons' | 'calendarLink' | 'pulse';
+export type MyPageTarget =
+  | 'journalList'
+  | 'summary'
+  | 'review'
+  | 'calendar'
+  | 'coupons'
+  | 'calendarLink'
+  | 'pulse'
+  | 'findHelp';
 
 interface Props {
   settings: Settings;
@@ -154,6 +162,8 @@ export function MyPage({ settings, onChangeSettings, onOpen, onBack, demo = fals
       label: '캘린더 앱 연동',
       sub: cal.connected ? '연결했어요 · 회기 끝 알림' : calendarAvailable || demo ? '회기가 끝나면 알림' : '준비 중',
     },
+    // 2026-11-27 — 근처 정신건강의학과·상담센터 (카카오맵으로 넘겨 준다, 명세 7.13)
+    { id: 'findHelp', label: '도움받을 곳 찾기', sub: '가까운 상담센터·병원' },
   ];
 
   const pct = (n: number) => (mix.total ? Math.round((n / mix.total) * 100) : 0);

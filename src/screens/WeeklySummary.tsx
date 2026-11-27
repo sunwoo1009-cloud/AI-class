@@ -5,6 +5,7 @@ import { loadCheckIns, loadWeeklySessions, saveWeeklySession } from '../storage/
 import { BackButton } from '../components/ui';
 import { reactionInfo } from '../constants';
 import { FoodIcon } from './menu/FoodIcon';
+import { FindHelp } from './FindHelp';
 
 interface Props {
   onBack: () => void;
@@ -15,6 +16,8 @@ export function WeeklySummary({ onBack }: Props) {
   const checkIns = useMemo(() => loadCheckIns(), []);
   const [sessionsList, setSessionsList] = useState(() => loadWeeklySessions());
   const [draft, setDraft] = useState('');
+  /** 자원 제안 칸에서 '도움받을 곳 찾기'를 그 자리에서 연다 (2026-11-27) */
+  const [finding, setFinding] = useState(false);
 
   const summary = useMemo(
     () => buildWeeklySummary(checkIns, sessionsList),
@@ -30,6 +33,8 @@ export function WeeklySummary({ onBack }: Props) {
     );
     setDraft('');
   }
+
+  if (finding) return <FindHelp onBack={() => setFinding(false)} backLabel="주간 요약으로" />;
 
   return (
     <div className="app">
@@ -51,6 +56,9 @@ export function WeeklySummary({ onBack }: Props) {
           <p style={{ marginBottom: 0 }} className="muted">
             수퍼비전 · 동료 상담 · 기관 EAP
           </p>
+          <button className="btn fh-link" style={{ textAlign: 'center' }} onClick={() => setFinding(true)}>
+            가까운 상담센터·병원 찾기
+          </button>
         </div>
       ) : null}
 

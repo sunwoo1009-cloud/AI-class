@@ -29,6 +29,7 @@ import { introOverride } from './lib/devTime';
 import { shouldShowIntro } from './lib/intro';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { WeeklySummary } from './screens/WeeklySummary';
+import { FindHelp } from './screens/FindHelp';
 import {
   clearSettings,
   ensureSchemaVersion,
@@ -45,6 +46,7 @@ type View =
   | 'journalList'
   | 'calendarLink'
   | 'pulse'
+  | 'findHelp'
   | 'summary'
   | 'review'
   | 'calendar'
@@ -273,6 +275,8 @@ function AppMain() {
       return withTabs('calendarLink', <CalendarLink variant="menu" onBack={myPage} />);
     case 'pulse':
       return withTabs('pulse', <PulseCheck onBack={myPage} />);
+    case 'findHelp':
+      return withTabs('findHelp', <FindHelp onBack={myPage} />);
     case 'boutique':
       return withTabs('boutique', <Boutique onBack={home} />);
     case 'rate':

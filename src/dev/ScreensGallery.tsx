@@ -30,6 +30,7 @@ import { IntroScene } from '../scenes/IntroScene';
 import { loadSettings } from '../storage/store';
 import { TabBar } from '../screens/home/TabBar';
 import { Avatar3DParts } from './Avatar3DParts';
+import { FindHelp } from '../screens/FindHelp';
 import type { TabTarget } from '../screens/home/TabBar';
 import type { Settings } from '../types';
 
@@ -463,6 +464,17 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
             onBack={noop}
             demo
           />
+        </DemoTabs>
+      ),
+    },
+    {
+      id: 'find-help',
+      label: '도움받을 곳 찾기',
+      spec: '7.13',
+      tall: true,
+      render: () => (
+        <DemoTabs active="findHelp">
+          <FindHelp onBack={noop} />
         </DemoTabs>
       ),
     },

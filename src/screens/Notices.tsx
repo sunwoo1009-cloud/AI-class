@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { EXTERNAL_RESOURCE, SAFETY_NOTICE } from '../scripts/techniques';
 import { BackButton } from '../components/ui';
+import { FindHelp } from './FindHelp';
 
 /**
  * 명세 6.4 / 9절 화면 7 — 앱 밖 자원 화면.
@@ -12,6 +14,9 @@ export function ExternalResource({
   onNext: () => void;
   onBack?: () => void;
 }) {
+  // 2026-11-27 — 체크인 흐름 안이라 앱 화면을 바꾸지 않고 그 자리에서 '도움받을 곳 찾기'를 열었다 닫는다
+  const [finding, setFinding] = useState(false);
+  if (finding) return <FindHelp onBack={() => setFinding(false)} backLabel="앞 화면으로" />;
   return (
     <div className="app">
       <div className="topbar">
@@ -40,6 +45,10 @@ export function ExternalResource({
         <br />
         나눌 수 있는 자리를 찾는 쪽이 나아요.
       </p>
+
+      <button className="btn fh-link" style={{ textAlign: 'center' }} onClick={() => setFinding(true)}>
+        가까운 상담센터·병원 찾기
+      </button>
 
       <div className="spacer" />
       <button className="btn btn-primary" onClick={onNext}>
