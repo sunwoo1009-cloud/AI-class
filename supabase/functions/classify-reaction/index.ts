@@ -1,18 +1,16 @@
 // 반응 선택 AI 판단 (명세 6.1, 2026-11-27) — Supabase Edge Function
 //
 // 앱이 보낸 짧은 글(지금 남은 반응·감정)이 여섯 반응 중 무엇에 가까운지 Claude 에게 묻는다.
-// - API 키는 Supabase 비밀값(ANTHROPIC_API_KEY)에만 둔다. 앱(브라우저)에는 절대 넣지 않는다.
+// OpenRouter(openrouter.ai)를 거쳐 Claude 를 부른다 — 사용자가 가진 키가 OpenRouter 키라서.
+// - API 키는 Supabase 비밀값(OPENROUTER_API_KEY)에만 둔다. 앱(브라우저)에는 절대 넣지 않는다.
 // - 받은 글은 판단에만 쓰고 저장하거나 로그에 남기지 않는다.
 // - 남용을 막으려고 글 길이(200자)와 같은 주소에서의 호출 수를 제한한다.
 //
-// 배포: Supabase 대시보드 → Edge Functions → Deploy a new function → Via Editor
-//       이름 classify-reaction, 이 파일 내용을 붙여넣고 Deploy.
-// 비밀값: Edge Functions → Secrets 에 ANTHROPIC_API_KEY 추가.
+// 배포: Supabase 대시보드 → Edge Functions → classify-reaction → 코드(index.ts) 바꾸고 Deploy.
+// 비밀값: Edge Functions → Secrets 에 OPENROUTER_API_KEY 추가 (값은 sk-or- 로 시작).
 
-import Anthropic from "npm:@anthropic-ai/sdk";
-
-/** 모델 — 바꾸려면 이 한 줄만. 비용은 README/명세 6.1 참고 */
-const MODEL = "claude-opus-5-5";
+/** 모델 — 바꾸려면 이 한 줄만. claude-opus-5.5: 1회 약 $0.006 / claude-haiku-5.5: 약 $0.00015 */
+const MODEL = "anthropic/claude-opus-5.5";
 
 const REACTIONS = [
   "hyperarousal",
@@ -47,7 +45,7 @@ Map it to the closest of these six reaction types:
 
 Return the best match first. Add a second type only if the note clearly expresses it too.
 Return an empty list if the note does not describe an emotional or bodily reaction at all.
-Never repeat or quote the note.`;
+Reply only with JSON like {"reactions":["anger"]}. Never repeat or quote the note.`;
 
 const SCHEMA = {
   type: "object",
@@ -60,8 +58,6 @@ const SCHEMA = {
   required: ["reactions"],
   additionalProperties: false,
 };
-
-const client = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") });
 
 function cors(origin: string | null): Record<string, string> {
   const allow = origin && ALLOWED_ORIGINS.has(origin) ? origin : "https://sunwoo1009-cloud.github.io";
@@ -88,6 +84,22 @@ function rateLimited(ip: string): boolean {
   return recent.length > RATE_LIMIT;
 }
 
+/** 모델 답에서 JSON 을 꺼낸다 — 코드 블록이나 앞뒤 글이 붙어 와도 */
+function parseReactions(content: unknown): string[] {
+  if (typeof content !== "string") return [];
+  const tryParse = (s: string) => {
+    try {
+      const v = JSON.parse(s);
+      return Array.isArray(v?.reactions) ? (v.reactions as unknown[]) : null;
+    } catch {
+      return null;
+    }
+  };
+  const direct = tryParse(content.trim());
+  const found = direct ?? tryParse(content.match(/\{[\s\S]*\}/)?.[0] ?? "") ?? [];
+  return found.filter((r): r is string => typeof r === "string");
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(origin) });
@@ -107,48 +119,51 @@ Deno.serve(async (req) => {
   if (!text) return json({ error: "empty" }, 400, origin);
   if (text.length > MAX_CHARS) text = text.slice(0, MAX_CHARS);
 
+  const key = Deno.env.get("OPENROUTER_API_KEY");
+  if (!key) return json({ error: "key" }, 500, origin);
+
   try {
-    const response = await client.beta.messages.create({
-      model: MODEL,
-      max_tokens: 2048,
-      // 거절되면 서버가 알맞은 모델로 다시 돌린다 (Anthropic 권장 기본값)
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
-      // 짧은 분류라 생각을 적게 — 비용과 기다림을 줄인다
-      output_config: {
-        effort: "low",
-        format: { type: "json_schema", schema: SCHEMA },
+    const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://sunwoo1009-cloud.github.io/AI-class/",
+        "X-Title": "bungeoppang",
       },
-      system: SYSTEM,
-      messages: [{ role: "user", content: text }],
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 2048,
+        // 짧은 분류라 생각을 적게 — 비용과 기다림을 줄인다
+        reasoning: { effort: "low" },
+        response_format: {
+          type: "json_schema",
+          json_schema: { name: "reaction", strict: true, schema: SCHEMA },
+        },
+        messages: [
+          { role: "system", content: SYSTEM },
+          { role: "user", content: text },
+        ],
+      }),
     });
 
-    if (response.stop_reason === "refusal") return json({ reactions: [], refused: true }, 200, origin);
+    if (r.status === 401) return json({ error: "key" }, 500, origin);
+    if (r.status === 402) return json({ error: "credits" }, 502, origin);
+    if (r.status === 429) return json({ error: "busy" }, 429, origin);
+    if (!r.ok) return json({ error: `api-${r.status}` }, 502, origin);
 
-    let reactions: string[] = [];
-    for (const block of response.content) {
-      if (block.type === "text") {
-        try {
-          const parsed = JSON.parse(block.text);
-          if (Array.isArray(parsed?.reactions)) reactions = parsed.reactions;
-        } catch {
-          // 모양이 틀리면 빈 결과 — 앱이 기기 안 판단으로 넘어간다
-        }
-      }
-    }
+    const data = await r.json();
+    const reactions = parseReactions(data?.choices?.[0]?.message?.content);
     const clean = [...new Set(reactions)]
-      .filter((r): r is (typeof REACTIONS)[number] => (REACTIONS as readonly string[]).includes(r))
+      .filter((x): x is (typeof REACTIONS)[number] => (REACTIONS as readonly string[]).includes(x))
       .slice(0, 2);
 
     // 글 내용은 남기지 않고, 토큰 수만 남긴다 (비용 확인용)
     console.log(
-      JSON.stringify({ in: response.usage.input_tokens, out: response.usage.output_tokens, n: clean.length }),
+      JSON.stringify({ in: data?.usage?.prompt_tokens, out: data?.usage?.completion_tokens, n: clean.length }),
     );
     return json({ reactions: clean }, 200, origin);
-  } catch (error) {
-    if (error instanceof Anthropic.RateLimitError) return json({ error: "busy" }, 429, origin);
-    if (error instanceof Anthropic.AuthenticationError) return json({ error: "key" }, 500, origin);
-    if (error instanceof Anthropic.APIError) return json({ error: `api-${error.status}` }, 502, origin);
+  } catch {
     return json({ error: "unknown" }, 500, origin);
   }
 });

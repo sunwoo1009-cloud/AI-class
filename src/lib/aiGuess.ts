@@ -3,7 +3,7 @@ import type { ReactionType } from '../types';
 
 /**
  * 반응 선택 AI 판단 (명세 6.1, 2026-11-27).
- * Supabase Edge Function `classify-reaction` 이 Claude 에게 묻는다 (supabase/functions/classify-reaction).
+ * Supabase Edge Function `classify-reaction` 이 OpenRouter 를 거쳐 Claude 에게 묻는다 (supabase/functions/classify-reaction).
  * API 키는 서버에만 있다. 이 파일은 함수 주소와 공개 키(anon)만 쓴다.
  *
  * 실패하면(함수가 아직 없음·인터넷 끊김·10초 넘음·한도) null 을 돌려준다 —
