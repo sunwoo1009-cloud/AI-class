@@ -1499,6 +1499,14 @@
   padding: 10px 14px;
 }
 
+/* '일주일 간 보지 않기' (2026-11-27) */
+.btn-quiet.coach-snooze {
+  display: block;
+  margin: 6px auto 0;
+  padding: 6px 2px;
+  font-size: 0.85rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .coupon.is-tapped,
   .coach,
@@ -2157,8 +2165,54 @@
 }
 
 /* --- 마이페이지 --- */
-.my-nick label {
+/* 맨 위 아바타 + 닉네임 (2026-11-27) */
+.my-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 4px 0 18px;
+  text-align: center;
+}
+
+.my-avatar {
+  width: 96px;
+  height: 160px;
+}
+
+.my-nick-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 14px;
+  border: 1.5px dashed transparent;
+  border-radius: 999px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 1.2rem;
   font-weight: 700;
+  cursor: pointer;
+}
+
+.my-nick-name:hover,
+.my-nick-name:focus-visible {
+  border-color: var(--btn-edge);
+}
+
+.my-nick-pen {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.my-nick {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.btn-quiet.my-nick-cancel {
+  display: block;
+  margin: 2px auto 0;
 }
 
 .my-pulse,
@@ -3090,6 +3144,51 @@
   font-size: 0.8rem;
   font-weight: 650;
   color: var(--accent);
+}
+
+/* --- 최근 지운 일기 (2026-11-27) --- */
+.jl-trash {
+  margin-top: 22px;
+  background: transparent;
+  border-style: dashed;
+}
+
+.jl-trash-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.jl-trash-row:last-child {
+  border-bottom: none;
+}
+
+.jl-trash-btns {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.jl-restore {
+  padding: 6px 14px;
+  border: 1.5px solid var(--btn-edge);
+  border-radius: 999px;
+  background: var(--btn-primary-bg);
+  box-shadow: 0 2px 0 var(--btn-primary-ledge);
+  color: var(--btn-primary-text);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.jl-trash-msg {
+  margin: 8px 0;
+  font-size: 0.85rem;
+  color: #a4473a;
 }
 
 /* --- 캘린더 시트 --- */

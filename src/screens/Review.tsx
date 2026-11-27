@@ -88,19 +88,7 @@ export function Review({ onBack }: Props) {
         </div>
       ) : null}
 
-      {review.singleTechniqueRate !== null ? (
-        <>
-          <h2>기법 하나로 마무리된 비율</h2>
-          <div className="card">
-            <div className="stat-row">
-              <span className="stat-label">전체 기간</span>
-              <span className="stat-value">
-                {Math.round(review.singleTechniqueRate * 100)}%
-              </span>
-            </div>
-          </div>
-        </>
-      ) : null}
+      {/* '기법 하나로 마무리된 비율' 칸은 2026-11-27 사용자 요청으로 뺐다 (계산은 lib/review.ts 에 남아 있다) */}
 
       {review.byTechnique.length > 0 ? (
         <>

@@ -15,7 +15,7 @@ import { coachSnoozed } from '../lib/coach';
 const STAMP_MS = 450;
 
 const COACH_KEY = 'cbd:coachStamp';
-/** 2026-11-27 — '알겠어요'를 누른 뒤 일주일 동안은 띄우지 않는다 (lib/coach.ts) */
+/** 2026-11-27 — '일주일 간 보지 않기'를 누른 뒤 일주일 동안은 띄우지 않는다 (lib/coach.ts) */
 function coachSeen(): boolean {
   try {
     return coachSnoozed(localStorage.getItem(COACH_KEY));
@@ -163,10 +163,10 @@ export function ClosingRitual({
     if (phase !== 'hold') return;
     if (coach === 'always' || (coach === 'auto' && !coachSeen())) setCoachOn(true);
   }, [phase, coach]);
-  /** ok — '알겠어요'로 닫았을 때만 일주일 동안 다시 띄우지 않는다 */
-  function closeCoach(ok: boolean) {
+  /** snooze — '일주일 간 보지 않기'를 눌렀을 때만 일주일 동안 다시 띄우지 않는다 */
+  function closeCoach(snooze: boolean) {
     setCoachOn(false);
-    if (ok) markCoachSeen();
+    if (snooze) markCoachSeen();
   }
 
   const appRef = useRef<HTMLDivElement>(null);
@@ -224,7 +224,7 @@ export function ClosingRitual({
           appRef={appRef}
           targetRef={couponRef}
           onClose={() => closeCoach(false)}
-          onOk={() => closeCoach(true)}
+          onSnooze={() => closeCoach(true)}
         />
       ) : null}
 
@@ -370,20 +370,21 @@ function CouponCard({
 
 /**
  * 코치 마크 (2026-11-27) — 쿠폰만 밝게 남기고 나머지를 어둡게 덮은 뒤
- * "두 번 톡톡 누르면 도장이 찍혀요"를 알려준다. 아무 데나 누르거나 '알겠어요'로 닫는다.
+ * "두 번 톡톡 누르면 도장이 찍혀요"를 알려준다. 아무 데나 누르거나 '알겠어요'로 닫는다(다음에 또 뜬다).
+ * '일주일 간 보지 않기'를 누를 때만 일주일 동안 띄우지 않는다 (2026-11-27 사용자 요청).
  * 화면(.app) 안에 겹쳐 그려서 발표용 틀 안에서도 제자리에 뜬다.
  */
 function CoachMark({
   appRef,
   targetRef,
   onClose,
-  onOk,
+  onSnooze,
 }: {
   appRef: RefObject<HTMLDivElement>;
   targetRef: RefObject<HTMLDivElement>;
   onClose: () => void;
-  /** '알겠어요' */
-  onOk: () => void;
+  /** '일주일 간 보지 않기' */
+  onSnooze: () => void;
 }) {
   const [box, setBox] = useState<{ top: number; left: number; width: number; height: number } | null>(
     null,
@@ -449,11 +450,21 @@ function CoachMark({
           className="btn btn-primary coach-ok"
           onClick={(e) => {
             e.stopPropagation();
-            onOk();
+            onClose();
           }}
           ref={okRef}
         >
           알겠어요
+        </button>
+        <button
+          type="button"
+          className="btn-quiet coach-snooze"
+          onClick={(e) => {
+            e.stopPropagation();
+            onSnooze();
+          }}
+        >
+          일주일 간 보지 않기
         </button>
       </div>
     </div>

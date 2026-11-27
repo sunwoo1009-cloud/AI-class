@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BackButton, Snackbar } from '../components/ui';
+import { AvatarSvg } from '../avatar/Avatar';
 import {
   bumpCase,
   CASE_KINDS,
@@ -18,6 +19,7 @@ import { accountsAvailable, currentAccount, NICKNAME_MAX, updateNickname } from 
 import {
   loadCaseLog,
   loadCheckIns,
+  loadCloset,
   loadPulse,
   loadSettings,
   loadTraumaSnoozeAt,
@@ -79,6 +81,15 @@ export function MyPage({ settings, onChangeSettings, onOpen, onBack, demo = fals
   const [signedIn, setSignedIn] = useState(false);
   const [nickNote, setNickNote] = useState<string | null>(null);
   const [nickBusy, setNickBusy] = useState(false);
+  /** 닉네임을 누르면 바꾸는 칸이 열린다 */
+  const [editing, setEditing] = useState(false);
+  /** 부티크에서 입힌 아바타 */
+  const [equipped] = useState(() => loadCloset().equipped);
+  function cancelNick() {
+    setNick(settings.displayName);
+    setEditing(false);
+    setNickNote(null);
+  }
   useEffect(() => {
     if (demo || !accountsAvailable) return;
     void currentAccount().then((a) => setSignedIn(a !== null));
@@ -87,7 +98,10 @@ export function MyPage({ settings, onChangeSettings, onOpen, onBack, demo = fals
   async function saveNick() {
     const name = nick.trim();
     if (!name) return setNickNote('닉네임을 적어 주세요');
-    if (demo) return setNickNote('닉네임을 바꿨어요');
+    if (demo) {
+      setEditing(false);
+      return setNickNote('닉네임을 바꿨어요');
+    }
     setNickBusy(true);
     setNickNote(null);
     if (signedIn) {
@@ -102,6 +116,7 @@ export function MyPage({ settings, onChangeSettings, onOpen, onBack, demo = fals
     }
     const s = loadSettings();
     if (s) onChangeSettings(s);
+    setEditing(false);
     setNickNote('닉네임을 바꿨어요');
   }
 
@@ -150,30 +165,60 @@ export function MyPage({ settings, onChangeSettings, onOpen, onBack, demo = fals
         <span className="topbar-title">마이페이지</span>
       </div>
 
-      {/* 닉네임 — 자기 거리두기 기법에서 부르는 이름 (2026-11-27 설정에서 옮겨 옴) */}
-      <section className="card my-nick">
-        <label htmlFor="my-nick">닉네임</label>
-        <div className="btn-row" style={{ marginTop: 6 }}>
-          <input
-            id="my-nick"
-            className="account-inline-input"
-            value={nick}
-            maxLength={NICKNAME_MAX}
-            autoComplete="nickname"
-            placeholder="예: 슈붕파"
-            onChange={(e) => setNick(e.target.value)}
-          />
+      {/* 맨 위 — 부티크에서 입힌 아바타와 닉네임. 닉네임을 누르면 바꿀 수 있다 (2026-11-27) */}
+      <section className="my-profile">
+        <AvatarSvg className="my-avatar" equipped={equipped} title="내 아바타" />
+        {editing ? (
+          <div className="my-nick">
+            <label htmlFor="my-nick" className="sr-only">
+              닉네임
+            </label>
+            <div className="btn-row">
+              <input
+                id="my-nick"
+                className="account-inline-input"
+                value={nick}
+                maxLength={NICKNAME_MAX}
+                autoComplete="nickname"
+                placeholder="예: 슈붕파"
+                autoFocus
+                onChange={(e) => setNick(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void saveNick();
+                  if (e.key === 'Escape') cancelNick();
+                }}
+              />
+              <button
+                className="btn btn-primary account-inline-btn"
+                disabled={nickBusy || !nick.trim() || nick.trim() === settings.displayName}
+                onClick={() => void saveNick()}
+              >
+                바꾸기
+              </button>
+            </div>
+            <small className="muted">
+              자기 거리두기 기법에서 이 이름으로 불러요{signedIn ? ' · 계정 닉네임도 함께 바뀌어요' : ''}
+            </small>
+            <button type="button" className="btn-quiet my-nick-cancel" onClick={cancelNick}>
+              그만두기
+            </button>
+          </div>
+        ) : (
           <button
-            className="btn btn-primary account-inline-btn"
-            disabled={nickBusy || !nick.trim() || nick.trim() === settings.displayName}
-            onClick={() => void saveNick()}
+            type="button"
+            className="my-nick-name"
+            onClick={() => {
+              setNickNote(null);
+              setEditing(true);
+            }}
+            aria-label={settings.displayName ? `닉네임 ${settings.displayName}, 눌러서 바꾸기` : '닉네임 정하기'}
           >
-            바꾸기
+            {settings.displayName || '닉네임 정하기'}
+            <span className="my-nick-pen" aria-hidden="true">
+              ✎
+            </span>
           </button>
-        </div>
-        <small className="muted">
-          자기 거리두기 기법에서 이 이름으로 불러요{signedIn ? ' · 계정 닉네임도 함께 바뀌어요' : ''}
-        </small>
+        )}
         {nickNote ? <p className="account-note">{nickNote}</p> : null}
       </section>
 

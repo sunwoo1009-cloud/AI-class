@@ -34,6 +34,8 @@ export const KEYS = {
   pulse: `${PREFIX}pulse`,
   traumaSnoozeAt: `${PREFIX}traumaSnoozeAt`,
   calLink: `${PREFIX}calLink`,
+  /** 최근 지운 일기 (2026-11-27) — 30일 동안 되살릴 수 있다. 기기에만 있고 서버에 안 올린다. */
+  journalTrash: `${PREFIX}journalTrash`,
 } as const;
 
 /**
@@ -299,7 +301,64 @@ export function upsertJournal(entry: JournalEntry): JournalEntry[] {
 }
 
 export function deleteJournal(id: string): JournalEntry[] {
-  const next = loadJournal().filter((j) => j.id !== id);
+  const list = loadJournal();
+  const gone = list.find((j) => j.id === id);
+  if (gone) {
+    const trash = loadJournalTrash().filter((t) => t.entry.id !== id);
+    write(KEYS.journalTrash, [{ entry: gone, deletedAt: new Date().toISOString() }, ...trash]);
+  }
+  const next = list.filter((j) => j.id !== id);
   saveJournal(next);
   return next;
+}
+
+// --- 최근 지운 일기 (2026-11-27) ---
+
+export interface TrashedJournal {
+  entry: JournalEntry;
+  deletedAt: string;
+}
+
+/** 지운 지 이만큼 지나면 되살릴 수 없다 */
+export const TRASH_DAYS = 30;
+
+/** 30일 안에 지운 것만 남긴다 (순수 함수) */
+export function freshTrash(list: TrashedJournal[], now: Date = new Date()): TrashedJournal[] {
+  const limit = now.getTime() - TRASH_DAYS * 24 * 60 * 60 * 1000;
+  return list.filter((t) => {
+    const at = new Date(t.deletedAt).getTime();
+    return !Number.isNaN(at) && at >= limit;
+  });
+}
+
+export function loadJournalTrash(): TrashedJournal[] {
+  const raw = read<TrashedJournal[]>(KEYS.journalTrash, []);
+  const fresh = freshTrash(Array.isArray(raw) ? raw : []);
+  if (fresh.length !== (Array.isArray(raw) ? raw.length : 0)) write(KEYS.journalTrash, fresh);
+  return fresh;
+}
+
+/**
+ * 지운 일기를 되살린다. 그날 일기를 새로 써 두었으면 덮어쓰지 않고 'taken' 을 돌려준다.
+ * 백업 중이면 일기가 바뀐 걸 동기화가 알아채 서버에도 다시 올린다.
+ */
+export function restoreJournal(id: string): 'ok' | 'taken' | 'missing' {
+  const trash = loadJournalTrash();
+  const item = trash.find((t) => t.entry.id === id);
+  if (!item) return 'missing';
+  if (journalForDate(item.entry.date)) return 'taken';
+  upsertJournal(item.entry);
+  write(
+    KEYS.journalTrash,
+    trash.filter((t) => t.entry.id !== id),
+  );
+  return 'ok';
+}
+
+/** 최근 지운 일기에서도 완전히 지운다 */
+export function purgeJournal(id: string): void {
+  write(
+    KEYS.journalTrash,
+    loadJournalTrash().filter((t) => t.entry.id !== id),
+  );
 }

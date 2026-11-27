@@ -1,7 +1,15 @@
 import { useState } from 'react';
 import { BackButton } from '../components/ui';
 import { formatDateLabel, toDateKey } from '../lib/date';
-import { deleteJournal, loadJournal } from '../storage/store';
+import {
+  deleteJournal,
+  loadJournal,
+  loadJournalTrash,
+  purgeJournal,
+  restoreJournal,
+  TRASH_DAYS,
+  type TrashedJournal,
+} from '../storage/store';
 import { deleteRemoteJournal } from '../sync/account';
 import type { JournalEntry } from '../types';
 import { promptQuestion } from './Journal';
@@ -51,16 +59,52 @@ export function JournalList({ onBack, onWrite, demo = false }: Props) {
   );
   const [open, setOpen] = useState<string | null>(() => list[0]?.id ?? null);
   const [confirming, setConfirming] = useState<string | null>(null);
+  /** 최근 지운 일기 (2026-11-27) — 30일 동안 되살릴 수 있다 */
+  const [trash, setTrash] = useState<TrashedJournal[]>(() => (demo ? [] : loadJournalTrash()));
+  const [trashOpen, setTrashOpen] = useState(false);
+  const [trashMsg, setTrashMsg] = useState<string | null>(null);
   const today = toDateKey(new Date());
   const wroteToday = list.some((j) => j.date === today);
 
+  const sortList = (l: JournalEntry[]) =>
+    l.filter((j) => j.answers.length > 0).sort((a, b) => (a.date < b.date ? 1 : -1));
+
   function remove(entry: JournalEntry) {
     setConfirming(null);
-    if (demo) return setList((l) => l.filter((j) => j.id !== entry.id));
+    if (demo) {
+      setList((l) => l.filter((j) => j.id !== entry.id));
+      setTrash((t) => [{ entry, deletedAt: new Date().toISOString() }, ...t]);
+      return;
+    }
     deleteJournal(entry.id);
-    // 일기를 백업 중이면 서버에서도 지운다 (명세 7.7)
+    // 일기를 백업 중이면 서버에서도 지운다 (명세 7.7). 되살리면 동기화가 다시 올린다.
     void deleteRemoteJournal(entry.date);
     setList((l) => l.filter((j) => j.id !== entry.id));
+    setTrash(loadJournalTrash());
+    setTrashMsg(null);
+  }
+
+  function restore(item: TrashedJournal) {
+    if (demo) {
+      setTrash((t) => t.filter((x) => x.entry.id !== item.entry.id));
+      setList((l) => sortList([...l, item.entry]));
+      return;
+    }
+    const r = restoreJournal(item.entry.id);
+    if (r === 'taken') {
+      setTrashMsg(`${formatDateLabel(item.entry.date)}에 쓴 일기가 이미 있어서 되살릴 수 없어요. 그 일기를 지우면 되살릴 수 있어요.`);
+      return;
+    }
+    setTrashMsg(null);
+    setList(sortList(loadJournal()));
+    setTrash(loadJournalTrash());
+    setOpen(item.entry.id);
+  }
+
+  function purge(item: TrashedJournal) {
+    if (!demo) purgeJournal(item.entry.id);
+    setTrash((t) => t.filter((x) => x.entry.id !== item.entry.id));
+    setTrashMsg(null);
   }
 
   return (
@@ -126,6 +170,47 @@ export function JournalList({ onBack, onWrite, demo = false }: Props) {
           );
         })}
       </div>
+
+      {trash.length ? (
+        <section className={`jl-item jl-trash${trashOpen ? ' is-open' : ''}`}>
+          <button
+            type="button"
+            className="jl-head"
+            aria-expanded={trashOpen}
+            onClick={() => setTrashOpen((v) => !v)}
+          >
+            <span>
+              <b>최근 지운 일기</b> <small className="muted">{trash.length}편</small>
+            </span>
+            <span className="jl-chev" aria-hidden="true">
+              ›
+            </span>
+          </button>
+          {trashOpen ? (
+            <div className="jl-body">
+              <p className="muted">지운 일기는 {TRASH_DAYS}일 동안 여기 남았다가 사라져요.</p>
+              {trashMsg ? (
+                <p className="jl-trash-msg" role="alert">
+                  {trashMsg}
+                </p>
+              ) : null}
+              {trash.map((t) => (
+                <div key={t.entry.id} className="jl-trash-row">
+                  <span>{formatDateLabel(t.entry.date)}</span>
+                  <span className="jl-trash-btns">
+                    <button className="btn-quiet" onClick={() => purge(t)}>
+                      완전히 지우기
+                    </button>
+                    <button className="jl-restore" onClick={() => restore(t)}>
+                      되살리기
+                    </button>
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
     </div>
   );
 }

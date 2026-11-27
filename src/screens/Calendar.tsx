@@ -10,7 +10,7 @@ import {
 import { formatDateLabel, formatTimeLabel } from '../lib/date';
 import { loadCheckIns } from '../storage/store';
 import type { CheckIn } from '../types';
-import { BackButton, BottomSheet } from '../components/ui';
+import { BackButton, BottomSheet, Tooltip } from '../components/ui';
 
 interface Props {
   onBack: () => void;
@@ -120,11 +120,13 @@ export function Calendar({ onBack }: Props) {
         <span>
           <i className="cal-dot" /> 체크인 (이번 달 {monthCount}회)
         </span>
+        {/* 2026-11-27 — 안내 문구를 툴팁으로 */}
+        <Tooltip
+          lines={['점이 있는 날을 누르면', '그날 체크인 기록이 아래에서 올라와요']}
+          label="캘린더 사용법 보기"
+          align="start"
+        />
       </div>
-
-      <p className="muted" style={{ marginTop: 18 }}>
-        점이 있는 날을 누르면 그날 체크인 기록이 아래에서 올라와요.
-      </p>
 
       <div className="spacer" />
 

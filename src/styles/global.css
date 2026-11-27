@@ -1524,11 +1524,13 @@ input[type='range'] {
 .cal-legend {
   display: flex;
   gap: 14px;
+  align-items: center;
   margin-top: 10px;
   font-size: 0.75rem;
 }
 
-.cal-legend span {
+/* 툴팁(.tip) 안쪽 칸에는 걸리지 않게 바로 아래 칸만 (2026-11-27) */
+.cal-legend > span:not(.tip) {
   display: inline-flex;
   align-items: center;
   gap: 5px;
