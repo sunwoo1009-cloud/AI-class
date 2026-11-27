@@ -1185,3 +1185,14 @@
     stroke-dashoffset: 0;
   }
 }
+
+/* 가입 고지 다섯 줄 — 아코디언 하나 안에 목록으로 (2026-11-27) */
+.account-notice-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text);
+}
+
+.account-notice-list li + li {
+  margin-top: 4px;
+}

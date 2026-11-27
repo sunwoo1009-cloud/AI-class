@@ -9,7 +9,7 @@ import { CouponBook } from '../screens/CouponBook';
 import { Boutique } from '../screens/Boutique';
 import { RateApp } from '../screens/RateApp';
 import { AvatarParts } from './AvatarParts';
-import { AboutSheet, FeedbackSheet, UpdatesSheet } from './PresentSheets';
+import { AboutSheet, UpdatesSheet } from './PresentSheets';
 import { AdminDemoSheet } from './AdminPage';
 import { ExternalResource, SafetyNotice } from '../screens/Notices';
 import { OfferExtra } from '../screens/OfferExtra';
@@ -402,7 +402,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
 
 type Sheet =
   | { title: string; kind: 'row'; ids: string[] }
-  | { title: string; kind: 'checkin' | 'about' | 'feedback' | 'admin' | 'updates' };
+  | { title: string; kind: 'checkin' | 'about' | 'admin' | 'updates' };
 
 const SHEETS: Sheet[] = [
   { title: '앱 설명', kind: 'about' },
@@ -419,7 +419,6 @@ const SHEETS: Sheet[] = [
   { title: '관리자 화면', kind: 'admin' },
   // 2026-11-24 부터 받은 수정 요청을 화면별로 (2026-11-27)
   { title: '업데이트 목록', kind: 'updates' },
-  { title: '피드백', kind: 'feedback' },
 ];
 
 /** 반응 → 그 반응의 첫 기법 화면 (명세 5절) */
@@ -549,10 +548,8 @@ function SheetView({
             <AboutSheet />
           ) : current.kind === 'admin' ? (
             <AdminDemoSheet />
-          ) : current.kind === 'updates' ? (
-            <UpdatesSheet />
           ) : (
-            <FeedbackSheet />
+            <UpdatesSheet />
           )}
         </div>
       </div>

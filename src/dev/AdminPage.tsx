@@ -9,15 +9,12 @@ import { accountsAvailable, currentAccount, signOut } from '../sync/account';
 import type { Account } from '../sync/account';
 import {
   checkAdmin,
-  deleteFeedbackItem,
   deleteReviewItem,
-  listFeedbackAdmin,
   listReviewsAdmin,
   loadAdminStats,
 } from '../sync/admin';
 import type { AdminStats, AppReviewItem } from '../sync/admin';
 import { averageRating } from '../lib/appReview';
-import type { FeedbackItem } from './feedback';
 
 /** 화면 점검 — 화면 하나만 새 탭에 띄운다 (?screens=<id>) */
 const SCREEN_GROUPS: { title: string; items: [id: string, label: string][] }[] = [
@@ -371,23 +368,15 @@ const DEMO_REVIEWS: AppReviewItem[] = [
   { id: -14, rating: 4, body: '(예시) 일기 알림이 있으면 좋겠어요', created_at: '2026-11-29T21:12:00Z' },
 ];
 
-type Open = 'pre' | 'post' | null;
-const DEMO_FEEDBACK: FeedbackItem[] = [
-  { id: -1, body: '(예시) 붕어빵 쿠폰이 귀여워서 마무리까지 하게 돼요', created_at: '2026-11-25T09:10:00Z' },
-  { id: -2, body: '(예시) 느린 호흡 화면에서 붕어빵이 커지는 게 따라 하기 쉬웠어요', created_at: '2026-11-25T09:05:00Z' },
-  { id: -3, body: '(예시) 일기 질문이 하나 더 있으면 좋겠어요', created_at: '2026-11-25T08:58:00Z' },
-];
-
+type Open = 'post' | null;
 /**
  * ② 운영 현황의 숫자와 피드백.
- * - 출시 전 피드백: 발표용 화면의 '피드백' 시트에서 받은 것 (feedback 표)
  * - 출시 후 리뷰: 앱 메뉴 '별점·리뷰'에서 받은 것 (reviews 표)
  * 각 칸을 누르면 아래에 목록이 펼쳐진다. 둘 다 운영자만 읽을 수 있다(서버 규칙).
  * demo 면 서버를 부르지 않고 예시 값을 보여준다 (발표용 시트).
  */
 function AdminData({ demo = false }: { demo?: boolean }) {
   const [stats, setStats] = useState<AdminStats | null>(demo ? DEMO_STATS : null);
-  const [feedback, setFeedback] = useState<FeedbackItem[]>(demo ? DEMO_FEEDBACK : []);
   const [reviews, setReviews] = useState<AppReviewItem[]>(demo ? DEMO_REVIEWS : []);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
   const [open, setOpen] = useState<Open>(demo ? 'post' : null);
@@ -398,9 +387,6 @@ function AdminData({ demo = false }: { demo?: boolean }) {
     const r = await loadAdminStats();
     if (r.ok) setStats(r.stats);
     else setNote(r.reason);
-    const f = await listFeedbackAdmin();
-    if (f.ok) setFeedback(f.items);
-    else setNote(f.reason);
     const v = await listReviewsAdmin();
     if (v.ok) {
       setReviews(v.items);
@@ -436,16 +422,7 @@ function AdminData({ demo = false }: { demo?: boolean }) {
             {sub ? <small>{sub}</small> : null}
           </div>
         ))}
-        {/* 출시 전 피드백 / 출시 후 리뷰 — 누르면 아래에 목록이 펼쳐진다 */}
-        <button
-          className={`admin-tile admin-tile-btn${open === 'pre' ? ' is-open' : ''}`}
-          aria-expanded={open === 'pre'}
-          onClick={() => setOpen((o) => (o === 'pre' ? null : 'pre'))}
-        >
-          <span>출시 전 피드백</span>
-          <b>{stats?.feedback ?? '—'}</b>
-          <small>발표 때 받은 글 · {open === 'pre' ? '접기 ▲' : '보기 ▼'}</small>
-        </button>
+        {/* 출시 후 리뷰 — 누르면 아래에 목록이 펼쳐진다 (출시 전 피드백은 2026-11-27 뺐다) */}
         <button
           className={`admin-tile admin-tile-btn${open === 'post' ? ' is-open' : ''}`}
           aria-expanded={open === 'post'}
@@ -465,11 +442,7 @@ function AdminData({ demo = false }: { demo?: boolean }) {
 
       <div className="admin-row">
         <h3>
-          {open === 'pre'
-            ? `출시 전 피드백 ${feedback.length}개`
-            : open === 'post'
-              ? `출시 후 리뷰 ${reviews.length}개`
-              : ''}
+          {open === 'post' ? `출시 후 리뷰 ${reviews.length}개` : ''}
         </h3>
         {demo ? null : (
           <>
@@ -486,17 +459,6 @@ function AdminData({ demo = false }: { demo?: boolean }) {
         )}
       </div>
       {note ? <p className="admin-warn">{note}</p> : null}
-      {open === 'pre' && feedback.length === 0 ? (
-        // 숫자는 있는데 목록이 비면 — 서버의 '운영자 읽기' 규칙이 아직 없는 것
-        (stats?.feedback ?? 0) > 0 && !demo ? (
-          <p className="admin-warn">
-            피드백이 {stats?.feedback}개 있는데 내용을 읽을 권한이 없어요. Supabase SQL Editor 에서
-            피드백을 관리자만 읽게 하는 SQL을 실행해 주세요.
-          </p>
-        ) : (
-          <p className="muted">아직 받은 피드백이 없어요.</p>
-        )
-      ) : null}
       {open === 'post' && !reviewsError && reviews.length === 0 && (stats?.reviews ?? 0) > 0 && !demo ? (
         <p className="admin-warn">
           리뷰가 {stats?.reviews}개 있는데 내용을 읽을 권한이 없어요. reviews.sql 을 다시 실행해 주세요.
@@ -538,31 +500,6 @@ function AdminData({ demo = false }: { demo?: boolean }) {
       </ul>
       ) : null}
 
-      {/* 출시 전 피드백 목록 — 발표 때 학생들이 보낸 글. 별점은 없다 */}
-      {open === 'pre' ? (
-      <ul className="pres-feedback-list">
-        {feedback.map((f) => (
-          <li key={f.id} className="admin-feedback">
-            <p>{f.body}</p>
-            <time dateTime={f.created_at}>{new Date(f.created_at).toLocaleString('ko-KR')}</time>
-            <button
-              className="btn btn-danger admin-mini"
-              disabled={demo}
-              onClick={() => {
-                if (demo) return;
-                if (!window.confirm('이 피드백을 지울까요? 되돌릴 수 없어요.')) return;
-                void deleteFeedbackItem(f.id).then((r) => {
-                  if (!r.ok) return setNote(r.reason);
-                  setFeedback((list) => list.filter((x) => x.id !== f.id));
-                });
-              }}
-            >
-              지우기
-            </button>
-          </li>
-        ))}
-      </ul>
-      ) : null}
     </>
   );
 }
