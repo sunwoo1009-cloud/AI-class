@@ -8,39 +8,34 @@ import {
   monthLabel,
 } from '../lib/calendar';
 import { formatDateLabel, formatTimeLabel } from '../lib/date';
-import { deleteJournal, loadCheckIns, loadJournal } from '../storage/store';
-import { deleteRemoteJournal } from '../sync/account';
-import type { CheckIn, JournalEntry } from '../types';
-import { BackButton } from '../components/ui';
-
-const PROMPT_LABELS: Record<JournalEntry['answers'][number]['promptId'], string> =
-  {
-    drain: '가장 지치게 한 것',
-    response: '몸과 마음의 반응',
-    let_go: '내려놓고 갈 것',
-  };
+import { loadCheckIns } from '../storage/store';
+import type { CheckIn } from '../types';
+import { BackButton, BottomSheet } from '../components/ui';
 
 interface Props {
   onBack: () => void;
 }
 
-/** 명세 7.5 / 9절 화면 11 */
+/**
+ * 명세 7.5 / 9절 화면 11.
+ * 2026-11-27 — 체크인 기록만 보인다(일기는 마이페이지 → 하루 끝 일기에서 본다).
+ * 날짜를 누르면 그날 체크인이 아래 시트(bottom sheet)로 올라온다.
+ */
 export function Calendar({ onBack }: Props) {
   const checkIns = useMemo(() => loadCheckIns(), []);
-  const [journal, setJournal] = useState(() => loadJournal());
 
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [selected, setSelected] = useState<string | null>(null);
+  /** 시트가 내려가는 동안에도 내용이 남아 있게 */
+  const [shownDate, setShownDate] = useState<string | null>(null);
 
   const weeks = useMemo(
-    () => buildMonthGrid(year, month, checkIns, journal, now),
+    () => buildMonthGrid(year, month, checkIns, [], now),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [year, month, checkIns, journal],
+    [year, month, checkIns],
   );
-
-  const dayCheckIns = selected ? checkInsForDate(checkIns, selected) : [];
 
   function shift(delta: number) {
     const m = month + delta;
@@ -55,6 +50,8 @@ export function Calendar({ onBack }: Props) {
     }
     setSelected(null);
   }
+
+  const monthCount = weeks.flat().reduce((n, c) => n + (c.dateKey ? c.checkInCount : 0), 0);
 
   return (
     <div className="app">
@@ -101,17 +98,18 @@ export function Calendar({ onBack }: Props) {
               ]
                 .filter(Boolean)
                 .join(' ')}
-              disabled={cell.checkInCount === 0 && !cell.hasJournal}
-              onClick={() => setSelected(isSelected ? null : cell.dateKey)}
+              disabled={cell.checkInCount === 0}
+              aria-label={`${cell.day}일 체크인 ${cell.checkInCount}회`}
+              onClick={() => {
+                setSelected(cell.dateKey);
+                setShownDate(cell.dateKey);
+              }}
             >
               <span className="cal-day">{cell.day}</span>
               <span className="cal-marks">
-                {Array.from({ length: Math.min(cell.checkInCount, 3) }).map(
-                  (_, k) => (
-                    <i key={k} className="cal-dot" />
-                  ),
-                )}
-                {cell.hasJournal ? <i className="cal-journal" /> : null}
+                {Array.from({ length: Math.min(cell.checkInCount, 3) }).map((_, k) => (
+                  <i key={k} className="cal-dot" />
+                ))}
               </span>
             </button>
           );
@@ -120,58 +118,38 @@ export function Calendar({ onBack }: Props) {
 
       <div className="cal-legend muted">
         <span>
-          <i className="cal-dot" /> 체크인
-        </span>
-        <span>
-          <i className="cal-journal" /> 일기
+          <i className="cal-dot" /> 체크인 (이번 달 {monthCount}회)
         </span>
       </div>
 
-      {selected ? (
-        <DayDetail
-          dateKey={selected}
-          checkIns={dayCheckIns}
-          entry={journal.find((j) => j.date === selected) ?? null}
-          onDeleteJournal={(id) => {
-            const date = journal.find((j) => j.id === id)?.date;
-            setJournal(deleteJournal(id));
-            // 일기를 백업 중이면 서버에서도 지운다 (명세 7.7)
-            if (date) void deleteRemoteJournal(date);
-          }}
-        />
-      ) : (
-        <p className="muted" style={{ marginTop: 18 }}>
-          기록이 있는 날을 누르면 그날 내용이 보여요.
-        </p>
-      )}
+      <p className="muted" style={{ marginTop: 18 }}>
+        점이 있는 날을 누르면 그날 체크인 기록이 아래에서 올라와요.
+      </p>
 
       <div className="spacer" />
+
+      <BottomSheet
+        open={selected !== null}
+        title={shownDate ? formatDateLabel(shownDate) : ''}
+        onClose={() => setSelected(null)}
+      >
+        {shownDate ? <DayCheckIns checkIns={checkInsForDate(checkIns, shownDate)} /> : null}
+      </BottomSheet>
     </div>
   );
 }
 
-function DayDetail({
-  dateKey,
-  checkIns,
-  entry,
-  onDeleteJournal,
-}: {
-  dateKey: string;
-  checkIns: CheckIn[];
-  entry: JournalEntry | null;
-  onDeleteJournal: (id: string) => void;
-}) {
-  const [confirming, setConfirming] = useState(false);
-
+function DayCheckIns({ checkIns }: { checkIns: CheckIn[] }) {
+  if (checkIns.length === 0) return <p className="muted">이날은 체크인 기록이 없어요.</p>;
   return (
-    <div style={{ marginTop: 18 }}>
-      <h2>{formatDateLabel(dateKey)}</h2>
-
-      {checkIns.length === 0 ? (
-        <p className="muted">이날은 체크인 기록이 없어요.</p>
-      ) : (
-        checkIns.map((c) => (
-          <div className="card" key={c.id}>
+    <>
+      <p className="muted" style={{ marginTop: 0 }}>
+        체크인 {checkIns.length}회
+      </p>
+      {checkIns.map((c) => {
+        const last = c.techniques.length ? c.techniques[c.techniques.length - 1].sudsPost : null;
+        return (
+          <div className="card cal-sheet-card" key={c.id}>
             <div className="stat-row">
               <span className="stat-label">{formatTimeLabel(c.timestamp)}</span>
               <span className="stat-value">
@@ -179,13 +157,10 @@ function DayDetail({
               </span>
             </div>
             <div className="stat-row">
-              <span className="stat-label">SUDS</span>
+              <span className="stat-label">하기 전 → 재평가</span>
               <span className="stat-value">
                 {c.sudsPre}
-                {c.techniques.length > 0 &&
-                c.techniques[c.techniques.length - 1].sudsPost !== null
-                  ? ` → ${c.techniques[c.techniques.length - 1].sudsPost}`
-                  : ''}
+                {last !== null ? ` → ${last}` : ''}
               </span>
             </div>
             <div className="stat-row">
@@ -202,46 +177,8 @@ function DayDetail({
               </p>
             ) : null}
           </div>
-        ))
-      )}
-
-      {entry && entry.answers.length > 0 ? (
-        <>
-          <h2 style={{ marginTop: 20 }}>그날 일기</h2>
-          <div className="card">
-            {entry.answers.map((a) => (
-              <div key={a.promptId} style={{ marginBottom: 14 }}>
-                <div className="stat-label">{PROMPT_LABELS[a.promptId]}</div>
-                <p className="journal-body">{a.text}</p>
-              </div>
-            ))}
-            {confirming ? (
-              <div className="btn-row">
-                <button
-                  className="btn"
-                  style={{ textAlign: 'center' }}
-                  onClick={() => setConfirming(false)}
-                >
-                  그만두기
-                </button>
-                <button
-                  className="btn btn-danger"
-                  onClick={() => {
-                    onDeleteJournal(entry.id);
-                    setConfirming(false);
-                  }}
-                >
-                  지우기
-                </button>
-              </div>
-            ) : (
-              <button className="btn-quiet" onClick={() => setConfirming(true)}>
-                이 일기 지우기
-              </button>
-            )}
-          </div>
-        </>
-      ) : null}
-    </div>
+        );
+      })}
+    </>
   );
 }

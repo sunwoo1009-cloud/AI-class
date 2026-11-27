@@ -27,7 +27,7 @@ import {
 } from '../storage/store';
 import type { Settings } from '../types';
 
-export type MyPageTarget = 'summary' | 'review' | 'calendar' | 'coupons' | 'calendarLink' | 'pulse';
+export type MyPageTarget = 'journalList' | 'summary' | 'review' | 'calendar' | 'coupons' | 'calendarLink' | 'pulse';
 
 interface Props {
   settings: Settings;
@@ -71,7 +71,7 @@ function demoLog(): CaseEntry[] {
 
 /**
  * 마이페이지 (2026-11-27 추가) — 탭 막대 '마이페이지'.
- * 닉네임 바꾸기 · 2주 점검 · 주간 요약 · 돌아보기 · 캘린더 · 붕어빵 쿠폰 모음 · 캘린더 앱 연동 · 사례 종류 비율.
+ * 닉네임 바꾸기 · 2주 점검 · 주간 요약 · 돌아보기 · 하루 끝 일기(2026-11-27) · 캘린더 · 붕어빵 쿠폰 모음 · 캘린더 앱 연동 · 사례 종류 비율.
  */
 export function MyPage({ settings, onChangeSettings, onOpen, onBack, demo = false }: Props) {
   /* ---------- 닉네임 ---------- */
@@ -131,7 +131,8 @@ export function MyPage({ settings, onChangeSettings, onOpen, onBack, demo = fals
   const rows: { id: MyPageTarget; label: string; sub: string; badge?: boolean }[] = [
     { id: 'summary', label: '주간 요약', sub: escalated ? '살펴볼 것이 있어요' : '지난 7일', badge: escalated },
     { id: 'review', label: '돌아보기', sub: '나아지고 있나' },
-    { id: 'calendar', label: '캘린더', sub: '날짜별 체크인·일기' },
+    { id: 'journalList', label: '하루 끝 일기', sub: '그동안 쓴 일기' },
+    { id: 'calendar', label: '캘린더', sub: '날짜별 체크인' },
     { id: 'coupons', label: '붕어빵 쿠폰 모음', sub: '모은 도장' },
     {
       id: 'calendarLink',

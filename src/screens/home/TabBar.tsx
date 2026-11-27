@@ -8,6 +8,7 @@ import { loadCheckIns, loadPulse } from '../../storage/store';
 export type TabTarget =
   | 'home'
   | 'mypage'
+  | 'journalList'
   | 'summary'
   | 'review'
   | 'calendar'
@@ -20,7 +21,7 @@ export type TabTarget =
   | 'bgm';
 
 /** 마이페이지 안에 든 화면 — 이 화면들에서는 '마이페이지' 탭이 켜진다 */
-const MY_PAGE: TabTarget[] = ['mypage', 'summary', 'review', 'calendar', 'coupons', 'calendarLink', 'pulse'];
+const MY_PAGE: TabTarget[] = ['mypage', 'journalList', 'summary', 'review', 'calendar', 'coupons', 'calendarLink', 'pulse'];
 
 /** '더보기' 안에 든 화면 */
 const MORE: { id: TabTarget; label: string; sub: string }[] = [

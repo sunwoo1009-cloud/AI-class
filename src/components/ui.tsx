@@ -543,3 +543,35 @@ export function BottomSheet({
     </div>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* 토스트 — 잠깐 떴다 사라지는 한 줄 (2026-11-27, 반응 선택 "결제되었습니다") */
+
+export function Toast({ message, icon }: { message: ReactNode; icon?: ReactNode }) {
+  return (
+    <div className="toast" role="status" aria-live="polite">
+      {icon ? (
+        <span className="toast-icon" aria-hidden="true">
+          {icon}
+        </span>
+      ) : null}
+      <span>{message}</span>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* 배너 — 화면 위에서 내려와 머무는 띠 (2026-11-27, 종결 의례 "오늘 하루도 수고했어요") */
+
+export function Banner({ children, icon }: { children: ReactNode; icon?: ReactNode }) {
+  return (
+    <div className="banner" role="status">
+      {icon ? (
+        <span className="banner-icon" aria-hidden="true">
+          {icon}
+        </span>
+      ) : null}
+      <span className="banner-text">{children}</span>
+    </div>
+  );
+}

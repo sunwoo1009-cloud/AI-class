@@ -10,6 +10,7 @@ import { BgmSettings } from './screens/BgmSettings';
 import { startBgmOnFirstGesture } from './lib/bgm';
 import { CalendarLink } from './screens/CalendarLink';
 import { MyPage } from './screens/MyPage';
+import { JournalList } from './screens/JournalList';
 import { PulseCheck } from './screens/PulseCheck';
 import { dismissNudge, loadCalLink, startCalendarAutoSync } from './sync/calendarLink';
 import { dueNudge } from './lib/sessionCalendar';
@@ -41,6 +42,7 @@ type View =
   | 'home'
   | 'checkin'
   | 'mypage'
+  | 'journalList'
   | 'calendarLink'
   | 'pulse'
   | 'summary'
@@ -97,6 +99,8 @@ function AppMain() {
   const [joining, setJoining] = useState(false);
   /** 선택 가입 다음 — 캘린더 앱 연동 안내를 한 번 보여준다 (2026-11-27) */
   const [linking, setLinking] = useState(false);
+  /** 일기를 마이페이지의 '하루 끝 일기'에서 열었으면 닫을 때 그 목록으로 돌아간다 */
+  const [journalFrom, setJournalFrom] = useState<'home' | 'journalList'>('home');
   /** 홈 알림 띠를 닫으면 다시 그린다 */
   const [, setNudgeTick] = useState(0);
 
@@ -234,7 +238,7 @@ function AppMain() {
     case 'checkin':
       return <CheckInFlow displayName={settings.displayName} onFinish={home} />;
     case 'journal':
-      return <Journal onDone={home} />;
+      return <Journal onDone={() => setView(journalFrom)} />;
     // 마이페이지와 그 안의 화면들 — 뒤로 가면 마이페이지로 (2026-11-27)
     case 'mypage':
       return withTabs(
@@ -244,6 +248,17 @@ function AppMain() {
           onChangeSettings={setSettings}
           onOpen={setView}
           onBack={home}
+        />,
+      );
+    case 'journalList':
+      return withTabs(
+        'journalList',
+        <JournalList
+          onBack={myPage}
+          onWrite={() => {
+            setJournalFrom('journalList');
+            setView('journal');
+          }}
         />,
       );
     case 'summary':
@@ -292,7 +307,10 @@ function AppMain() {
         'home',
         <Home
           onStartCheckIn={() => setView('checkin')}
-          onOpenJournal={() => setView('journal')}
+          onOpenJournal={() => {
+            setJournalFrom('home');
+            setView('journal');
+          }}
           nudge={
             nudge
               ? {

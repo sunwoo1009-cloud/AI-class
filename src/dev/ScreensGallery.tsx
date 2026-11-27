@@ -10,6 +10,7 @@ import { Boutique } from '../screens/Boutique';
 import { RateApp } from '../screens/RateApp';
 import { BgmSettings } from '../screens/BgmSettings';
 import { MyPage } from '../screens/MyPage';
+import { JournalList } from '../screens/JournalList';
 import { PulseCheck } from '../screens/PulseCheck';
 import { CalendarLink } from '../screens/CalendarLink';
 import { AvatarParts } from './AvatarParts';
@@ -366,6 +367,22 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       ),
     },
     {
+      id: 'journal-list',
+      label: '하루 끝 일기 — 그동안 쓴 일기',
+      tall: true,
+      render: () => (
+        <DemoTabs active="journalList">
+          <JournalList onBack={noop} onWrite={noop} demo />
+        </DemoTabs>
+      ),
+    },
+    {
+      id: 'reaction-result',
+      label: '반응 선택 — 메뉴를 찾았어요',
+      tall: true,
+      render: () => <ReactionSelect onSubmit={noop} onCancel={noop} demoText="가슴이 두근거리고 화가 나요" />,
+    },
+    {
       id: 'journal',
       label: '하루 끝 일기',
       spec: '7.3',
@@ -488,7 +505,7 @@ const SHEETS: Sheet[] = [
   // 처음 여는 순서대로: 온보딩 → 선택 가입 → (다음부터 열 때마다) 인트로 → 홈
   { title: '시작', kind: 'row', ids: ['onboarding', 'join', 'calendar-link-start', 'intro', 'home'] },
   { title: '기법을 사용해 감정 관리하기', kind: 'checkin' },
-  { title: '오늘의 나를 기록하기', kind: 'row', ids: ['journal'] },
+  { title: '오늘의 나를 기록하기', kind: 'row', ids: ['journal', 'journal-list'] },
   // 2026-11-27 — 주간 요약·돌아보기·캘린더·쿠폰은 마이페이지 안으로
   {
     title: '마이페이지',
@@ -499,6 +516,7 @@ const SHEETS: Sheet[] = [
       'pulse-result',
       'summary',
       'review',
+      'journal-list',
       'calendar',
       'coupons',
       'calendar-link',
@@ -677,7 +695,9 @@ function CheckInFlowSheet({ byId }: { byId: Map<string, Screen> }) {
   return (
     <div className="gal-flow">
       <Frame s={s('reaction')} />
-      <Arrow />
+      <Arrow label="적고 찾기" />
+      <Frame s={s('reaction-result')} />
+      <Arrow label="그림 누르기" />
       <Frame s={s('suds-pre')} />
       <Arrow label={`${r.label} 선택`} />
 

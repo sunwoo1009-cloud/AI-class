@@ -8,22 +8,24 @@ import type { CouponView } from '../lib/coupon';
 import { addStamp, loadStampBalance } from '../storage/store';
 import { TAIYAKI_BODY, TAIYAKI_TAIL } from './menu/FoodIcon';
 import type { TechniqueId } from '../types';
-import { BackButton } from '../components/ui';
+import { BackButton, Banner } from '../components/ui';
+import { coachSnoozed } from '../lib/coach';
 
 /** 두 번 누른 뒤 도장이 찍히는 움직임 길이 (2026-11-27 — 전에는 3초 길게 누르기) */
 const STAMP_MS = 450;
 
 const COACH_KEY = 'cbd:coachStamp';
+/** 2026-11-27 — '알겠어요'를 누른 뒤 일주일 동안은 띄우지 않는다 (lib/coach.ts) */
 function coachSeen(): boolean {
   try {
-    return localStorage.getItem(COACH_KEY) === '1';
+    return coachSnoozed(localStorage.getItem(COACH_KEY));
   } catch {
     return true;
   }
 }
 function markCoachSeen() {
   try {
-    localStorage.setItem(COACH_KEY, '1');
+    localStorage.setItem(COACH_KEY, new Date().toISOString());
   } catch {
     // 저장이 막혀도 이번에는 닫힌다
   }
@@ -161,9 +163,10 @@ export function ClosingRitual({
     if (phase !== 'hold') return;
     if (coach === 'always' || (coach === 'auto' && !coachSeen())) setCoachOn(true);
   }, [phase, coach]);
-  function closeCoach() {
+  /** ok — '알겠어요'로 닫았을 때만 일주일 동안 다시 띄우지 않는다 */
+  function closeCoach(ok: boolean) {
     setCoachOn(false);
-    markCoachSeen();
+    if (ok) markCoachSeen();
   }
 
   const appRef = useRef<HTMLDivElement>(null);
@@ -217,7 +220,12 @@ export function ClosingRitual({
       ) : null}
 
       {coachOn && phase === 'hold' ? (
-        <CoachMark appRef={appRef} targetRef={couponRef} onClose={closeCoach} />
+        <CoachMark
+          appRef={appRef}
+          targetRef={couponRef}
+          onClose={() => closeCoach(false)}
+          onOk={() => closeCoach(true)}
+        />
       ) : null}
 
       {phase === 'ask' ? (
@@ -247,9 +255,9 @@ export function ClosingRitual({
       {/* 명세 8.7 [4] — 2026-11-24 사용자 결정으로 원칙 5의 예외 */}
       {phase === 'bye' ? (
         <>
-          <div className="script">
-            <p className="script-text bye-text">오늘 하루도 수고했어요</p>
-          </div>
+          {/* 2026-11-27 — 위에서 내려오는 배너로 */}
+          <Banner icon={<ByeIcon />}>오늘 하루도 수고했어요</Banner>
+          <div className="spacer" />
           <button className="btn btn-primary" onClick={onReady}>
             홈으로
           </button>
@@ -369,10 +377,13 @@ function CoachMark({
   appRef,
   targetRef,
   onClose,
+  onOk,
 }: {
   appRef: RefObject<HTMLDivElement>;
   targetRef: RefObject<HTMLDivElement>;
   onClose: () => void;
+  /** '알겠어요' */
+  onOk: () => void;
 }) {
   const [box, setBox] = useState<{ top: number; left: number; width: number; height: number } | null>(
     null,
@@ -438,7 +449,7 @@ function CoachMark({
           className="btn btn-primary coach-ok"
           onClick={(e) => {
             e.stopPropagation();
-            onClose();
+            onOk();
           }}
           ref={okRef}
         >
@@ -488,5 +499,16 @@ export function ClosingMore({
         </p>
       ) : null}
     </div>
+  );
+}
+
+/** 배너 아이콘 — 김이 나는 붕어빵 */
+function ByeIcon() {
+  return (
+    <svg viewBox="0 0 40 40" focusable="false">
+      <path className="bye-steam" d="M14 12 c-2-3 2-5 0-8 M20 12 c-2-3 2-5 0-8 M26 12 c-2-3 2-5 0-8" />
+      <path className="bye-fish" d="M5 26 c4-8 18-9 25-3 l6-4 v14 l-6-4 c-7 6-21 5-25-3 z" />
+      <circle cx="12" cy="25" r="1.6" />
+    </svg>
   );
 }

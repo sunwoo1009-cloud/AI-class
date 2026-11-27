@@ -1,37 +1,73 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Lines } from '../components/Lines';
 import { REACTIONS, reactionInfo, won } from '../constants';
 import type { ReactionType } from '../types';
 import { FoodIcon } from './menu/FoodIcon';
-import { BackButton, Tooltip } from '../components/ui';
+import { BackButton, Toast, Tooltip } from '../components/ui';
+import { guessReactions } from '../lib/emotionGuess';
 
 interface Props {
   onSubmit: (reactions: ReactionType[]) => void;
   onCancel: () => void;
+  /** 발표용 — 글을 미리 채워 메뉴가 나온 모습부터 보여준다 */
+  demoText?: string;
 }
 
-/**
- * 명세 6.1 / 9절 화면 3
- * 6개 반응 중 1~2개를 고른다. 먼저 고른 것이 주 반응이다.
- *
- * 노점 메뉴판 모양으로 보여준다. 반응 이름이 품목이고, 고르면
- * 아래에 영수증이 뜬다. 값은 표시용이며 기록에는 들어가지 않는다.
- */
-export function ReactionSelect({ onSubmit, onCancel }: Props) {
-  const [picked, setPicked] = useState<ReactionType[]>([]);
+/** 토스트가 보인 뒤 다음 화면으로 넘어가기까지 */
+const PAID_MS = 1100;
 
-  function toggle(id: ReactionType) {
-    setPicked((prev) => {
-      if (prev.includes(id)) return prev.filter((r) => r !== id);
-      if (prev.length >= 2) return prev;
-      return [...prev, id];
-    });
+/**
+ * 명세 6.1 / 9절 화면 3 — 2026-11-27 개편.
+ * 메뉴판에서 고르는 대신, 지금 남아 있는 반응·감정을 직접 적는다.
+ * 앱이 적은 글이 여섯 반응(과각성·분노·짜증·침습적 장면·멍함·무력감·반추) 중 무엇에 가까운지 판단해
+ * 그 메뉴 그림을 통통 튀며(bounce) 보여준다. 그림을 누르면 "결제되었습니다" 토스트가 뜨고 다음 화면으로.
+ *
+ * 적은 글은 판단에만 쓰고 저장하지 않는다. 판단은 기기 안에서 한다(lib/emotionGuess.ts).
+ */
+export function ReactionSelect({ onSubmit, onCancel, demoText }: Props) {
+  const [text, setText] = useState(demoText ?? '');
+  /** 판단한 결과 — null 이면 아직 판단 전 */
+  const [found, setFound] = useState<ReactionType[] | null>(() =>
+    demoText ? guessReactions(demoText).map((g) => g.id) : null,
+  );
+  const [showAll, setShowAll] = useState(false);
+  const [paid, setPaid] = useState<ReactionType | null>(null);
+  /** 판단할 때마다 바꿔서 그림이 다시 튀게 한다 */
+  const [round, setRound] = useState(0);
+  const timer = useRef<number | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+
+  useEffect(
+    () => () => {
+      if (timer.current) window.clearTimeout(timer.current);
+    },
+    [],
+  );
+
+  function judge() {
+    const t = text.trim();
+    if (!t) return;
+    const ids = guessReactions(t).map((g) => g.id);
+    setFound(ids);
+    setShowAll(ids.length === 0);
+    setRound((r) => r + 1);
+    window.setTimeout(
+      () => resultRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }),
+      60,
+    );
   }
 
-  const total = picked.reduce(
-    (sum, id) => sum + reactionInfo(id).menuItem.price,
-    0,
-  );
+  function pay(id: ReactionType) {
+    if (paid) return;
+    setPaid(id);
+    timer.current = window.setTimeout(() => onSubmit([id]), PAID_MS);
+  }
+
+  const shown: ReactionType[] = found
+    ? showAll
+      ? [...found, ...REACTIONS.map((r) => r.id).filter((id) => !found.includes(id))]
+      : found
+    : [];
 
   return (
     <div className="app app-paper">
@@ -39,90 +75,85 @@ export function ReactionSelect({ onSubmit, onCancel }: Props) {
         <BackButton onClick={onCancel} label="홈으로" />
       </div>
 
-      {/* 화면 폭이 아니라 칸 너비에 맞춰 한 줄로 줄인다 — 틀 안에서도 넘치지 않게 */}
       <div className="lines-box">
-        <Lines
-          as="h1"
-          text="지금 남아 있는 반응에 이름을 붙여보세요"
-          base="1.35rem"
-        />
+        <Lines as="h1" text="지금 남아 있는 반응에 이름을 붙여보세요" base="1.35rem" />
       </div>
       <p className="muted">
-        한 개 또는 두 개를 고르세요
+        지금 느끼는 반응이나 감정을 적어 보세요
         <br />
-        먼저 고른 것이 주 반응이에요
+        어울리는 메뉴를 찾아 드려요
       </p>
 
-      <div className="menu-board">
-        {/* 가격표 때문에 실제 결제로 오해하지 않게 (2026-11-25).
-            2026-11-27 간판 옆 ⓘ 툴팁으로 옮겼다. */}
-        <div className="menu-sign-row">
-          <p className="menu-sign">메뉴판</p>
-          <Tooltip lines={['실제로 결제되지 않아요']} label="가격 안내 보기" />
-        </div>
+      <label className="feel-field">
+        <span className="sr-only">지금 남아 있는 반응이나 감정</span>
+        <textarea
+          value={text}
+          rows={3}
+          maxLength={200}
+          placeholder="예: 가슴이 계속 두근거려요"
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              judge();
+            }
+          }}
+        />
+      </label>
+      <p className="feel-note">적은 글은 메뉴를 찾는 데만 쓰고 저장하지 않아요. 내담자 정보는 적지 마세요.</p>
+      <button
+        className="btn btn-primary"
+        disabled={!text.trim() || paid !== null}
+        onClick={judge}
+      >
+        {found ? '다시 찾기' : '메뉴 찾기'}
+      </button>
 
-        <div className="menu-strips">
-          {REACTIONS.map((r) => {
-            const index = picked.indexOf(r.id);
-            const selected = index >= 0;
-            return (
-              <button
-                key={r.id}
-                className="menu-strip"
-                aria-pressed={selected}
-                onClick={() => toggle(r.id)}
-              >
-                {selected ? (
-                  <span className="strip-stamp">
-                    {index === 0 ? '주 반응' : '두 번째'}
-                  </span>
-                ) : null}
-                <FoodIcon kind={r.menuItem.icon} />
-                <span className="strip-reaction">{r.label}</span>
-                <span className="strip-item">{r.menuItem.name}</span>
-                <span className="strip-price">{won(r.menuItem.price)}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {picked.length > 0 ? (
-        <div className="receipt" aria-live="polite">
-          <p className="receipt-title">영수증</p>
-          <div className="receipt-rule" aria-hidden="true" />
-
-          {picked.map((id, i) => {
-            const r = reactionInfo(id);
-            return (
-              <div className="receipt-row" key={id}>
-                <span className="receipt-name">
-                  {r.menuItem.name}
-                  <span className="receipt-sub">
-                    {i === 0 ? '주 반응' : '두 번째'} · {r.label}
-                  </span>
-                </span>
-                <span className="receipt-price">{won(r.menuItem.price)}</span>
-              </div>
-            );
-          })}
-
-          <div className="receipt-rule" aria-hidden="true" />
-          <div className="receipt-row receipt-total">
-            <span className="receipt-name">합계</span>
-            <span className="receipt-price">{won(total)}</span>
+      {found ? (
+        <div className="menu-board feel-result" ref={resultRef}>
+          <div className="menu-sign-row">
+            <p className="menu-sign">
+              {found.length === 0 ? '가까운 메뉴를 골라 주세요' : '이 메뉴가 맞아 보여요'}
+            </p>
+            <Tooltip lines={['실제로 결제되지 않아요']} label="가격 안내 보기" />
           </div>
+          <p className="feel-hint">
+            {found.length === 0
+              ? '적은 글로는 알아보지 못했어요'
+              : '그림을 누르면 주문돼요'}
+          </p>
+
+          <div className="menu-strips" key={round}>
+            {shown.map((id, i) => {
+              const r = reactionInfo(id);
+              return (
+                <button
+                  key={id}
+                  className={`menu-strip feel-pop${paid === id ? ' is-paid' : ''}`}
+                  style={{ animationDelay: `${i * 110}ms` }}
+                  disabled={paid !== null && paid !== id}
+                  onClick={() => pay(id)}
+                >
+                  {paid === id ? <span className="strip-stamp">주문</span> : null}
+                  <FoodIcon kind={r.menuItem.icon} />
+                  <span className="strip-reaction">{r.label}</span>
+                  <span className="strip-item">{r.menuItem.name}</span>
+                  <span className="strip-price">{won(r.menuItem.price)}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {!showAll ? (
+            <button type="button" className="btn-quiet feel-more" onClick={() => setShowAll(true)}>
+              다른 메뉴도 보기
+            </button>
+          ) : null}
         </div>
       ) : null}
 
-      <div className="spacer" />
-      <button
-        className="btn btn-primary"
-        disabled={picked.length === 0}
-        onClick={() => onSubmit(picked)}
-      >
-        다음
-      </button>
+      {paid ? <Toast message="결제되었습니다" icon="✓" /> : null}
     </div>
   );
 }
+

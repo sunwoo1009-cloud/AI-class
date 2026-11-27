@@ -38,6 +38,7 @@ const SCREEN_GROUPS: { title: string; items: [id: string, label: string][] }[] =
     title: '체크인 흐름',
     items: [
       ['reaction', '반응 선택'],
+      ['reaction-result', '반응 선택 — 메뉴 찾음'],
       ['suds-pre', '하기 전'],
       ['suds-post', '다시 평가하기'],
       ['offer', '기법 추가 선택'],
@@ -68,6 +69,7 @@ const SCREEN_GROUPS: { title: string; items: [id: string, label: string][] }[] =
       ['pulse-result', '2주 점검 — 결과'],
       ['summary', '주간 요약'],
       ['review', '돌아보기'],
+      ['journal-list', '하루 끝 일기 모아 보기'],
       ['calendar', '캘린더'],
       ['coupons', '붕어빵 쿠폰'],
       ['calendar-link', '캘린더 앱 연동'],

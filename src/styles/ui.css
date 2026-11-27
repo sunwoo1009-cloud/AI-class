@@ -2748,3 +2748,351 @@
     animation-duration: 1ms !important;
   }
 }
+
+/* ================================================================== */
+/* 2026-11-27 — 반응 직접 적기 · 토스트 · 배너 · 일기 넘기기 · 일기 모아 보기 · 캘린더 시트 */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- 반응 직접 적기 --- */
+.feel-field textarea {
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1.5px solid var(--btn-edge);
+  background: var(--strip-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  resize: none;
+  box-shadow: inset 0 2px 4px rgba(120, 90, 50, 0.08);
+}
+
+.feel-field textarea:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.feel-note {
+  margin: 6px 2px 14px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.feel-result {
+  margin-top: 18px;
+}
+
+.feel-hint {
+  margin: -4px 0 10px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--strip-muted);
+}
+
+/* 찾은 메뉴가 통통 튀며 나타난다 */
+.menu-strip.feel-pop {
+  animation: feel-bounce 720ms cubic-bezier(0.28, 0.84, 0.42, 1) both;
+}
+
+@keyframes feel-bounce {
+  0% {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.6);
+  }
+  45% {
+    opacity: 1;
+    transform: translateY(0) scale(1.08, 0.92);
+  }
+  62% {
+    transform: translateY(-14px) scale(0.97, 1.04);
+  }
+  78% {
+    transform: translateY(0) scale(1.03, 0.97);
+  }
+  90% {
+    transform: translateY(-3px);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+.menu-strip.feel-pop.is-paid {
+  outline: 3px solid var(--stamp-ink);
+  outline-offset: 2px;
+}
+
+.menu-strip.feel-pop:disabled {
+  opacity: 0.45;
+}
+
+.btn-quiet.feel-more {
+  display: block;
+  margin: 12px auto 0;
+}
+
+/* --- 토스트 --- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(40px + env(safe-area-inset-bottom));
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 20px;
+  border-radius: 999px;
+  background: #3b2c17;
+  color: #fff7e8;
+  font-weight: 700;
+  box-shadow: 0 8px 22px rgba(40, 30, 20, 0.3);
+  transform: translateX(-50%);
+  animation: snack-in 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  white-space: nowrap;
+}
+
+.toast-icon {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #3f8f5a;
+  font-size: 0.8rem;
+}
+
+.gal-screen .toast {
+  position: absolute;
+}
+
+/* --- 배너 — 위에서 내려와 머문다 --- */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 6px 0 0;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border: 1.5px solid var(--btn-primary-ledge);
+  box-shadow: 0 4px 0 var(--btn-primary-ledge), 0 10px 24px rgba(120, 90, 30, 0.18);
+  animation: banner-drop 620ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+
+.banner-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: #fffaf0;
+}
+
+.banner-icon svg {
+  width: 34px;
+  height: 34px;
+}
+
+.banner-icon .bye-fish {
+  fill: #e7b45c;
+  stroke: #8a5a1c;
+  stroke-width: 1.6;
+}
+
+.banner-icon .bye-steam {
+  fill: none;
+  stroke: #c9a46a;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.banner-icon circle {
+  fill: #5a3a12;
+}
+
+.banner-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+@keyframes banner-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-60px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* --- 일기: 문구가 서서히 나타난다 --- */
+.journal-notice.jr-fade {
+  animation: jr-fade 900ms ease-out both;
+}
+
+@keyframes jr-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* --- 일기: 질문을 옆으로 밀어서 넘긴다 --- */
+.jr-swipe-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 6px 0 8px;
+}
+
+.jr-count {
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: var(--text-muted);
+}
+
+.jr-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.jr-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  transition: width 200ms ease, background 200ms ease;
+}
+
+.jr-dot.is-on {
+  width: 22px;
+  background: var(--accent);
+}
+
+.jr-swipe {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  padding-bottom: 6px;
+}
+
+.jr-swipe::-webkit-scrollbar {
+  display: none;
+}
+
+.journal-field.jr-slide {
+  flex: 0 0 100%;
+  margin: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.jr-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.jr-nav .btn {
+  text-align: center;
+  padding: 12px;
+}
+
+.jr-swipe-hint {
+  margin: 6px 0 0;
+  text-align: center;
+  font-size: 0.78rem;
+}
+
+/* --- 일기 모아 보기 --- */
+.jl-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.jl-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.jl-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.jl-today {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.jl-chev {
+  font-size: 1.3rem;
+  color: var(--text-muted);
+  transition: transform 200ms ease;
+}
+
+.jl-item.is-open .jl-chev {
+  transform: rotate(90deg);
+}
+
+.jl-body {
+  padding: 0 16px 14px;
+  border-top: 1px dashed var(--border);
+  animation: jr-fade 260ms ease both;
+}
+
+.jl-qa {
+  margin-top: 12px;
+}
+
+.jl-q {
+  margin: 0 0 4px;
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--accent);
+}
+
+/* --- 캘린더 시트 --- */
+.card.cal-sheet-card {
+  margin-bottom: 10px;
+}
