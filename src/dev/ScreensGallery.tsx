@@ -407,7 +407,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
     },
     {
       id: 'boutique',
-      label: '부티크 — 직장인 꾸미기',
+      label: '옷장 — 직장인 꾸미기',
       spec: '8.8',
       tall: true,
       render: () => (

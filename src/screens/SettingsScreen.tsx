@@ -24,6 +24,62 @@ import type { Settings } from '../types';
 import { AccountSection } from './AccountSection';
 import { Accordion, BackButton, ProgressBar } from '../components/ui';
 import { useProgress } from '../lib/useProgress';
+import { askMyPlace, clearMyPlace, loadWeatherPlace } from '../lib/weather';
+
+/**
+ * 인트로 날씨 지역 (2026-11-27, lib/weather.ts).
+ * 기본은 서울. '내 지역으로'를 누를 때만 위치를 묻고, 약 10km 로 뭉갠 좌표만 기기에 둔다.
+ */
+function WeatherPlaceSection() {
+  const [mine, setMine] = useState(() => loadWeatherPlace().mine);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  return (
+    <>
+      <h2 style={{ marginTop: 22 }}>인트로 날씨 지역</h2>
+      <p className="muted">
+        퇴근길 장면이 그날 날씨(맑음·흐림·비·눈)에 맞춰 바뀌어요.
+        <br />
+        지금은 <b>{mine ? '내 지역' : '서울'}</b> 날씨예요.
+      </p>
+      {mine ? (
+        <button
+          className="btn"
+          style={{ textAlign: 'center' }}
+          onClick={() => {
+            clearMyPlace();
+            setMine(false);
+            setNote('서울 날씨로 바꿨어요');
+          }}
+        >
+          서울 날씨로 되돌리기
+        </button>
+      ) : (
+        <button
+          className="btn"
+          style={{ textAlign: 'center' }}
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            setNote(null);
+            const r = await askMyPlace();
+            setBusy(false);
+            if (r.ok) {
+              setMine(true);
+              setNote('내 지역 날씨로 바꿨어요');
+            } else setNote(r.reason);
+          }}
+        >
+          {busy ? '위치를 받는 중…' : '내 지역 날씨로'}
+        </button>
+      )}
+      <small className="muted" style={{ display: 'block', marginTop: 6 }}>
+        위치는 약 10km 단위로만 기기에 남기고, 날씨를 물을 때만 날씨 서비스(Open-Meteo)에 보내요.
+      </small>
+      {note ? <p className="account-note">{note}</p> : null}
+    </>
+  );
+}
 
 /** 홈 화면에 설치해서 연 것인지. 설치해서 쓰면 브라우저가 기록을 덜 지운다. */
 function isInstalled(): boolean {
@@ -208,6 +264,8 @@ export function SettingsScreen({
       {/* 명세 7.7 — 선택 가입. 닉네임도 가입할 때 정한다 (예전 '표시 이름' 칸을 대신한다) */}
       <AccountSection onChangeSettings={onChangeSettings} onReset={onReset} />
 
+      <WeatherPlaceSection />
+
       <h2 style={{ marginTop: 22 }}>데이터 내보내기</h2>
       <p className="muted">
         백업하거나 기기를 바꿀 때 쓰세요.
@@ -270,7 +328,7 @@ export function SettingsScreen({
             style={{ textAlign: 'center' }}
             onClick={() => setConfirmingReset(false)}
           >
-            그만두기
+            닫기
           </button>
           <button
             className="btn btn-danger"

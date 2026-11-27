@@ -396,6 +396,13 @@ button {
   gap: 10px;
 }
 
+/* 메뉴가 하나만(또는 홀수 개로 마지막 하나가 혼자) 남으면 가운데에 (2026-11-27) */
+.menu-strips > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: calc(50% - 5px);
+}
+
 /* 한 띠에 세 줄 — 반응 이름 · 품목 · 값 */
 .menu-strip {
   position: relative;

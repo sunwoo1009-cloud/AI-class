@@ -406,6 +406,194 @@
   animation: intro-copy-in 700ms ease 1600ms forwards;
 }
 
+/* =======================================================================
+   인트로 날씨 (2026-11-27) — 맑음 · 흐림 · 비 · 눈
+   맑음은 원래 노을 그대로에 해만 얹는다. 나머지는 하늘을 회색 쪽으로 누른다.
+   어두운 남색은 쓰지 않는다 — 비 오는 날도 회보라·회갈색으로 밝게.
+   ======================================================================= */
+
+.intro[data-weather='cloudy'] {
+  --sky-top: #b9b4ba;
+  --sky-mid: #cfc6c0;
+  --sky-bottom: #e2dbd1;
+  --ground: #b3a798;
+  --ground-deep: #a09484;
+}
+
+.intro[data-weather='rain'] {
+  --sky-top: #a9a5ae;
+  --sky-mid: #bdb6b4;
+  --sky-bottom: #d5cdc4;
+  --ground: #a39687;
+  --ground-deep: #8f8274;
+}
+
+.intro[data-weather='snow'] {
+  --sky-top: #cfced6;
+  --sky-mid: #e0dcda;
+  --sky-bottom: #efebe6;
+  --ground: #e6e1da;
+  --ground-deep: #d5cfc7;
+}
+
+.intro .scene-ground {
+  transition: background 600ms ease;
+}
+
+.wx-sky,
+.wx-fall {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  animation: wx-in 900ms ease both;
+}
+
+@keyframes wx-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* 맑음 — 노을 속 낮은 해 */
+.wx-sun {
+  position: absolute;
+  right: 16%;
+  top: 13%;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff3d6 0 42%, rgba(255, 228, 182, 0.55) 56%, rgba(255, 228, 182, 0) 72%);
+  transform: scale(1.9);
+}
+
+/* 구름 */
+.wx-clouds {
+  position: absolute;
+  left: 0;
+  top: 6%;
+  width: 100%;
+  height: 26%;
+  overflow: visible;
+}
+
+.wx-cloudy .wx-clouds {
+  fill: #ece6e0;
+  opacity: 0.85;
+}
+
+.wx-rain .wx-clouds {
+  fill: #c9c2c4;
+  opacity: 0.95;
+}
+
+.wx-snow .wx-clouds {
+  fill: #f4f1ee;
+  opacity: 0.9;
+}
+
+.wx-cloud-drift {
+  animation: wx-drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes wx-drift {
+  to {
+    transform: translateX(-24px);
+  }
+}
+
+/* 비 — 비스듬한 가는 줄 두 겹 (가까운 것은 굵고 빠르게) */
+.wx-rain-a,
+.wx-rain-b,
+.wx-snow-a,
+.wx-snow-b {
+  position: absolute;
+  inset: -20% -10% 0;
+}
+
+.wx-rain-a {
+  background-image: repeating-linear-gradient(
+    105deg,
+    transparent 0 22px,
+    rgba(250, 248, 255, 0.55) 22px 23.5px,
+    transparent 23.5px 47px
+  );
+  background-size: 100% 90px;
+  animation: wx-rain 0.55s linear infinite;
+  mask-image: repeating-linear-gradient(to bottom, #000 0 26px, transparent 26px 58px);
+}
+
+.wx-rain-b {
+  background-image: repeating-linear-gradient(
+    105deg,
+    transparent 0 31px,
+    rgba(240, 238, 248, 0.35) 31px 32px,
+    transparent 32px 61px
+  );
+  background-size: 100% 70px;
+  animation: wx-rain 0.85s linear infinite;
+  mask-image: repeating-linear-gradient(to bottom, #000 0 18px, transparent 18px 44px);
+}
+
+@keyframes wx-rain {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(-16px, 90px);
+  }
+}
+
+/* 눈 — 동그란 눈송이 두 겹, 천천히 내려오며 살짝 흔들린다 */
+.wx-snow-a {
+  background-image:
+    radial-gradient(circle, #fff 0 2.6px, transparent 3.2px),
+    radial-gradient(circle, #fff 0 2px, transparent 2.6px);
+  background-size: 90px 110px, 70px 80px;
+  background-position: 10px 0, 45px 35px;
+  animation: wx-snow 7s linear infinite;
+  opacity: 0.95;
+}
+
+.wx-snow-b {
+  background-image:
+    radial-gradient(circle, #fff 0 1.6px, transparent 2.2px),
+    radial-gradient(circle, #fff 0 1.2px, transparent 1.8px);
+  background-size: 54px 64px, 40px 52px;
+  background-position: 20px 10px, 5px 30px;
+  animation: wx-snow-slow 11s linear infinite;
+  opacity: 0.8;
+}
+
+@keyframes wx-snow {
+  from {
+    background-position: 10px 0, 45px 35px;
+  }
+  to {
+    background-position: 40px 440px, 65px 355px;
+  }
+}
+
+@keyframes wx-snow-slow {
+  from {
+    background-position: 20px 10px, 5px 30px;
+  }
+  to {
+    background-position: 0 266px, 25px 238px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wx-sky,
+  .wx-fall,
+  .wx-cloud-drift,
+  .wx-rain-a,
+  .wx-rain-b,
+  .wx-snow-a,
+  .wx-snow-b {
+    animation: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .intro-scroll,
   .walker-bob.walk,

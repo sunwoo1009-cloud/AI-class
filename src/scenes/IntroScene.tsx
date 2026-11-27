@@ -1,9 +1,11 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Cityscape } from './Cityscape';
 import { Steam } from './Steam';
 import { StreetLamp } from './StreetLamp';
+import { WeatherLayer } from './WeatherLayer';
 import { AvatarSvg } from '../avatar/Avatar';
 import { loadCloset } from '../storage/store';
+import { fetchWeather, lastWeather, parseWeatherOverride, type Weather } from '../lib/weather';
 
 interface Props {
   /** 전환이 끝나면 호출된다 */
@@ -25,6 +27,20 @@ export function IntroScene({ onDone }: Props) {
   const [equipped] = useState(() => loadCloset().equipped);
   const doneRef = useRef(false);
 
+  // 그날 날씨 (2026-11-27) — 마지막으로 받은 날씨로 먼저 그리고, 새로 받으면 서서히 바꾼다
+  const forced = typeof window === 'undefined' ? null : parseWeatherOverride(window.location.search);
+  const [weather, setWeather] = useState<Weather>(() => forced ?? lastWeather());
+  useEffect(() => {
+    if (forced) return;
+    let alive = true;
+    void fetchWeather().then((w) => {
+      if (alive) setWeather(w);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [forced]);
+
   function leave() {
     if (doneRef.current) return;
     doneRef.current = true;
@@ -36,6 +52,7 @@ export function IntroScene({ onDone }: Props) {
     <div
       className={`scene-home intro${leaving ? ' intro-leaving' : ''}`}
       data-lit="true"
+      data-weather={weather}
       onClick={leave}
       role="button"
       tabIndex={0}
@@ -46,6 +63,8 @@ export function IntroScene({ onDone }: Props) {
     >
       <div className="scene-sky" aria-hidden="true" />
       <div className="scene-ground" aria-hidden="true" />
+      {/* 해·구름 — 건물 뒤에 */}
+      <WeatherLayer weather={weather} part="sky" />
 
       {/* 흐르는 배경 — 같은 타일 두 장을 이어 붙여 끊김 없이 돈다 */}
       <div className="intro-parallax" aria-hidden="true">
@@ -74,6 +93,9 @@ export function IntroScene({ onDone }: Props) {
           <Steam transform="translate(8 74)" strength="full" />
         </svg>
       </div>
+
+      {/* 비·눈 — 사람 앞에, 문구 뒤에 */}
+      <WeatherLayer weather={weather} part="fall" />
 
       <div className="intro-copy">
         <p>어! 붕어빵 냄새다.</p>

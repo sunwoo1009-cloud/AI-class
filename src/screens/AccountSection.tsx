@@ -266,7 +266,7 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
               disabled={busy}
               onClick={() => setConfirmingDelete(false)}
             >
-              그만두기
+              닫기
             </button>
           </div>
         ) : null}
@@ -301,7 +301,7 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
 /**
  * 가입·로그인 칸. 설정(AccountSection)과 온보딩 다음 가입 화면(JoinScreen)이 함께 쓴다.
  * - initialMode: 처음 보여줄 칸 (intro = '로그인'·'가입하기' 버튼 두 개)
- * - allowCancel: 칸 아래 '그만두기'를 둘지. 가입 화면에는 따로 '가입하지 않고 시작하기'가 있다.
+ * - allowCancel: 칸 아래 '닫기'를 둘지 (2026-11-27 '그만두기' → '닫기'). 가입 화면에는 따로 '가입하지 않고 시작하기'가 있다.
  */
 export function AuthForm({
   initialMode = 'intro',
@@ -501,7 +501,7 @@ export function AuthForm({
                   setNote(null);
                 }}
               >
-                그만두기
+                닫기
               </button>
             ) : null}
             <button

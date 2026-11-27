@@ -36,6 +36,9 @@ export const KEYS = {
   calLink: `${PREFIX}calLink`,
   /** 최근 지운 일기 (2026-11-27) — 30일 동안 되살릴 수 있다. 기기에만 있고 서버에 안 올린다. */
   journalTrash: `${PREFIX}journalTrash`,
+  /** 인트로 날씨 (2026-11-27, lib/weather.ts) — 받은 날씨 1시간 보관, 설정에서 고른 지역(뭉갠 좌표) */
+  weather: `${PREFIX}weather`,
+  weatherPlace: `${PREFIX}weatherPlace`,
 } as const;
 
 /**

@@ -200,7 +200,7 @@ export function MyPage({ settings, onChangeSettings, onOpen, onBack, demo = fals
               자기 거리두기 기법에서 이 이름으로 불러요{signedIn ? ' · 계정 닉네임도 함께 바뀌어요' : ''}
             </small>
             <button type="button" className="btn-quiet my-nick-cancel" onClick={cancelNick}>
-              그만두기
+              닫기
             </button>
           </div>
         ) : (

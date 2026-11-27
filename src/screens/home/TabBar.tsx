@@ -71,7 +71,7 @@ export function TabBar({ active, onNavigate }: Props) {
   const tabs: { id: TabTarget | 'more'; label: string; icon: ReactNode; badge?: number }[] = [
     { id: 'home', label: '홈', icon: <IconHome /> },
     { id: 'mypage', label: '마이페이지', icon: <IconPerson />, badge },
-    { id: 'boutique', label: '부티크', icon: <IconShirt /> },
+    { id: 'boutique', label: '옷장', icon: <IconShirt /> },
     { id: 'more', label: '더보기', icon: <IconMore /> },
   ];
 

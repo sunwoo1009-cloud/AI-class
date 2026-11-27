@@ -153,7 +153,7 @@ export function JournalList({ onBack, onWrite, demo = false }: Props) {
                   {confirming === j.id ? (
                     <div className="btn-row">
                       <button className="btn" style={{ textAlign: 'center' }} onClick={() => setConfirming(null)}>
-                        그만두기
+                        닫기
                       </button>
                       <button className="btn btn-danger" onClick={() => remove(j)}>
                         지우기

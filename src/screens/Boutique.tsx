@@ -122,7 +122,7 @@ export function Boutique({ onBack }: Props) {
       <div className="boutique-tabs" role="tablist">
         {(
           [
-            ['shop', '부티크'],
+            ['shop', '옷장'],
             ['owned', '아이템 도감'],
           ] as const
         ).map(([id, label]) => (

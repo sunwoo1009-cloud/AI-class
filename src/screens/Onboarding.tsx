@@ -71,7 +71,6 @@ export function Onboarding({ onDone }: Props) {
         />
       </div>
 
-      <p className="onb-hint muted">칸을 누르면 내용을 볼 수 있어요</p>
       <div className="onb-cards">
         {ONBOARDING_CARDS.map((c, i) => (
           <button
