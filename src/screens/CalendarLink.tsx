@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Accordion, BackButton, DoneButton } from '../components/ui';
+import { Accordion, BackButton, DoneButton, Tooltip } from '../components/ui';
 import { NUDGE_TEXT, sessionLabel } from '../lib/sessionCalendar';
 import type { Session } from '../lib/sessionCalendar';
 import {
@@ -111,14 +111,19 @@ export function CalendarLink({ variant, onBack, onDone, demo = false }: Props) {
         </div>
       ) : null}
 
-      <h1>상담이 끝나면 알려 드릴까요?</h1>
-      <p className="muted">
-        캘린더 앱에 그날의 상담 회기 시간을 넣어 두면
-        <br />
-        회기가 끝나는 시각에 알림이 와요.
-        <br />
-        이 앱을 닫아 두어도 캘린더 앱이 알려 줘요.
-      </p>
+      {/* 2026-11-27 — 아래 설명을 제목 옆 ⓘ 툴팁으로 (사용자 요청) */}
+      <h1 className="title-with-tip">
+        상담이 끝나면 알려 드릴까요?
+        <Tooltip
+          label="캘린더 앱 연동 안내 보기"
+          align="end"
+          lines={[
+            '캘린더 앱에 그날의 상담 회기 시간을 넣어 두면',
+            '회기가 끝나는 시각에 알림이 와요',
+            '이 앱을 닫아 두어도 캘린더 앱이 알려 줘요',
+          ]}
+        />
+      </h1>
 
       {/* 알림이 어떻게 보이는지 */}
       <div className="callink-preview" aria-label="알림 예시">

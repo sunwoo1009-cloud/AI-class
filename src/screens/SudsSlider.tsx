@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { SUDS_ANCHORS } from '../constants';
-import { BackButton } from '../components/ui';
+import { BackButton, SegmentedControl } from '../components/ui';
 
 interface Props {
   mode: 'pre' | 'post';
@@ -41,17 +41,15 @@ export function SudsSlider({ mode, onSubmit, onBack }: Props) {
       <div className="suds-value">{value}</div>
       <div className="suds-current-anchor">{anchorFor(value)}</div>
 
-      {/* 처음 보는 사람이 막대를 움직일 수 있다는 걸 알게 */}
-      <p className="suds-hint">{mode === 'pre' ? '막대를 좌우로 옮겨 0~10까지 선택하세요' : '막대를 좌우로 옮겨 선택하세요'}</p>
+      {/* 2026-11-27 — 슬라이더 대신 0~10 segmented control (사용자 요청) */}
+      <p className="suds-hint">{mode === 'pre' ? '0~10 중 하나를 누르세요' : '하나를 누르세요'}</p>
 
-      <input
-        type="range"
-        min={0}
-        max={10}
-        step={1}
+      <SegmentedControl
+        className="segc-suds"
+        label="0에서 10 사이로 평정하세요"
+        options={Array.from({ length: 11 }, (_, n) => ({ value: n, label: String(n) }))}
         value={value}
-        onChange={(e) => setValue(Number(e.target.value))}
-        aria-label="0에서 10 사이로 평정하세요"
+        onChange={setValue}
       />
 
       <div className="suds-anchors">

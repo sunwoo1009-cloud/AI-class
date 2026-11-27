@@ -106,7 +106,6 @@
 /* 2026-11-27 — 테두리에 그라데이션이 들어간 깔끔한 타원 생각 말풍선 + 그 아래 한 줄 버튼 두 개.
    그라데이션은 두 버튼 색(하늘색 → 베이지)을 잇는다. */
 .bubble {
-  --thought-ring: linear-gradient(120deg, #92b6ca 0%, #c7c9d6 45%, #e0c39a 100%);
   position: absolute;
   left: var(--gutter);
   right: var(--gutter);
@@ -115,33 +114,36 @@
   cursor: default;
 }
 
+/* 2026-11-27 — 테두리가 바깥으로 갈수록 옅어진다 (사용자 요청).
+   선 하나 대신, 말풍선 가장자리에서 바깥으로 퍼지는 겹 테두리를 점점 옅게 쌓는다.
+   안쪽 고리는 하늘색, 바깥으로 갈수록 베이지 빛으로 흐려진다. */
 .thought {
   position: relative;
   width: min(260px, 78%);
   margin: 0 auto;
   padding: 26px 22px;
-  border: 2.5px solid transparent;
   border-radius: 50%;
-  /* 안쪽은 크림색, 테두리 자리에만 그라데이션이 보인다 */
-  background:
-    linear-gradient(var(--bubble-bg), var(--bubble-bg)) padding-box,
-    var(--thought-ring) border-box;
+  background: var(--bubble-bg);
   text-align: center;
   box-shadow:
-    0 6px 0 rgba(150, 125, 95, 0.22),
-    0 12px 22px rgba(60, 50, 40, 0.16);
+    0 0 0 1.5px rgba(146, 182, 202, 0.75),
+    0 0 0 4px rgba(170, 190, 205, 0.42),
+    0 0 0 7.5px rgba(205, 196, 190, 0.24),
+    0 0 0 12px rgba(224, 195, 154, 0.12),
+    0 0 26px 14px rgba(253, 250, 243, 0.35),
+    0 14px 24px rgba(60, 50, 40, 0.14);
 }
 
-/* 생각 꼬리 — 오른쪽 아래로 작아지는 동그라미, 테두리도 같은 그라데이션 */
+/* 생각 꼬리 — 오른쪽 아래로 작아지는 동그라미, 같은 방식으로 바깥이 옅어진다 */
 .thought-dot {
   position: absolute;
   display: block;
-  border: 2px solid transparent;
   border-radius: 50%;
-  background:
-    linear-gradient(var(--bubble-bg), var(--bubble-bg)) padding-box,
-    var(--thought-ring) border-box;
-  box-shadow: 0 3px 6px rgba(60, 50, 40, 0.12);
+  background: var(--bubble-bg);
+  box-shadow:
+    0 0 0 1.5px rgba(146, 182, 202, 0.7),
+    0 0 0 3.5px rgba(190, 196, 200, 0.3),
+    0 0 0 6px rgba(224, 195, 154, 0.12);
 }
 
 .thought-dot-1 {

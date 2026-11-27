@@ -16,6 +16,7 @@ export type TabTarget =
   | 'calendarLink'
   | 'pulse'
   | 'findHelp'
+  | 'caseMix'
   | 'boutique'
   | 'rate'
   | 'settings'
@@ -32,6 +33,7 @@ const MY_PAGE: TabTarget[] = [
   'calendarLink',
   'pulse',
   'findHelp',
+  'caseMix',
 ];
 
 /** '더보기' 안에 든 화면 */

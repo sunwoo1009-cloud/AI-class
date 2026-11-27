@@ -240,7 +240,16 @@ function buildHair(g: THREE.Group, id: string | undefined, silhouette: string) {
     }
     return;
   }
+  // 앞 조각 하나 — 바탕보다 살짝 두껍게 얹어 겹치는 면이 깜빡이지 않게 (2026-11-27 앞머리)
+  const bang = (phiStart: number, phiLen: number, thetaLen: number) => {
+    const m = mesh(new THREE.SphereGeometry(R + 0.014, 40, 24, phiStart, phiLen, 0, thetaLen), color);
+    m.scale.set(1, 0.95, 0.95);
+    return at(m, 0, HEAD_Y + 0.005, -0.005);
+  };
+
   if (id === 'hair-bob') {
+    // 일자 뱅 — 눈썹 바로 위에서 가지런히 자른 앞머리
+    g.add(bang(FRONT - 0.78, 1.56, 1.24));
     for (const s of [-1, 1]) {
       const side = mesh(new THREE.CapsuleGeometry(0.1, 0.32, 8, 16), color);
       g.add(at(side, s * 0.4, HEAD_Y - 0.12, -0.04));
@@ -251,6 +260,10 @@ function buildHair(g: THREE.Group, id: string | undefined, silhouette: string) {
     return;
   }
   if (id === 'hair-long') {
+    // 가운데 가르마 커튼 앞머리 — 가운데는 짧고 양옆으로 갈수록 내려온다
+    // 양쪽 한 조각씩 — 가운데에 가르마 틈을 둔다 (조각을 여럿 겹치면 끝이 계단처럼 보였다)
+    g.add(bang(FRONT + 0.07, 0.75, 1.2));
+    g.add(bang(FRONT - 0.82, 0.75, 1.2));
     for (const s of [-1, 1]) {
       const side = mesh(new THREE.CapsuleGeometry(0.09, 0.62, 8, 16), color);
       g.add(at(side, s * 0.39, HEAD_Y - 0.3, -0.05));
@@ -260,7 +273,13 @@ function buildHair(g: THREE.Group, id: string | undefined, silhouette: string) {
     g.add(at(fall, 0, HEAD_Y - 0.33, -0.22));
     return;
   }
-  // 포니테일
+  // 포니테일 — 가벼운 동글 앞머리 (웨이브보다 작고 성글게)
+  for (let i = -2; i <= 2; i++) {
+    const lump = mesh(new THREE.SphereGeometry(0.075, 18, 14), color);
+    lump.scale.set(1.1, 0.8, 0.6);
+    stick(lump, onHead(i * 0.24, 0.48 - Math.abs(i) * 0.04, 0.0));
+    g.add(lump);
+  }
   const tail = mesh(new THREE.CapsuleGeometry(0.1, 0.42, 8, 16), color);
   tail.rotation.x = 0.35;
   g.add(at(tail, 0, HEAD_Y - 0.08, -0.5));

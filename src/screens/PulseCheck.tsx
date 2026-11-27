@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BackButton, SegmentedControl } from '../components/ui';
+import { FindHelp } from './FindHelp';
 import {
   PULSE_ITEMS,
   PULSE_LEVELS,
@@ -48,6 +49,8 @@ export function PulseCheck({ onBack, demo = false, startAtResult = false }: Prop
     startAtResult ? demoHistory() : null,
   );
   const complete = PULSE_ITEMS.every((x) => answers[x.id] !== undefined);
+  /** '조기 신호' 칸에서 '도움받을 곳 찾기'를 그 자리에서 연다 (2026-11-27, 주간 요약에서 옮김) */
+  const [finding, setFinding] = useState(false);
 
   function save() {
     if (!complete) return;
@@ -59,6 +62,8 @@ export function PulseCheck({ onBack, demo = false, startAtResult = false }: Prop
     const list = demo ? [...demoHistory().slice(0, 3), check] : addPulse(check);
     setHistory(list);
   }
+
+  if (finding) return <FindHelp onBack={() => setFinding(false)} backLabel="점검 결과로" />;
 
   /* ---------- 결과 ---------- */
   if (history) {
@@ -117,6 +122,9 @@ export function PulseCheck({ onBack, demo = false, startAtResult = false }: Prop
               <br />
               전문가의 평가와 상담을 받는 것이 안전해요.
             </p>
+            <button className="btn fh-link" style={{ textAlign: 'center' }} onClick={() => setFinding(true)}>
+              가까운 상담센터·병원 찾기
+            </button>
           </div>
         ) : (
           <p className="muted">이 점검은 진단이 아니에요. 변화를 알아차리는 데 써 주세요.</p>

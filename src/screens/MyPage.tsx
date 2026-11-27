@@ -1,17 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BackButton, Snackbar } from '../components/ui';
 import { Avatar3DLazy } from '../avatar3d/Avatar3DLazy';
-import {
-  bumpCase,
-  CASE_KINDS,
-  caseMix,
-  countOn,
-  shouldShowTraumaSnack,
-  TRAUMA_LOAD,
-  TRAUMA_SNACK_TEXT,
-} from '../lib/caseMix';
-import type { CaseEntry, CaseKind } from '../lib/caseMix';
-import { toDateKey } from '../lib/date';
+import { caseMix, shouldShowTraumaSnack, TRAUMA_SNACK_TEXT } from '../lib/caseMix';
+import { demoCaseLog } from './CaseMixScreen';
 import { evaluateEscalation } from '../lib/escalation';
 import { nextPulseAt, pulseDue } from '../lib/pulse';
 import { calendarAvailable, loadCalLink } from '../sync/calendarLink';
@@ -23,7 +14,6 @@ import {
   loadPulse,
   loadSettings,
   loadTraumaSnoozeAt,
-  saveCaseLog,
   saveSettings,
   saveTraumaSnoozeAt,
 } from '../storage/store';
@@ -37,6 +27,7 @@ export type MyPageTarget =
   | 'coupons'
   | 'calendarLink'
   | 'pulse'
+  | 'caseMix'
   | 'findHelp';
 
 interface Props {
@@ -48,40 +39,10 @@ interface Props {
   demo?: boolean;
 }
 
-/** 종류마다 막대 색 — 외상만 진하게, 나머지는 팔레트 안의 연한 색 */
-const KIND_COLOR: Record<CaseKind, string> = {
-  trauma: '#b2452f',
-  crisis: '#d98b5f',
-  mood: '#3a6279',
-  relation: '#7fa6bd',
-  study: '#c9a45c',
-  other: '#b9ab95',
-};
-
-function demoLog(): CaseEntry[] {
-  const out: CaseEntry[] = [];
-  const d = new Date();
-  const plan: [number, CaseKind, number][] = [
-    [0, 'trauma', 2],
-    [0, 'mood', 1],
-    [1, 'trauma', 3],
-    [2, 'trauma', 2],
-    [2, 'relation', 1],
-    [5, 'trauma', 2],
-    [6, 'crisis', 1],
-    [8, 'study', 2],
-    [12, 'trauma', 1],
-  ];
-  for (const [ago, kind, count] of plan) {
-    const day = new Date(d.getFullYear(), d.getMonth(), d.getDate() - ago);
-    out.push({ date: toDateKey(day), kind, count });
-  }
-  return out;
-}
-
 /**
  * 마이페이지 (2026-11-27 추가) — 탭 막대 '마이페이지'.
- * 닉네임 바꾸기 · 2주 점검 · 주간 요약 · 돌아보기 · 하루 끝 일기(2026-11-27) · 캘린더 · 붕어빵 쿠폰 모음 · 캘린더 앱 연동 · 사례 종류 비율.
+ * 아바타·닉네임 · 2주 점검 · 주간 요약 · 돌아보기 · 하루 끝 일기 · 캘린더 · 붕어빵 쿠폰 모음 · 캘린더 앱 연동
+ * · 나의 사례 비율(따로 화면) · 도움받을 곳 찾기.
  */
 export function MyPage({ settings, onChangeSettings, onOpen, onBack, demo = false }: Props) {
   /* ---------- 닉네임 ---------- */
@@ -133,20 +94,11 @@ export function MyPage({ settings, onChangeSettings, onOpen, onBack, demo = fals
   const due = pulseDue(pulse);
   const next = nextPulseAt(pulse);
 
-  /* ---------- 사례 종류 ---------- */
-  const [log, setLog] = useState<CaseEntry[]>(() => (demo ? demoLog() : loadCaseLog()));
-  const today = toDateKey(new Date());
-  const mix = caseMix(log);
+  /* ---------- 나의 사례 비율 (세는 곳은 따로 화면, 여기서는 알림만) ---------- */
+  const mix = useMemo(() => caseMix(demo ? demoCaseLog() : loadCaseLog()), [demo]);
   const [snack, setSnack] = useState(() =>
-    shouldShowTraumaSnack(caseMix(demo ? demoLog() : loadCaseLog()), demo ? null : loadTraumaSnoozeAt()),
+    shouldShowTraumaSnack(mix, demo ? null : loadTraumaSnoozeAt()),
   );
-  function bump(kind: CaseKind, delta: 1 | -1) {
-    const nextLog = bumpCase(log, today, kind, delta);
-    setLog(nextLog);
-    if (!demo) saveCaseLog(nextLog);
-    // 기록하다 기준을 넘으면 그때 알린다 (이미 '확인'을 눌렀으면 7일 동안은 다시 띄우지 않는다)
-    if (shouldShowTraumaSnack(caseMix(nextLog), demo ? null : loadTraumaSnoozeAt())) setSnack(true);
-  }
 
   /* ---------- 목록 ---------- */
   const escalated = demo ? false : evaluateEscalation(loadCheckIns()).triggered;
@@ -163,10 +115,15 @@ export function MyPage({ settings, onChangeSettings, onOpen, onBack, demo = fals
       sub: cal.connected ? '연결했어요 · 회기 끝 알림' : calendarAvailable || demo ? '회기가 끝나면 알림' : '준비 중',
     },
     // 2026-11-27 — 근처 정신건강의학과·상담센터 (카카오맵으로 넘겨 준다, 명세 7.13)
+    // 2026-11-27 — 칸에서 따로 화면으로, 이름 '사례 종류 비율' → '나의 사례 비율'
+    {
+      id: 'caseMix',
+      label: '나의 사례 비율',
+      sub: mix.total ? `지난 30일 ${mix.total}회기` : '오늘 본 회기를 종류마다 세기',
+      badge: snack,
+    },
     { id: 'findHelp', label: '도움받을 곳 찾기', sub: '가까운 상담센터·병원' },
   ];
-
-  const pct = (n: number) => (mix.total ? Math.round((n / mix.total) * 100) : 0);
 
   return (
     <div className={`app mypage${snack ? ' has-snack' : ''}`}>
@@ -268,80 +225,7 @@ export function MyPage({ settings, onChangeSettings, onOpen, onBack, demo = fals
         ))}
       </nav>
 
-      {/* 사례 종류 비율 */}
-      <section className="card my-cases">
-        <h2>사례 종류 비율</h2>
-        <p className="muted" style={{ marginTop: 0 }}>
-          오늘 본 회기를 종류마다 한 번씩 눌러 세요.
-          <br />
-          날짜와 종류만 남아요.
-        </p>
-        <div className="case-grid">
-          {CASE_KINDS.map((k) => {
-            const n = countOn(log, today, k.id);
-            return (
-              <div key={k.id} className={`case-chip${n ? ' is-on' : ''}`}>
-                <button
-                  type="button"
-                  className="case-add"
-                  onClick={() => bump(k.id, 1)}
-                  aria-label={`${k.label} 회기 하나 더하기, 오늘 ${n}회`}
-                >
-                  <span className="case-swatch" style={{ background: KIND_COLOR[k.id] }} aria-hidden="true" />
-                  <span className="case-name">
-                    {k.label}
-                    {k.sub ? <small>{k.sub}</small> : null}
-                  </span>
-                  <span className="case-n">{n}</span>
-                </button>
-                <button
-                  type="button"
-                  className="case-minus"
-                  disabled={n === 0}
-                  onClick={() => bump(k.id, -1)}
-                  aria-label={`${k.label} 하나 빼기`}
-                >
-                  −
-                </button>
-              </div>
-            );
-          })}
-        </div>
-
-        <h3 className="case-h3">지난 30일</h3>
-        {mix.total === 0 ? (
-          <p className="muted">기록이 쌓이면 여기에 비율이 보여요.</p>
-        ) : (
-          <>
-            <div className="case-bar" role="img" aria-label={CASE_KINDS.map((k) => `${k.label} ${pct(mix.byKind[k.id])}%`).join(', ')}>
-              {CASE_KINDS.filter((k) => mix.byKind[k.id] > 0).map((k) => (
-                <span
-                  key={k.id}
-                  style={{ flexGrow: mix.byKind[k.id], background: KIND_COLOR[k.id] }}
-                />
-              ))}
-            </div>
-            <ul className="case-legend">
-              {CASE_KINDS.filter((k) => mix.byKind[k.id] > 0).map((k) => (
-                <li key={k.id}>
-                  <span className="case-swatch" style={{ background: KIND_COLOR[k.id] }} aria-hidden="true" />
-                  {k.label} <b>{pct(mix.byKind[k.id])}%</b>
-                </li>
-              ))}
-            </ul>
-            <div className={`case-trauma${mix.traumaRatio !== null && mix.total >= TRAUMA_LOAD.minSessions && mix.traumaRatio >= TRAUMA_LOAD.highRatio ? ' is-high' : ''}`}>
-              <span>전체 중 외상 사례</span>
-              <b>{pct(mix.byKind.trauma)}%</b>
-              <small>
-                {mix.total}회기 중 {mix.byKind.trauma}회기
-                {mix.total < TRAUMA_LOAD.minSessions
-                  ? ` · ${TRAUMA_LOAD.minSessions}회기 이상 기록하면 비중을 살펴 드려요`
-                  : ''}
-              </small>
-            </div>
-          </>
-        )}
-      </section>
+      {/* '사례 종류 비율' 칸은 2026-11-27 '나의 사례 비율' 화면으로 옮겼다 (CaseMixScreen) */}
 
       <Snackbar
         open={snack}

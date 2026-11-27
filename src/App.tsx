@@ -30,6 +30,7 @@ import { shouldShowIntro } from './lib/intro';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { WeeklySummary } from './screens/WeeklySummary';
 import { FindHelp } from './screens/FindHelp';
+import { CaseMixScreen } from './screens/CaseMixScreen';
 import {
   clearSettings,
   ensureSchemaVersion,
@@ -47,6 +48,7 @@ type View =
   | 'calendarLink'
   | 'pulse'
   | 'findHelp'
+  | 'caseMix'
   | 'summary'
   | 'review'
   | 'calendar'
@@ -277,6 +279,8 @@ function AppMain() {
       return withTabs('pulse', <PulseCheck onBack={myPage} />);
     case 'findHelp':
       return withTabs('findHelp', <FindHelp onBack={myPage} />);
+    case 'caseMix':
+      return withTabs('caseMix', <CaseMixScreen onBack={myPage} />);
     case 'boutique':
       return withTabs('boutique', <Boutique onBack={home} />);
     case 'rate':

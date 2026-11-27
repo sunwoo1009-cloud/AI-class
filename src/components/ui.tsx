@@ -323,17 +323,19 @@ export function SegmentedControl<T extends string | number>({
   value,
   onChange,
   label,
+  className,
 }: {
   options: { value: T; label: string }[];
   value: T | undefined;
   onChange: (next: T) => void;
   label: string;
+  className?: string;
 }) {
   const i = options.findIndex((o) => o.value === value);
   const n = options.length;
   return (
     <div
-      className="segc"
+      className={`segc${className ? ` ${className}` : ''}`}
       role="radiogroup"
       aria-label={label}
       style={{ gridTemplateColumns: `repeat(${n}, 1fr)` }}

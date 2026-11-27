@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { Cityscape } from './Cityscape';
-import { Steam } from './Steam';
 import { StreetLamp } from './StreetLamp';
 import { WeatherLayer } from './WeatherLayer';
 import { AvatarSvg } from '../avatar/Avatar';
@@ -87,12 +86,7 @@ export function IntroScene({ onDone }: Props) {
         <AvatarSvg equipped={equipped} silhouette="var(--figure)" walking />
       </div>
 
-      {/* 오른쪽 끝 — 노점이 가깝다는 암시 */}
-      <div className="intro-hint-steam" aria-hidden="true">
-        <svg viewBox="0 0 40 80">
-          <Steam transform="translate(8 74)" strength="full" />
-        </svg>
-      </div>
+      {/* 오른쪽 끝 김 그림(노점 암시)은 2026-11-27 사용자 요청으로 뺐다 */}
 
       {/* 비·눈 — 사람 앞에, 문구 뒤에 */}
       <WeatherLayer weather={weather} part="fall" />

@@ -31,6 +31,7 @@ import { loadSettings } from '../storage/store';
 import { TabBar } from '../screens/home/TabBar';
 import { Avatar3DParts } from './Avatar3DParts';
 import { FindHelp } from '../screens/FindHelp';
+import { CaseMixScreen } from '../screens/CaseMixScreen';
 import type { TabTarget } from '../screens/home/TabBar';
 import type { Settings } from '../types';
 
@@ -403,7 +404,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       tall: true,
       render: () => (
         <DemoTabs active="coupons">
-          <CouponBook onBack={noop} />
+          <CouponBook onBack={noop} demoStamps={34} />
         </DemoTabs>
       ),
     },
@@ -464,6 +465,17 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
             onBack={noop}
             demo
           />
+        </DemoTabs>
+      ),
+    },
+    {
+      id: 'case-mix',
+      label: '나의 사례 비율',
+      spec: '7.11',
+      tall: true,
+      render: () => (
+        <DemoTabs active="caseMix">
+          <CaseMixScreen onBack={noop} demo />
         </DemoTabs>
       ),
     },
