@@ -9,6 +9,7 @@ import {
   upsertJournal,
 } from '../storage/store';
 import type { JournalEntry } from '../types';
+import { BackButton } from '../components/ui';
 
 interface Props {
   onDone: () => void;
@@ -71,6 +72,10 @@ export function Journal({ onDone }: Props) {
   if (saved) {
     return (
       <div className="app app-paper">
+        {/* 뒤로 — 방금 쓴 일기를 다시 고친다 */}
+        <div className="topbar">
+          <BackButton onClick={() => setSaved(false)} label="일기 다시 고치기" />
+        </div>
         <div className="script">
           <p className="script-text">오늘 일은 여기까지예요</p>
         </div>
@@ -91,9 +96,7 @@ export function Journal({ onDone }: Props) {
       </div>
 
       <div className="topbar">
-        <button className="btn-quiet" onClick={onDone}>
-          그만두기
-        </button>
+        <BackButton onClick={onDone} label="홈으로" />
         <span className="topbar-title">
           {existing ? '오늘 일기 수정' : '하루 끝 일기'}
         </span>

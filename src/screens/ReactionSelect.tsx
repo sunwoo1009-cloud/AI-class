@@ -3,6 +3,7 @@ import { Lines } from '../components/Lines';
 import { REACTIONS, reactionInfo, won } from '../constants';
 import type { ReactionType } from '../types';
 import { FoodIcon } from './menu/FoodIcon';
+import { BackButton, Tooltip } from '../components/ui';
 
 interface Props {
   onSubmit: (reactions: ReactionType[]) => void;
@@ -35,9 +36,7 @@ export function ReactionSelect({ onSubmit, onCancel }: Props) {
   return (
     <div className="app app-paper">
       <div className="topbar">
-        <button className="btn-quiet" onClick={onCancel}>
-          그만두기
-        </button>
+        <BackButton onClick={onCancel} label="홈으로" />
       </div>
 
       {/* 화면 폭이 아니라 칸 너비에 맞춰 한 줄로 줄인다 — 틀 안에서도 넘치지 않게 */}
@@ -55,9 +54,12 @@ export function ReactionSelect({ onSubmit, onCancel }: Props) {
       </p>
 
       <div className="menu-board">
-        <p className="menu-sign">메뉴판</p>
-        {/* 가격표 때문에 실제 결제로 오해하지 않게 (2026-11-25) */}
-        <p className="menu-free-note">실제로 결제되지 않아요</p>
+        {/* 가격표 때문에 실제 결제로 오해하지 않게 (2026-11-25).
+            2026-11-27 간판 옆 ⓘ 툴팁으로 옮겼다. */}
+        <div className="menu-sign-row">
+          <p className="menu-sign">메뉴판</p>
+          <Tooltip lines={['실제로 결제되지 않아요']} label="가격 안내 보기" />
+        </div>
 
         <div className="menu-strips">
           {REACTIONS.map((r) => {

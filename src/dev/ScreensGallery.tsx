@@ -9,7 +9,7 @@ import { CouponBook } from '../screens/CouponBook';
 import { Boutique } from '../screens/Boutique';
 import { RateApp } from '../screens/RateApp';
 import { AvatarParts } from './AvatarParts';
-import { AboutSheet, FeedbackSheet } from './PresentSheets';
+import { AboutSheet, FeedbackSheet, UpdatesSheet } from './PresentSheets';
 import { AdminDemoSheet } from './AdminPage';
 import { ExternalResource, SafetyNotice } from '../screens/Notices';
 import { OfferExtra } from '../screens/OfferExtra';
@@ -23,6 +23,8 @@ import { TechniquePlayer } from '../screens/TechniquePlayer';
 import { WeeklySummary } from '../screens/WeeklySummary';
 import { IntroScene } from '../scenes/IntroScene';
 import { loadSettings } from '../storage/store';
+import { TabBar } from '../screens/home/TabBar';
+import type { TabTarget } from '../screens/home/TabBar';
 import type { Settings } from '../types';
 
 /** 모든 콜백을 받아 삼키는 빈 함수 */
@@ -83,17 +85,9 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       label: '홈 — 노점',
       spec: '9절 화면 2',
       render: () => (
-        <Home
-          onStartCheckIn={noop}
-          onOpenJournal={noop}
-          onOpenSummary={noop}
-          onOpenReview={noop}
-          onOpenCalendar={noop}
-          onOpenCoupons={noop}
-          onOpenBoutique={noop}
-          onOpenRate={noop}
-          onOpenSettings={noop}
-        />
+        <DemoTabs active="home">
+          <Home onStartCheckIn={noop} onOpenJournal={noop} />
+        </DemoTabs>
       ),
     },
     {
@@ -107,7 +101,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       label: '선택 가입',
       spec: '7.7',
       tall: true,
-      render: () => <JoinScreen onDone={noop} />,
+      render: () => <JoinScreen onDone={noop} onBack={noop} />,
     },
     {
       id: 'reaction',
@@ -119,13 +113,13 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       id: 'suds-pre',
       label: 'SUDS — 하기 전',
       spec: '6.2',
-      render: () => <SudsSlider mode="pre" onSubmit={noop} />,
+      render: () => <SudsSlider mode="pre" onSubmit={noop} onBack={noop} />,
     },
     {
       id: 'suds-post',
       label: 'SUDS — 다시 평가하기',
       spec: '6.4',
-      render: () => <SudsSlider mode="post" onSubmit={noop} />,
+      render: () => <SudsSlider mode="post" onSubmit={noop} onBack={noop} />,
     },
     {
       id: 'tech-breathing',
@@ -138,6 +132,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           reasonNote="점수가 높을 때는 몸을 먼저 가라앉혀요."
           onDone={noop}
           onSafetyImmediate={noop}
+          onBack={noop}
           initialStep={step}
         />
       ),
@@ -152,6 +147,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           displayName={settings.displayName}
           onDone={noop}
           onSafetyImmediate={noop}
+          onBack={noop}
           initialStep={step}
         />
       ),
@@ -166,6 +162,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           displayName={settings.displayName}
           onDone={noop}
           onSafetyImmediate={noop}
+          onBack={noop}
           initialStep={step}
         />
       ),
@@ -189,6 +186,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           displayName={settings.displayName}
           onDone={noop}
           onSafetyImmediate={noop}
+          onBack={noop}
           initialStep={step}
         />
       ),
@@ -203,6 +201,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           displayName={settings.displayName}
           onDone={noop}
           onSafetyImmediate={noop}
+          onBack={noop}
           initialStep={step}
         />
       ),
@@ -217,6 +216,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           technique="containment"
           onAccept={noop}
           onDecline={noop}
+          onBack={noop}
         />
       ),
     },
@@ -224,26 +224,26 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       id: 'external',
       label: '앱 밖 자원',
       spec: '6.4',
-      render: () => <ExternalResource onNext={noop} />,
+      render: () => <ExternalResource onNext={noop} onBack={noop} />,
     },
     {
       id: 'safety',
       label: '위기 절차 안내',
       spec: '8.4',
-      render: () => <SafetyNotice onNext={noop} />,
+      render: () => <SafetyNotice onNext={noop} onBack={noop} />,
     },
     {
       id: 'closing',
       label: '종결 의례',
       spec: '8.7',
-      render: () => <ClosingRitual onReady={noop} onMore={noop} />,
+      render: () => <ClosingRitual onReady={noop} onMore={noop} onBack={noop} />,
     },
     {
       id: 'closing-ask',
       label: '종결 의례 — 마무리 질문',
       spec: '8.7',
       render: () => (
-        <ClosingRitual onReady={noop} onMore={noop} initialPhase="ask" />
+        <ClosingRitual onReady={noop} onMore={noop} initialPhase="ask" onBack={noop} />
       ),
     },
     {
@@ -263,6 +263,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
           candidate="compassion"
           onTechnique={noop}
           onExit={noop}
+          onBack={noop}
         />
       ),
     },
@@ -271,21 +272,33 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       label: '주간 요약',
       spec: '7.1 · 7.2',
       tall: true,
-      render: () => <WeeklySummary onBack={noop} />,
+      render: () => (
+        <DemoTabs active="summary">
+          <WeeklySummary onBack={noop} />
+        </DemoTabs>
+      ),
     },
     {
       id: 'review',
       label: '돌아보기',
       spec: '7.4',
       tall: true,
-      render: () => <Review onBack={noop} />,
+      render: () => (
+        <DemoTabs active="review">
+          <Review onBack={noop} />
+        </DemoTabs>
+      ),
     },
     {
       id: 'calendar',
       label: '캘린더',
       spec: '7.5',
       tall: true,
-      render: () => <Calendar onBack={noop} />,
+      render: () => (
+        <DemoTabs active="calendar">
+          <Calendar onBack={noop} />
+        </DemoTabs>
+      ),
     },
     {
       id: 'journal',
@@ -299,19 +312,31 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       label: '붕어빵 쿠폰 모음',
       spec: '8.7',
       tall: true,
-      render: () => <CouponBook onBack={noop} />,
+      render: () => (
+        <DemoTabs active="coupons">
+          <CouponBook onBack={noop} />
+        </DemoTabs>
+      ),
     },
     {
       id: 'boutique',
       label: '부티크 — 직장인 꾸미기',
       spec: '8.8',
       tall: true,
-      render: () => <Boutique onBack={noop} />,
+      render: () => (
+        <DemoTabs active="boutique">
+          <Boutique onBack={noop} />
+        </DemoTabs>
+      ),
     },
     {
       id: 'rate',
       label: '별점·리뷰',
-      render: () => <RateApp onBack={noop} />,
+      render: () => (
+        <DemoTabs active="rate">
+          <RateApp onBack={noop} />
+        </DemoTabs>
+      ),
     },
     {
       id: 'avatar-parts',
@@ -326,12 +351,15 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       spec: '9절 화면 13',
       tall: true,
       render: () => (
-        <SettingsScreen
-          settings={settings}
-          onChangeSettings={setSettings}
-          onReset={noop}
-          onBack={noop}
-        />
+        <DemoTabs active="settings">
+          <SettingsScreen
+            settings={settings}
+            onChangeSettings={setSettings}
+            onReset={noop}
+            onBack={noop}
+            demo
+          />
+        </DemoTabs>
       ),
     },
   ];
@@ -374,7 +402,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
 
 type Sheet =
   | { title: string; kind: 'row'; ids: string[] }
-  | { title: string; kind: 'checkin' | 'about' | 'feedback' | 'admin' };
+  | { title: string; kind: 'checkin' | 'about' | 'feedback' | 'admin' | 'updates' };
 
 const SHEETS: Sheet[] = [
   { title: '앱 설명', kind: 'about' },
@@ -389,6 +417,8 @@ const SHEETS: Sheet[] = [
   },
   { title: '아바타 꾸미기', kind: 'row', ids: ['boutique', 'avatar-parts'] },
   { title: '관리자 화면', kind: 'admin' },
+  // 2026-11-24 부터 받은 수정 요청을 화면별로 (2026-11-27)
+  { title: '업데이트 목록', kind: 'updates' },
   { title: '피드백', kind: 'feedback' },
 ];
 
@@ -519,6 +549,8 @@ function SheetView({
             <AboutSheet />
           ) : current.kind === 'admin' ? (
             <AdminDemoSheet />
+          ) : current.kind === 'updates' ? (
+            <UpdatesSheet />
           ) : (
             <FeedbackSheet />
           )}
@@ -628,6 +660,7 @@ function DetachmentWithSafety({
   if (safety) {
     return (
       <SafetyNotice
+        onBack={() => setSafety(false)}
         onNext={() => {
           setSafety(false);
           setRound((r) => r + 1);
@@ -644,6 +677,16 @@ function DetachmentWithSafety({
       onSafetyImmediate={() => setSafety(true)}
       initialStep={round === 0 ? initialStep : 0}
     />
+  );
+}
+
+/** 발표 화면의 탭 막대 — 눌러도 이동하지 않는다 (틀마다 화면이 하나씩이라) */
+function DemoTabs({ active, children }: { active: TabTarget; children: React.ReactNode }) {
+  return (
+    <div className="with-tabbar">
+      {children}
+      <TabBar active={active} onNavigate={noop} />
+    </div>
   );
 }
 

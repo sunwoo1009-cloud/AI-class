@@ -7,6 +7,8 @@ import { AdminPage } from './dev/AdminPage';
 import { Boutique } from './screens/Boutique';
 import { RateApp } from './screens/RateApp';
 import { Home } from './screens/Home';
+import { TabBar } from './screens/home/TabBar';
+import type { TabTarget } from './screens/home/TabBar';
 import { Journal } from './screens/Journal';
 import { Onboarding } from './screens/Onboarding';
 import { IntroScene } from './scenes/IntroScene';
@@ -20,6 +22,7 @@ import { shouldShowIntro } from './lib/intro';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { WeeklySummary } from './screens/WeeklySummary';
 import {
+  clearSettings,
   ensureSchemaVersion,
   loadSettings,
   saveSettings,
@@ -62,7 +65,9 @@ function StartPreview() {
     <>
       <div className="preview-badge">관리자 미리보기 · 저장되지 않아요</div>
       {step === 'onboarding' ? <Onboarding onDone={() => setStep('join')} /> : null}
-      {step === 'join' ? <JoinScreen onDone={() => setStep('intro')} /> : null}
+      {step === 'join' ? (
+        <JoinScreen onDone={() => setStep('intro')} onBack={() => setStep('onboarding')} />
+      ) : null}
       {step === 'intro' ? <IntroScene onDone={back} /> : null}
     </>
   );
@@ -158,6 +163,12 @@ function AppMain() {
   if (joining) {
     return (
       <JoinScreen
+        onBack={() => {
+          // 온보딩으로 돌아간다 — 온보딩을 마친 표시만 지운다 (다른 기록은 그대로)
+          clearSettings();
+          setJoining(false);
+          setSettings(null);
+        }}
         onDone={() => {
           // 가입했으면 닉네임이 설정에 들어와 있다
           setSettings(loadSettings());
@@ -169,25 +180,34 @@ function AppMain() {
 
   const home = () => setView('home');
 
+  // 아래 고정 탭 막대를 붙이는 화면 — 홈과 메뉴 화면들 (2026-11-27)
+  const withTabs = (active: TabTarget, screen: React.ReactNode) => (
+    <div className="with-tabbar">
+      {screen}
+      <TabBar active={active} onNavigate={setView} />
+    </div>
+  );
+
   switch (view) {
     case 'checkin':
       return <CheckInFlow displayName={settings.displayName} onFinish={home} />;
-    case 'summary':
-      return <WeeklySummary onBack={home} />;
-    case 'review':
-      return <Review onBack={home} />;
-    case 'calendar':
-      return <Calendar onBack={home} />;
     case 'journal':
       return <Journal onDone={home} />;
+    case 'summary':
+      return withTabs('summary', <WeeklySummary onBack={home} />);
+    case 'review':
+      return withTabs('review', <Review onBack={home} />);
+    case 'calendar':
+      return withTabs('calendar', <Calendar onBack={home} />);
     case 'coupons':
-      return <CouponBook onBack={home} />;
+      return withTabs('coupons', <CouponBook onBack={home} />);
     case 'boutique':
-      return <Boutique onBack={home} />;
+      return withTabs('boutique', <Boutique onBack={home} />);
     case 'rate':
-      return <RateApp onBack={home} />;
+      return withTabs('rate', <RateApp onBack={home} />);
     case 'settings':
-      return (
+      return withTabs(
+        'settings',
         <SettingsScreen
           settings={settings}
           onChangeSettings={setSettings}
@@ -197,21 +217,15 @@ function AppMain() {
             setView('home');
           }}
           onBack={home}
-        />
+        />,
       );
     case 'home':
-      return (
+      return withTabs(
+        'home',
         <Home
           onStartCheckIn={() => setView('checkin')}
-          onOpenSummary={() => setView('summary')}
-          onOpenReview={() => setView('review')}
-          onOpenCalendar={() => setView('calendar')}
-          onOpenCoupons={() => setView('coupons')}
-          onOpenBoutique={() => setView('boutique')}
-          onOpenRate={() => setView('rate')}
           onOpenJournal={() => setView('journal')}
-          onOpenSettings={() => setView('settings')}
-        />
+        />,
       );
   }
 }

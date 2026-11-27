@@ -376,13 +376,17 @@ button {
   letter-spacing: 0.06em;
 }
 
-/* 간판 아래 — 가격은 꾸밈이고 결제가 없다는 안내 */
-.menu-free-note {
-  margin: -6px 0 14px;
-  text-align: center;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: var(--strip-text);
+/* 간판과 그 옆 ⓘ — 가격은 꾸밈이고 결제가 없다는 안내 (툴팁) */
+.menu-sign-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 18px;
+}
+
+.menu-sign-row .menu-sign {
+  margin: 0;
 }
 
 /* 종이 띠를 두 칸씩 늘어놓는다 */
@@ -586,12 +590,18 @@ button {
 
 /* --- 헤더 --- */
 
+/* 왼쪽부터 [뒤로] [제목] …… [오른쪽 버튼] (2026-11-27 뒤로 버튼을 넣으며 왼쪽 정렬로) */
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
   margin-bottom: 18px;
   min-height: 28px;
+}
+
+.topbar > .btn-quiet:last-child,
+.topbar > .boutique-stamps {
+  margin-left: auto;
 }
 
 .topbar-title {
@@ -1172,32 +1182,7 @@ input[type='range'] {
   font-weight: 700;
 }
 
-/* 종류 — 가로로 넘긴다 */
-.boutique-cats {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  margin: 0 calc(var(--gutter) * -1) 12px;
-  padding: 2px var(--gutter) 6px;
-  scrollbar-width: none;
-}
-
-.boutique-cat {
-  flex: none;
-  padding: 7px 14px;
-  border-radius: 999px;
-  border: 1.5px solid var(--border);
-  background: var(--surface);
-  color: var(--text-muted);
-  font-size: 0.875rem;
-}
-
-.boutique-cat[aria-selected='true'] {
-  border-color: var(--btn-edge);
-  background: var(--btn-primary-bg);
-  color: var(--btn-primary-text);
-  font-weight: 700;
-}
+/* 종류 — 탭 전환(.tabsw, ui.css)으로 바뀌었다 (2026-11-27) */
 
 .boutique-grid {
   display: grid;

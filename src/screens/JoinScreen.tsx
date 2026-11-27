@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { accountsAvailable, startAutoSync } from '../sync/account';
 import { AuthForm } from './AccountSection';
+import { BackButton } from '../components/ui';
 
 interface Props {
   /** 가입하든 안 하든 다음으로 (홈) */
   onDone: () => void;
+  /** 왼쪽 위 뒤로 — 온보딩으로 */
+  onBack?: () => void;
 }
 
 /**
@@ -12,11 +15,16 @@ interface Props {
  * 가입은 선택이다. '가입하지 않고 시작하기'로 바로 넘어갈 수 있다.
  * 같은 가입·로그인 칸을 설정에서도 쓴다(AuthForm).
  */
-export function JoinScreen({ onDone }: Props) {
+export function JoinScreen({ onDone, onBack }: Props) {
   const [done, setDone] = useState<string | null>(null);
 
   return (
     <div className="app">
+      {onBack && !done ? (
+        <div className="topbar">
+          <BackButton onClick={onBack} label="앞 화면으로" />
+        </div>
+      ) : null}
       <h1>기록을 백업할까요?</h1>
       <p className="muted">
         가입은 선택이에요. 가입하지 않아도 모든 기능을 쓸 수 있고, 기록은 이 기기에만 남아요.

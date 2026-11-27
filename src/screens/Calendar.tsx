@@ -11,6 +11,7 @@ import { formatDateLabel, formatTimeLabel } from '../lib/date';
 import { deleteJournal, loadCheckIns, loadJournal } from '../storage/store';
 import { deleteRemoteJournal } from '../sync/account';
 import type { CheckIn, JournalEntry } from '../types';
+import { BackButton } from '../components/ui';
 
 const PROMPT_LABELS: Record<JournalEntry['answers'][number]['promptId'], string> =
   {
@@ -58,9 +59,7 @@ export function Calendar({ onBack }: Props) {
   return (
     <div className="app">
       <div className="topbar">
-        <button className="btn-quiet" onClick={onBack}>
-          홈으로
-        </button>
+        <BackButton onClick={onBack} label="홈으로" />
         <span className="topbar-title">캘린더</span>
       </div>
 

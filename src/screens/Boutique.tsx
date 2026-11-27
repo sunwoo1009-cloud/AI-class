@@ -11,12 +11,18 @@ import {
 } from '../lib/boutique';
 import type { Category, Closet, Item, Slot } from '../lib/boutique';
 import { loadCloset, loadStampTotal, saveCloset } from '../storage/store';
+import { BackButton, TabSwitch } from '../components/ui';
 
 interface Props {
   onBack: () => void;
 }
 
 type Tab = 'shop' | 'owned';
+
+const CAT_OPTIONS: { id: Category | 'all'; label: string }[] = [
+  { id: 'all', label: '전체' },
+  ...CATEGORIES.map((c) => ({ id: c, label: CATEGORY_LABELS[c] })),
+];
 
 /**
  * 부티크 — 모은 도장으로 직장인을 꾸민다 (명세 8.8).
@@ -51,6 +57,14 @@ export function Boutique({ onBack }: Props) {
       ),
     [category, tab, closet.owned],
   );
+
+  /** 탭을 오른쪽으로 옮기면 목록이 오른쪽에서, 왼쪽이면 왼쪽에서 들어온다 */
+  const [slideFrom, setSlideFrom] = useState<'left' | 'right'>('right');
+  function pickCategory(next: Category | 'all') {
+    const at = (c: Category | 'all') => CAT_OPTIONS.findIndex((o) => o.id === c);
+    setSlideFrom(at(next) >= at(category) ? 'right' : 'left');
+    setCategory(next);
+  }
 
   function update(next: Closet) {
     setCloset(next);
@@ -98,9 +112,7 @@ export function Boutique({ onBack }: Props) {
   return (
     <div className="app boutique">
       <div className="topbar">
-        <button className="btn-quiet" onClick={onBack}>
-          홈으로
-        </button>
+        <BackButton onClick={onBack} label="홈으로" />
         <span className="boutique-stamps" aria-label={`쓸 수 있는 도장 ${balance}개`}>
           <StampIcon />
           {balance}
@@ -134,27 +146,26 @@ export function Boutique({ onBack }: Props) {
         ) : null}
       </div>
 
-      {/* 종류 */}
-      <div className="boutique-cats" role="tablist" aria-label="아이템 종류">
-        {(['all', ...CATEGORIES] as const).map((c) => (
-          <button
-            key={c}
-            role="tab"
-            aria-selected={category === c}
-            className="boutique-cat"
-            onClick={() => setCategory(c)}
-          >
-            {c === 'all' ? '전체' : CATEGORY_LABELS[c]}
-          </button>
-        ))}
-      </div>
+      {/* 종류 — 탭 전환 (2026-11-27). 고른 칸 바탕이 미끄러져 옮겨 가고,
+          아래 목록은 고른 방향에서 밀려 들어온다. */}
+      <TabSwitch
+        className="boutique-cats"
+        label="아이템 종류"
+        value={category}
+        onChange={pickCategory}
+        options={CAT_OPTIONS}
+      />
 
       {list.length === 0 ? (
         <p className="muted" style={{ textAlign: 'center', marginTop: 18 }}>
           {tab === 'owned' ? '아직 가진 아이템이 없어요' : '아이템이 없어요'}
         </p>
       ) : (
-        <div className="boutique-grid">
+        <div
+          className={`boutique-grid tab-panel from-${slideFrom}`}
+          key={`${tab}-${category}`}
+          role="tabpanel"
+        >
           {list.map((item) => {
             const owned = closet.owned.includes(item.id);
             const worn = closet.equipped[item.slot] === item.id;

@@ -16,6 +16,15 @@ import {
 import type { Account } from '../sync/account';
 import { clearAllData, loadSettings } from '../storage/store';
 import type { Settings } from '../types';
+import {
+  Accordion,
+  DoneButton,
+  FloatingField,
+  PasswordField,
+  ProgressBar,
+} from '../components/ui';
+import { emailState, passwordProblem } from '../lib/formCheck';
+import { useProgress } from '../lib/useProgress';
 
 interface Props {
   onChangeSettings: (next: Settings) => void;
@@ -25,23 +34,38 @@ interface Props {
 
 type Mode = 'intro' | 'signup' | 'login' | 'sent';
 
-/** 가입 화면과 로그인 뒤 화면에 똑같이 보여주는 고지 (명세 7.7) */
+/**
+ * 가입 화면과 로그인 뒤 화면에 똑같이 보여주는 고지 (명세 7.7).
+ * 2026-11-27 아코디언으로 바꿨다. 접혀 있어도 핵심이 읽히도록 **제목 자체가 고지 문장**이고,
+ * 펼치면 자세한 내용이 나온다.
+ */
 function Notice() {
   return (
-    <ul className="account-notice">
-      <li>
-        <b>올라가는 것</b>: 체크인 기록(고른 반응·점수·한 기법), 도장 수·꾸민 직장인, 주간 회기 수
-      </li>
-      <li>
-        <b>일기는 올라가지 않아요.</b> ‘일기도 백업하기’를 따로 켰을 때만 올라가요
-      </li>
-      <li>이름과 소속은 받지 않아요</li>
-      <li>
-        각자 자기 기록만 읽고 쓸 수 있어요. <b>다만 운영자는 관리자 화면에서</b> 서버에
-        올라간 기록을 볼 수 있어요
-      </li>
-      <li>계정을 삭제하면 서버에 있는 기록은 모두 지워져요</li>
-    </ul>
+    <Accordion
+      className="account-notice-acc"
+      items={[
+        {
+          title: '체크인 기록이 서버에 올라가요',
+          body: '고른 반응·점수·한 기법, 도장 수·꾸민 직장인, 주간 회기 수가 올라가요',
+        },
+        {
+          title: '일기는 올라가지 않아요',
+          body: '‘일기도 백업하기’를 따로 켰을 때만 올라가요',
+        },
+        {
+          title: '이름과 소속은 받지 않아요',
+          body: '닉네임과 이메일만 받아요. 닉네임은 실명이 아니어도 돼요',
+        },
+        {
+          title: '운영자는 올라간 기록을 볼 수 있어요',
+          body: '각자 자기 기록만 읽고 쓸 수 있어요. 다만 운영자는 관리자 화면에서 서버에 올라간 기록을 볼 수 있어요',
+        },
+        {
+          title: '계정을 삭제하면 서버 기록은 모두 지워져요',
+          body: '이 기기에 있는 기록은 남길지 함께 지울지 고를 수 있어요',
+        },
+      ]}
+    />
   );
 }
 
@@ -54,6 +78,7 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
   const [prefs, setPrefs] = useState(loadSyncPrefs);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [nickDraft, setNickDraft] = useState('');
+  const sync = useProgress();
 
   // 로그인한 계정이 바뀌면 닉네임 칸을 그 계정 닉네임으로 채운다
   useEffect(() => {
@@ -121,22 +146,30 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
               ? `마지막 동기화 ${new Date(prefs.lastSyncAt).toLocaleString('ko-KR')}`
               : '아직 동기화하지 않았어요'}
           </p>
-          <button
-            className="btn"
-            style={{ textAlign: 'center' }}
-            disabled={busy}
-            onClick={() =>
-              void run(async () => {
-                const r = await syncNow();
-                setPrefs(loadSyncPrefs());
-                setNote(r.ok ? `맞췄어요${r.added ? ` · 서버에서 ${r.added}개를 받았어요` : ''}` : r.reason);
-                const s = loadSettings();
-                if (s) onChangeSettings(s);
-              })
-            }
-          >
-            {busy ? '맞추는 중…' : '지금 동기화'}
-          </button>
+          {/* 지금 동기화 → 진행 막대 → 100% 가 되면 초록 체크 완료 버튼 (2026-11-27) */}
+          {sync.pct !== null ? (
+            <ProgressBar value={sync.pct} label="동기화하는 중" />
+          ) : sync.done ? (
+            <DoneButton>동기화했어요</DoneButton>
+          ) : (
+            <button
+              className="btn"
+              style={{ textAlign: 'center' }}
+              disabled={busy}
+              onClick={() =>
+                void run(async () => {
+                  const r = await sync.run(() => syncNow());
+                  setPrefs(loadSyncPrefs());
+                  setNote(r.ok ? (r.added ? `서버에서 ${r.added}개를 받았어요` : null) : r.reason);
+                  if (r.ok) sync.showDone();
+                  const s = loadSettings();
+                  if (s) onChangeSettings(s);
+                })
+              }
+            >
+              지금 동기화
+            </button>
+          )}
 
           <label className="check-row">
             <input
@@ -326,6 +359,15 @@ export function AuthForm({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [agreed, setAgreed] = useState(false);
+  /** 이메일 칸을 한 번 떠났는가 — 그 뒤에만 형식 오류를 보인다 */
+  const [emailTouched, setEmailTouched] = useState(false);
+  /** 비밀번호 칸 오류 문구와 흔들기 */
+  const [pwError, setPwError] = useState<string | null>(null);
+  const [pwShake, setPwShake] = useState(0);
+  const [nickShake, setNickShake] = useState(0);
+  const [emailShake, setEmailShake] = useState(0);
+
+  const eState = emailState(email, emailTouched);
 
   async function run(fn: () => Promise<void>) {
     setBusy(true);
@@ -340,6 +382,27 @@ export function AuthForm({
   async function afterLogin(message: string) {
     setPassword('');
     await onSignedIn(message);
+  }
+
+  /** 보내기 전에 칸을 확인한다. 틀린 칸은 흔들고 아래에 이유를 적는다. */
+  function checkFields(): boolean {
+    let ok = true;
+    if (mode === 'signup' && !nickname.trim()) {
+      setNickShake((n) => n + 1);
+      ok = false;
+    }
+    if (emailState(email, true) !== 'valid') {
+      setEmailTouched(true);
+      setEmailShake((n) => n + 1);
+      ok = false;
+    }
+    const pw = passwordProblem(password);
+    if (pw) {
+      setPwError(pw);
+      setPwShake((n) => n + 1);
+      ok = false;
+    }
+    return ok;
   }
 
   return (
@@ -370,12 +433,19 @@ export function AuthForm({
       {mode === 'signup' || mode === 'login' ? (
         <form
           className="account-form"
+          // 브라우저 기본 확인 말풍선 대신 칸 아래 문구와 흔들기로 알린다
+          noValidate
           onSubmit={(e) => {
             e.preventDefault();
+            if (!checkFields()) return;
             void run(async () => {
               if (mode === 'login') {
                 const r = await signIn(email, password);
-                if (!r.ok) return setNote(r.reason);
+                if (!r.ok) {
+                  // 로그인 실패는 대개 비밀번호 — 비밀번호 칸을 흔든다
+                  setPwShake((n) => n + 1);
+                  return setNote(r.reason);
+                }
                 await afterLogin('로그인했어요. 기록을 맞췄어요');
                 return;
               }
@@ -390,44 +460,54 @@ export function AuthForm({
           }}
         >
           {mode === 'signup' ? (
-            <label className="account-field">
-              <span>닉네임</span>
-              <input
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                maxLength={20}
-                autoComplete="nickname"
-                placeholder="예: 슈붕파"
-                required
-              />
-              <small>자기 거리두기 기법에서 이 이름으로 불러요. 실명이 아니어도 돼요</small>
-            </label>
+            <FloatingField
+              label="닉네임"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              maxLength={20}
+              autoComplete="nickname"
+              placeholder="예: 슈붕파"
+              shakeKey={nickShake}
+              status={nickShake && !nickname.trim() ? 'error' : null}
+              message={nickShake && !nickname.trim() ? '닉네임을 입력해 주세요' : undefined}
+              hint="자기 거리두기 기법에서 이 이름으로 불러요. 실명이 아니어도 돼요"
+            />
           ) : null}
 
-          <label className="account-field">
-            <span>이메일</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              required
-            />
-            {mode === 'signup' ? <small>직장 이메일보다 개인 이메일을 권장해요</small> : null}
-          </label>
+          {/* 형식이 맞으면 바로 초록 테두리 + ✓ (텍스트 필드 상태) */}
+          <FloatingField
+            label="이메일"
+            type="email"
+            inputMode="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onBlur={() => setEmailTouched(true)}
+            autoComplete="email"
+            shakeKey={emailShake}
+            status={eState === 'valid' ? 'success' : eState === 'invalid' ? 'error' : null}
+            message={
+              eState === 'valid'
+                ? '올바른 이메일 형식이에요'
+                : eState === 'invalid'
+                  ? '이메일 형식을 확인해 주세요 (예: name@mail.com)'
+                  : undefined
+            }
+            hint={mode === 'signup' ? '직장 이메일보다 개인 이메일을 권장해요' : undefined}
+          />
 
-          <label className="account-field">
-            <span>비밀번호</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-              minLength={6}
-              required
-            />
-            {mode === 'signup' ? <small>6자 이상</small> : null}
-          </label>
+          <PasswordField
+            label="비밀번호"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setPwError(null);
+            }}
+            autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+            shakeKey={pwShake}
+            status={pwError ? 'error' : null}
+            message={pwError ?? undefined}
+            hint={mode === 'signup' ? '6자 이상' : undefined}
+          />
 
           {mode === 'signup' ? (
             <>
@@ -460,7 +540,7 @@ export function AuthForm({
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={busy || (mode === 'signup' && (!agreed || !nickname.trim()))}
+              disabled={busy || (mode === 'signup' && !agreed)}
             >
               {busy ? '잠시만요…' : mode === 'signup' ? '가입하기' : '로그인'}
             </button>

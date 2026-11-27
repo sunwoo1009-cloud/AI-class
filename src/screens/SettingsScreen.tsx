@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { backupDue } from '../lib/backup';
 import { buildExport, parseImport } from '../lib/dataTransfer';
 import type { Snapshot } from '../lib/dataTransfer';
@@ -22,6 +22,8 @@ import {
 } from '../storage/store';
 import type { Settings } from '../types';
 import { AccountSection } from './AccountSection';
+import { Accordion, BackButton, ProgressBar } from '../components/ui';
+import { useProgress } from '../lib/useProgress';
 
 /** 홈 화면에 설치해서 연 것인지. 설치해서 쓰면 브라우저가 기록을 덜 지운다. */
 function isInstalled(): boolean {
@@ -38,6 +40,8 @@ interface Props {
   onChangeSettings: (next: Settings) => void;
   onReset: () => void;
   onBack: () => void;
+  /** 발표용 모음 — 삭제를 눌러도 진행·완료 화면만 보이고 기록은 지우지 않는다 */
+  demo?: boolean;
 }
 
 function snapshot(): Snapshot {
@@ -56,6 +60,7 @@ export function SettingsScreen({
   onChangeSettings,
   onReset,
   onBack,
+  demo = false,
 }: Props) {
   const [includeJournal, setIncludeJournal] = useState(false);
   const [importNote, setImportNote] = useState<string | null>(null);
@@ -63,6 +68,13 @@ export function SettingsScreen({
   const fileRef = useRef<HTMLInputElement>(null);
   const [lastExport, setLastExport] = useState(loadLastExportAt);
   const [installed] = useState(isInstalled);
+  const wipe = useProgress();
+  const [wiped, setWiped] = useState(false);
+  const wipedRef = useRef<HTMLDivElement>(null);
+  // 지운 뒤 화면은 맨 위부터 보이게 (발표 틀 안에서 스크롤이 남아 있어도)
+  useEffect(() => {
+    if (wiped) wipedRef.current?.scrollIntoView({ block: 'start' });
+  }, [wiped]);
 
   const showBackupNote = backupDue({
     lastExportAt: lastExport,
@@ -113,12 +125,44 @@ export function SettingsScreen({
     );
   }
 
+  // 지운 뒤 화면 — 이 기기의 기록이 모두 사라졌다는 것을 확인시키고 처음으로 보낸다
+  if (wiped) {
+    return (
+      // 아래 탭 막대까지 덮는다 — 지운 뒤에는 '처음 화면으로'로만 나간다
+      <div className="app after-delete-screen" ref={wipedRef}>
+        <div className="after-delete" role="status">
+          <span className="after-delete-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" focusable="false">
+              <path className="ad-can" d="M14 16 H34 L32 40 H16 Z" />
+              <path className="ad-lid" d="M11 16 H37 M20 16 V12 H28 V16" />
+              <path className="ad-check" d="M19 28 L23 32 L30 24" />
+            </svg>
+          </span>
+          <h1>모두 지웠어요</h1>
+          <p className="muted">
+            이 기기의 체크인, 일기, 회기 수, 쿠폰 도장, 꾸민 직장인을 지우고 로그아웃했어요.
+            <br />
+            서버에 백업한 기록은 그대로 남아 있어요.
+          </p>
+        </div>
+        <div className="spacer" />
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            if (demo) setWiped(false);
+            else onReset();
+          }}
+        >
+          처음 화면으로
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       <div className="topbar">
-        <button className="btn-quiet" onClick={onBack}>
-          홈으로
-        </button>
+        <BackButton onClick={onBack} label="홈으로" />
         <span className="topbar-title">설정</span>
       </div>
 
@@ -135,21 +179,29 @@ export function SettingsScreen({
         </div>
       ) : null}
 
-      {/* 명세 7.6 — 브라우저 주소로 쓰면 기록이 지워질 수 있다 */}
+      {/* 명세 7.6 — 브라우저 주소로 쓰면 기록이 지워질 수 있다.
+          2026-11-27 제목 아래 내용을 아코디언으로 접었다. */}
       {installed ? null : (
         <div className="card card-note">
           <p style={{ marginBottom: 8, fontWeight: 650 }}>
             홈 화면에 추가해서 쓰세요
           </p>
-          <p className="muted" style={{ marginBottom: 6 }}>
-            브라우저 주소로만 쓰면, 오래 열지 않았을 때 브라우저가 기록을 지울 수
-            있어요. 설치해서 쓰면 이 일이 생기지 않아요.
-          </p>
-          <p className="muted" style={{ marginBottom: 0 }}>
-            아이폰 사파리: 공유 버튼 → ‘홈 화면에 추가’
-            <br />
-            안드로이드 크롬: 오른쪽 위 ⋮ → ‘홈 화면에 추가’ 또는 ‘앱 설치’
-          </p>
+          <Accordion
+            items={[
+              {
+                title: '왜 추가해야 하나요?',
+                body: '브라우저 주소로만 쓰면, 오래 열지 않았을 때 브라우저가 기록을 지울 수 있어요. 설치해서 쓰면 이 일이 생기지 않아요.',
+              },
+              {
+                title: '아이폰 사파리',
+                body: '공유 버튼 → ‘홈 화면에 추가’',
+              },
+              {
+                title: '안드로이드 크롬',
+                body: '오른쪽 위 ⋮ → ‘홈 화면에 추가’ 또는 ‘앱 설치’',
+              },
+            ]}
+          />
         </div>
       )}
 
@@ -206,7 +258,10 @@ export function SettingsScreen({
         되돌릴 수 없어요. 기관 공용 기기에서 쓰셨다면 나가기 전에 지우세요. 서버에 백업한
         기록은 남아요 — 서버 기록까지 지우려면 위의 ‘계정 삭제’를 쓰세요.
       </p>
-      {confirmingReset ? (
+      {/* 2026-11-27 — 전부 지우기 → 진행 막대 → 100% 가 되면 지운 뒤 화면(After delete) */}
+      {wipe.pct !== null ? (
+        <ProgressBar value={wipe.pct} label="지우는 중" tone="danger" />
+      ) : confirmingReset ? (
         <div className="btn-row">
           <button
             className="btn"
@@ -218,8 +273,13 @@ export function SettingsScreen({
           <button
             className="btn btn-danger"
             onClick={() => {
-              clearAllData();
-              onReset();
+              void (async () => {
+                await wipe.fill(1200);
+                // 발표 화면에서는 보여주기만 하고 실제 기록은 지우지 않는다
+                if (!demo) clearAllData();
+                wipe.clear();
+                setWiped(true);
+              })();
             }}
           >
             전부 지우기

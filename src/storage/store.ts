@@ -100,6 +100,15 @@ export function saveSettings(settings: Settings): void {
   write(KEYS.settings, settings);
 }
 
+/** 온보딩을 마친 표시만 지운다 — 가입 화면에서 뒤로 눌러 온보딩으로 돌아갈 때 */
+export function clearSettings(): void {
+  try {
+    localStorage.removeItem(KEYS.settings);
+  } catch {
+    // 접근이 막힌 경우 무시한다.
+  }
+}
+
 // --- 체크인 ---
 
 export function loadCheckIns(): CheckIn[] {

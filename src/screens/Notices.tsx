@@ -1,13 +1,21 @@
 import { EXTERNAL_RESOURCE, SAFETY_NOTICE } from '../scripts/techniques';
+import { BackButton } from '../components/ui';
 
 /**
  * 명세 6.4 / 9절 화면 7 — 앱 밖 자원 화면.
  * 설계 원칙 4: 앱 개입이 효과가 없다는 신호가 보이면 앱 밖의 자원을 제안한다.
  */
-export function ExternalResource({ onNext }: { onNext: () => void }) {
+export function ExternalResource({
+  onNext,
+  onBack,
+}: {
+  onNext: () => void;
+  onBack?: () => void;
+}) {
   return (
     <div className="app">
       <div className="topbar">
+        {onBack ? <BackButton onClick={onBack} /> : null}
         <span className="topbar-title">앱 밖에서</span>
       </div>
 
@@ -39,10 +47,17 @@ export function ExternalResource({ onNext }: { onNext: () => void }) {
 }
 
 /** 명세 8.4 — 내담자 안전 걱정으로 기법을 중단했을 때 */
-export function SafetyNotice({ onNext }: { onNext: () => void }) {
+export function SafetyNotice({
+  onNext,
+  onBack,
+}: {
+  onNext: () => void;
+  onBack?: () => void;
+}) {
   return (
     <div className="app">
       <div className="topbar">
+        {onBack ? <BackButton onClick={onBack} /> : null}
         <span className="topbar-title">확인이 먼저예요</span>
       </div>
 

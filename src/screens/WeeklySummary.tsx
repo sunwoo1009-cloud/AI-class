@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { evaluateEscalation } from '../lib/escalation';
 import { buildWeeklySummary } from '../lib/summary';
 import { loadCheckIns, loadWeeklySessions, saveWeeklySession } from '../storage/store';
+import { BackButton } from '../components/ui';
 
 interface Props {
   onBack: () => void;
@@ -31,9 +32,7 @@ export function WeeklySummary({ onBack }: Props) {
   return (
     <div className="app">
       <div className="topbar">
-        <button className="btn-quiet" onClick={onBack}>
-          홈으로
-        </button>
+        <BackButton onClick={onBack} label="홈으로" />
         <span className="topbar-title">최근 7일</span>
       </div>
 

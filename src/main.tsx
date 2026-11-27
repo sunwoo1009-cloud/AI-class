@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import './styles/global.css';
+import './styles/ui.css';
 
 /**
  * 새로 배포하면, 열자마자(10초 안에) 새 버전이 자리 잡을 때 한 번 새로 고친다.

@@ -9,6 +9,7 @@ import type { ScriptOption, ScriptStep } from '../scripts/techniques';
 import { expandSteps, resolveOptions, toggleChoice } from '../lib/choice';
 import type { ChoiceAnswers } from '../lib/choice';
 import type { TechniqueId } from '../types';
+import { BackButton } from '../components/ui';
 
 interface Props {
   technique: TechniqueId;
@@ -20,6 +21,8 @@ interface Props {
   onSafetyImmediate: () => void;
   /** 개발용 모음에서 중간 단계를 바로 보려고 쓴다. 실제 흐름은 늘 0부터. */
   initialStep?: number;
+  /** 첫 단계에서 왼쪽 위 뒤로를 누르면 — 체크인 흐름의 앞 단계로 */
+  onBack?: () => void;
 }
 
 export function TechniquePlayer({
@@ -29,6 +32,7 @@ export function TechniquePlayer({
   onDone,
   onSafetyImmediate,
   initialStep = 0,
+  onBack,
 }: Props) {
   const script = TECHNIQUE_SCRIPTS[technique];
   // 가입하지 않아 닉네임이 없으면 '○○'로 둔다 — 자기 이름을 넣어 말하게 한다 (명세 8.6)
@@ -84,6 +88,12 @@ export function TechniquePlayer({
   return (
     <div className="app app-paper">
       <div className="topbar">
+        {/* 왼쪽 위 뒤로 — 대본 안에서 한 칸 뒤로, 첫 칸이면 흐름의 앞 단계로 */}
+        {index > 0 || onBack ? (
+          <BackButton
+            onClick={() => (index > 0 ? setIndex((i) => i - 1) : onBack?.())}
+          />
+        ) : null}
         <span className="topbar-title topbar-title-strong">
           {TECHNIQUE_LABELS[technique]}
         </span>

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { REVIEW } from '../constants';
 import { buildReview } from '../lib/review';
 import { loadCheckIns, loadWeeklySessions } from '../storage/store';
+import { BackButton } from '../components/ui';
 
 interface Props {
   onBack: () => void;
@@ -23,9 +24,7 @@ export function Review({ onBack }: Props) {
   return (
     <div className="app">
       <div className="topbar">
-        <button className="btn-quiet" onClick={onBack}>
-          홈으로
-        </button>
+        <BackButton onClick={onBack} label="홈으로" />
         <span className="topbar-title">돌아보기</span>
       </div>
 

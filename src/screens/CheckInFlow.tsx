@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import { FLOW, reactionInfo } from '../constants';
 import {
   derive,
@@ -7,9 +7,10 @@ import {
   reduce,
   toCheckIn,
 } from '../flow/checkinMachine';
+import { canGoBack, historyReducer, initHistory } from '../flow/history';
 import { josa } from '../lib/josa';
 import { newId, upsertCheckIn } from '../storage/store';
-import type { FlowState, TechniqueId } from '../types';
+import type { FlowEvent, FlowState, TechniqueId } from '../types';
 import { ClosingMore, ClosingRitual } from './ClosingRitual';
 import { ExternalResource, SafetyNotice } from './Notices';
 import { OfferExtra } from './OfferExtra';
@@ -44,11 +45,22 @@ function reasonNoteFor(
   return undefined;
 }
 
+const flowWithHistory = historyReducer<FlowState, FlowEvent>(reduce);
+
 export function CheckInFlow({ onFinish, displayName }: {
   onFinish: () => void;
   displayName: string;
 }) {
-  const [state, dispatch] = useReducer(reduce, undefined, initialFlowState);
+  // 지나온 단계를 쌓아 두고 왼쪽 위 뒤로를 누르면 하나씩 돌아간다 (2026-11-27)
+  const [hist, send] = useReducer(flowWithHistory, undefined, () =>
+    initHistory(initialFlowState()),
+  );
+  const state = hist.cur;
+  const dispatch = useCallback((event: FlowEvent) => send({ type: 'FORWARD', event }), []);
+  // 첫 화면(반응 선택)에서 뒤로는 홈으로
+  const back = () => (canGoBack(hist) ? send({ type: 'BACK' }) : onFinish());
+  // 마무리에서 도장을 찍고 뒤로 갔다가 다시 오면 또 찍지 않는다
+  const stampedRef = useRef(false);
   const idRef = useRef(newId());
   const startedAtRef = useRef(new Date().toISOString());
 
@@ -74,7 +86,7 @@ export function CheckInFlow({ onFinish, displayName }: {
     case 'reaction_select':
       return (
         <ReactionSelect
-          onCancel={onFinish}
+          onCancel={back}
           onSubmit={(reactions) =>
             dispatch({ type: 'SELECT_REACTIONS', reactions })
           }
@@ -85,6 +97,7 @@ export function CheckInFlow({ onFinish, displayName }: {
       return (
         <SudsSlider
           mode="pre"
+          onBack={back}
           onSubmit={(value) => dispatch({ type: 'SUBMIT_SUDS_PRE', value })}
         />
       );
@@ -96,6 +109,7 @@ export function CheckInFlow({ onFinish, displayName }: {
           technique={step.technique}
           displayName={displayName}
           reasonNote={reasonNoteFor(state, step.technique)}
+          onBack={back}
           onDone={() => dispatch({ type: 'TECHNIQUE_DONE' })}
           onSafetyImmediate={() =>
             dispatch({ type: 'SAFETY_CONCERN_IMMEDIATE' })
@@ -107,6 +121,7 @@ export function CheckInFlow({ onFinish, displayName }: {
       return (
         <SudsSlider
           mode="post"
+          onBack={back}
           onSubmit={(value) => dispatch({ type: 'SUBMIT_SUDS_POST', value })}
         />
       );
@@ -118,19 +133,24 @@ export function CheckInFlow({ onFinish, displayName }: {
           technique={step.technique}
           onAccept={() => dispatch({ type: 'ACCEPT_OFFER' })}
           onDecline={() => dispatch({ type: 'DECLINE_OFFER' })}
+          onBack={back}
         />
       );
 
     case 'external_resource':
       return (
         <ExternalResource
+          onBack={back}
           onNext={() => dispatch({ type: 'EXTERNAL_RESOURCE_NEXT' })}
         />
       );
 
     case 'safety_notice':
       return (
-        <SafetyNotice onNext={() => dispatch({ type: 'SAFETY_NOTICE_NEXT' })} />
+        <SafetyNotice
+          onBack={back}
+          onNext={() => dispatch({ type: 'SAFETY_NOTICE_NEXT' })}
+        />
       );
 
     case 'closing_ritual':
@@ -138,6 +158,11 @@ export function CheckInFlow({ onFinish, displayName }: {
         <ClosingRitual
           onReady={() => dispatch({ type: 'CLOSING_READY' })}
           onMore={() => dispatch({ type: 'CLOSING_MORE' })}
+          onBack={back}
+          alreadyStamped={stampedRef.current}
+          onStamped={() => {
+            stampedRef.current = true;
+          }}
         />
       );
 
@@ -145,8 +170,13 @@ export function CheckInFlow({ onFinish, displayName }: {
       return (
         <ClosingMore
           candidate={candidate}
-          onTechnique={() => dispatch({ type: 'CLOSING_MORE_TECHNIQUE' })}
+          onTechnique={() => {
+            // 기법을 하나 더 하고 다시 마무리하면 그 마무리에도 도장을 찍는다 (원래 규칙)
+            stampedRef.current = false;
+            dispatch({ type: 'CLOSING_MORE_TECHNIQUE' });
+          }}
           onExit={() => dispatch({ type: 'CLOSING_MORE_EXIT' })}
+          onBack={back}
         />
       );
 

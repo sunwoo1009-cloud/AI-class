@@ -1,11 +1,13 @@
 import { TECHNIQUE_LABELS } from '../constants';
 import type { OfferVariant, TechniqueId } from '../types';
+import { BackButton } from '../components/ui';
 
 interface Props {
   variant: OfferVariant;
   technique: TechniqueId;
   onAccept: () => void;
   onDecline: () => void;
+  onBack?: () => void;
 }
 
 /** 명세 6.3 — 경로별 문구 */
@@ -22,10 +24,11 @@ const DECLINE_LABEL: Record<OfferVariant, string> = {
 };
 
 /** 명세 9절 화면 6 */
-export function OfferExtra({ variant, technique, onAccept, onDecline }: Props) {
+export function OfferExtra({ variant, technique, onAccept, onDecline, onBack }: Props) {
   return (
     <div className="app app-paper">
       <div className="topbar">
+        {onBack ? <BackButton onClick={onBack} /> : null}
         <span className="topbar-title">선택</span>
       </div>
 

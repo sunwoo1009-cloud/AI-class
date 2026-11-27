@@ -6,6 +6,7 @@ import type { CouponView } from '../lib/coupon';
 import { addStamp, loadStampBalance } from '../storage/store';
 import { TAIYAKI_BODY, TAIYAKI_TAIL } from './menu/FoodIcon';
 import type { TechniqueId } from '../types';
+import { BackButton } from '../components/ui';
 
 const HOLD_MS = 3000;
 
@@ -18,19 +19,36 @@ interface Props {
   onMore: () => void;
   /** 개발용 모음에서 중간 단계를 바로 보려고 쓴다. 실제 흐름은 늘 breath 부터. */
   initialPhase?: Phase;
+  /** 왼쪽 위 뒤로 — 체크인 흐름의 앞 단계로 */
+  onBack?: () => void;
+  /**
+   * 이번 체크인에서 이미 도장을 찍었는가. 뒤로 갔다가 다시 들어오면 참이다.
+   * 그러면 도장을 또 찍지 않고 마무리 질문부터 보여준다.
+   */
+  alreadyStamped?: boolean;
+  /** 도장을 찍은 순간 */
+  onStamped?: () => void;
 }
 
 /** 명세 8.7 / 9절 화면 8 — 모든 경로가 마지막에 거친다 */
-export function ClosingRitual({ onReady, onMore, initialPhase = 'breath' }: Props) {
-  const [phase, setPhase] = useState<Phase>(initialPhase);
+export function ClosingRitual({
+  onReady,
+  onMore,
+  initialPhase = 'breath',
+  onBack,
+  alreadyStamped = false,
+  onStamped,
+}: Props) {
+  const [phase, setPhase] = useState<Phase>(alreadyStamped ? 'ask' : initialPhase);
   const [progress, setProgress] = useState(0);
   const timerRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
 
   // 화면에 들어올 때의 도장 수를 붙잡아 둔다. 화면이 바뀌어도 흔들리지 않는다.
   // 부티크에서 쓴 만큼 뺀 '쓸 수 있는 도장'을 보여준다 (명세 8.8).
-  const [base] = useState(() => loadStampBalance());
-  const savedRef = useRef(false);
+  // 이미 찍고 돌아왔으면 그 도장은 빼고 센다 (아래에서 '찍힘'으로 다시 더한다).
+  const [base] = useState(() => Math.max(0, loadStampBalance() - (alreadyStamped ? 1 : 0)));
+  const savedRef = useRef(alreadyStamped);
   const stamped = phase === 'closed' || phase === 'ask' || phase === 'bye';
   const view = couponView(base, stamped);
 
@@ -39,6 +57,8 @@ export function ClosingRitual({ onReady, onMore, initialPhase = 'breath' }: Prop
     if (phase !== 'closed' || savedRef.current) return;
     savedRef.current = true;
     addStamp();
+    onStamped?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
   // [1, 10] 숨을 한 번 쉬고
@@ -96,6 +116,17 @@ export function ClosingRitual({ onReady, onMore, initialPhase = 'breath' }: Prop
   return (
     <div className="app app-paper">
       <div className="topbar">
+        {/* 인사 화면에서는 마무리 질문으로, 그 앞은 체크인 흐름의 앞 단계로 */}
+        {phase === 'bye' ? (
+          <BackButton onClick={() => setPhase('ask')} />
+        ) : onBack ? (
+          <BackButton
+            onClick={() => {
+              cancelHold();
+              onBack();
+            }}
+          />
+        ) : null}
         <span className="topbar-title">마무리</span>
       </div>
 
@@ -269,14 +300,17 @@ export function ClosingMore({
   candidate,
   onTechnique,
   onExit,
+  onBack,
 }: {
   candidate: TechniqueId | null;
   onTechnique: () => void;
   onExit: () => void;
+  onBack?: () => void;
 }) {
   return (
     <div className="app app-paper">
       <div className="topbar">
+        {onBack ? <BackButton onClick={onBack} /> : null}
         <span className="topbar-title">마무리</span>
       </div>
 

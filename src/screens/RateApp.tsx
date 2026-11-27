@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { feedbackConnected, insertPublic } from '../dev/feedback';
 import { REVIEW_MAX, checkReview } from '../lib/appReview';
+import { BackButton, Tooltip } from '../components/ui';
 
 interface Props {
   onBack: () => void;
@@ -44,9 +45,7 @@ export function RateApp({ onBack }: Props) {
   return (
     <div className="app">
       <div className="topbar">
-        <button className="btn-quiet" onClick={onBack}>
-          홈으로
-        </button>
+        <BackButton onClick={onBack} label="홈으로" />
         <span className="topbar-title">별점·리뷰</span>
       </div>
 
@@ -64,12 +63,24 @@ export function RateApp({ onBack }: Props) {
         </>
       ) : (
         <>
-          <h1>이 앱은 어땠나요?</h1>
-          <p className="muted">
-            별점과 리뷰는 운영자만 볼 수 있어요. 이름이나 기록은 함께 보내지 않아요.
-          </p>
+          {/* 2026-11-27 — 안내 두 줄을 제목 옆 ⓘ 툴팁으로 */}
+          <h1 className="title-with-tip">
+            이 앱은 어땠나요?
+            <Tooltip
+              label="보내는 내용 안내 보기"
+              lines={[
+                '별점과 리뷰는 운영자만 볼 수 있어요',
+                '이름이나 기록은 함께 보내지 않아요',
+              ]}
+            />
+          </h1>
 
-          <div className="rate-stars" role="radiogroup" aria-label="별점">
+          {/* 별을 고르면 별이 차례로 통통 튀고, 아래에 고른 점수가 확인 표시와 함께 뜬다 (응답 피드백) */}
+          <div
+            className="rate-stars"
+            role="radiogroup"
+            aria-label="별점"
+          >
             {[1, 2, 3, 4, 5].map((n) => (
               <button
                 key={n}
@@ -82,13 +93,32 @@ export function RateApp({ onBack }: Props) {
                   setNote(null);
                 }}
               >
-                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                {/* 고를 때마다 svg 를 새로 그려 튀는 움직임을 다시 튼다 (버튼은 그대로라 포커스가 남는다) */}
+                <svg
+                  key={rating ?? 0}
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                  style={{ animationDelay: `${(n - 1) * 60}ms` }}
+                >
                   <path d="M12 2.8l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 16.8l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />
                 </svg>
               </button>
             ))}
           </div>
-          <p className="rate-label">{rating ? `${rating}점 · ${LABELS[rating]}` : '별을 눌러 골라 주세요'}</p>
+          {rating ? (
+            <p className="rate-feedback" key={rating} role="status">
+              <span className="rate-feedback-check" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M5 12.5 L10 17 L19 7.5" />
+                </svg>
+              </span>
+              {rating}점 · {LABELS[rating]}
+              <span className="rate-feedback-sub">골랐어요</span>
+            </p>
+          ) : (
+            <p className="rate-label">별을 눌러 골라 주세요</p>
+          )}
 
           <label className="account-field">
             <span>하고 싶은 말 (선택)</span>

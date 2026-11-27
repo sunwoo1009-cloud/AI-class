@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { couponView, STAMPS_PER_CARD } from '../lib/coupon';
 import { loadStampBalance } from '../storage/store';
 import { TAIYAKI_BODY, TAIYAKI_TAIL } from './menu/FoodIcon';
+import { BackButton, Tooltip } from '../components/ui';
 
 interface Props {
   onBack: () => void;
@@ -20,18 +21,21 @@ export function CouponBook({ onBack }: Props) {
   return (
     <div className="app app-paper">
       <div className="topbar">
-        <button className="btn-quiet" onClick={onBack}>
-          홈으로
-        </button>
+        <BackButton onClick={onBack} label="홈으로" />
         <span className="topbar-title">붕어빵 쿠폰</span>
       </div>
 
-      <h1>모은 붕어빵 쿠폰</h1>
-      <p className="muted">
-        마무리를 한 번 마칠 때마다 도장이 하나 찍혀요
-        <br />
-        도장으로 메뉴의 부티크에서 직장인을 꾸밀 수 있어요
-      </p>
+      {/* 2026-11-27 — 도장 안내를 제목 옆 ⓘ 툴팁으로 */}
+      <h1 className="title-with-tip">
+        모은 붕어빵 쿠폰
+        <Tooltip
+          label="도장 안내 보기"
+          lines={[
+            '마무리를 한 번 마칠 때마다 도장이 하나 찍혀요',
+            '도장으로 메뉴의 부티크에서 직장인을 꾸밀 수 있어요',
+          ]}
+        />
+      </h1>
 
       <p className="coupon-count" style={{ margin: '4px 0 16px' }}>
         쓸 수 있는 도장 {view.total}개 · 다 채운 쿠폰 {view.cards}장

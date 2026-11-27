@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { SUDS_ANCHORS } from '../constants';
+import { BackButton } from '../components/ui';
 
 interface Props {
   mode: 'pre' | 'post';
   onSubmit: (value: number) => void;
+  /** 왼쪽 위 뒤로 — 앞 단계로 */
+  onBack?: () => void;
 }
 
 function anchorFor(value: number): string {
@@ -17,12 +20,13 @@ function anchorFor(value: number): string {
  * 명세 6.2 / 9절 화면 4
  * 개입 전과 재평정에서 공용으로 쓰고, 문구만 다르게 한다.
  */
-export function SudsSlider({ mode, onSubmit }: Props) {
+export function SudsSlider({ mode, onSubmit, onBack }: Props) {
   const [value, setValue] = useState(5);
 
   return (
     <div className="app app-paper">
       <div className="topbar">
+        {onBack ? <BackButton onClick={onBack} /> : null}
         <span className="topbar-title">
           {mode === 'pre' ? '하기 전' : '다시 평가하기'}
         </span>
