@@ -1308,67 +1308,6 @@
   border-radius: 8px;
 }
 
-/* --- 배경 음악 화면 --- */
-.bgm-card {
-  display: grid;
-  gap: 10px;
-}
-
-.bgm-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.bgm-label {
-  display: grid;
-  font-weight: 700;
-}
-
-.bgm-label small {
-  font-weight: 400;
-  font-size: 0.8125rem;
-  color: var(--text-muted);
-}
-
-.bgm-volume {
-  margin-top: 6px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--border);
-}
-
-.bgm-volume.is-off {
-  opacity: 0.55;
-}
-
-.bgm-volume-num {
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--accent);
-}
-
-.bgm-slider-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.bgm-icon svg {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: var(--text-muted);
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.bgm-note {
-  margin-top: 4px;
-  font-size: 0.875rem;
-}
-
 /* --- 종결 의례 — 두 번 톡톡 (2026-11-27) --- */
 /* 첫 번째 누름: 쿠폰이 살짝 눌렸다 올라온다 */
 .coupon.is-tapped {

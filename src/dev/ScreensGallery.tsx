@@ -8,7 +8,6 @@ import { Journal } from '../screens/Journal';
 import { CouponBook } from '../screens/CouponBook';
 import { Boutique } from '../screens/Boutique';
 import { RateApp } from '../screens/RateApp';
-import { BgmSettings } from '../screens/BgmSettings';
 import { MyPage } from '../screens/MyPage';
 import { JournalList } from '../screens/JournalList';
 import { PulseCheck } from '../screens/PulseCheck';
@@ -429,15 +428,6 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       ),
     },
     {
-      id: 'bgm',
-      label: '배경 음악',
-      render: () => (
-        <DemoTabs active="bgm">
-          <BgmSettings onBack={noop} />
-        </DemoTabs>
-      ),
-    },
-    {
       id: 'avatar-parts',
       label: '아바타 — 아이템 확인용',
       spec: '8.8',
@@ -568,7 +558,7 @@ const SHEETS: Sheet[] = [
   // 처음 여는 순서대로: 온보딩 → 선택 가입 → (다음부터 열 때마다) 인트로 → 홈
   { title: '시작', kind: 'row', ids: ['onboarding', 'join', 'calendar-link-start', 'intro', 'home'] },
   { title: '기법을 사용해 감정 관리하기', kind: 'checkin' },
-  { title: '오늘의 나를 기록하기', kind: 'row', ids: ['journal-intro', 'journal', 'journal-list'] },
+  { title: '하루 끝 일기', kind: 'row', ids: ['journal-intro', 'journal', 'journal-list'] },
   // 2026-11-27 — 주간 요약·돌아보기·캘린더·쿠폰은 마이페이지 안으로
   {
     title: '마이페이지',
@@ -586,7 +576,7 @@ const SHEETS: Sheet[] = [
       'home-nudge',
     ],
   },
-  { title: '메뉴', kind: 'row', ids: ['rate', 'bgm', 'settings'] },
+  { title: '메뉴', kind: 'row', ids: ['rate', 'settings'] },
   { title: '아바타 꾸미기', kind: 'row', ids: ['boutique', 'avatar-parts'] },
   { title: '관리자 화면', kind: 'admin' },
   // 2026-11-24 부터 받은 수정 요청을 화면별로 (2026-11-27)

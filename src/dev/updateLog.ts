@@ -166,10 +166,11 @@ export const UPDATE_LOG: CategoryLog[] = [
           },
           {
             kind: '수정',
-            date: '11-24',
-            text: '말풍선 버튼: "기법을 사용해 감정 관리하기" / "오늘의 나를 기록하기"',
+            date: '11-27',
+            text: '말풍선 버튼: "기법을 사용해 감정 관리하기" / "하루 끝 일기"',
             history: [
               { date: '처음', text: '"여러 단계를 거치며 오늘의 나를 기록하기" / "간단하게 하루 정리하기"' },
+              { date: '11-24', text: '"기법을 사용해 감정 관리하기" / "오늘의 나를 기록하기"' },
             ],
           },
           { kind: '수정', date: '11-24', text: '버튼과 말풍선을 입체적이고 말랑한 느낌으로 바꿨어요' },
@@ -462,7 +463,7 @@ export const UPDATE_LOG: CategoryLog[] = [
   },
   {
     id: 'journal',
-    title: '오늘의 나를 기록하기',
+    title: '하루 끝 일기',
     screens: [
       {
         screen: '하루 끝 일기',
@@ -513,11 +514,13 @@ export const UPDATE_LOG: CategoryLog[] = [
             date: '11-27',
             text: '쓰는 화면 맨 위의 고정 안내를 뺐어요 — 바로 앞 안내 화면에 같은 문구가 나와요',
           },
+          { kind: '삭제', date: '11-27', text: '"옆으로 밀어서 넘길 수 있어요" 안내 (밀어 넘기기는 그대로)' },
         ],
       },
       {
         screen: '하루 끝 일기 — 그동안 쓴 일기',
         changes: [
+          { kind: '삭제', date: '11-27', text: '"모두 N편이에요. 날짜를 누르면 펼쳐져요." 문구' },
           {
             kind: '추가',
             date: '11-27',
@@ -741,6 +744,7 @@ export const UPDATE_LOG: CategoryLog[] = [
             date: '11-27',
             text: '더보기 → 배경 음악 화면: 음악 켜기·끄기 스위치와 음량 슬라이더. 앱을 열고 처음 누르면 음악이 나와요',
           },
+          { kind: '삭제', date: '11-27', text: '배경 음악 화면과 기능을 뺐어요 — 음악이 나오지 않아요' },
         ],
       },
       {

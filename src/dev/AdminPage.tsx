@@ -82,7 +82,6 @@ const SCREEN_GROUPS: { title: string; items: [id: string, label: string][] }[] =
       ['journal', '하루 끝 일기'],
       ['boutique', '옷장'],
       ['rate', '별점·리뷰'],
-      ['bgm', '배경 음악'],
       ['avatar-parts', '아바타 아이템 확인'],
       ['settings', '설정'],
     ],

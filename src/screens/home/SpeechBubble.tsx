@@ -47,7 +47,7 @@ export function SpeechBubble({ onCheckIn, onJournal }: Props) {
           }}
         >
           아니야, 다음에 먹을래!
-          <span className="bubble-btn-sub">오늘의 나를 기록하기</span>
+          <span className="bubble-btn-sub">하루 끝 일기</span>
         </button>
       </div>
     </div>

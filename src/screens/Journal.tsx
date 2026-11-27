@@ -229,7 +229,7 @@ export function Journal({ onDone, skipIntro = false }: Props) {
           다음 질문 ›
         </button>
       </div>
-      <p className="jr-swipe-hint muted">옆으로 밀어서 넘길 수 있어요</p>
+      {/* "옆으로 밀어서 넘길 수 있어요" 안내는 2026-11-27 사용자 요청으로 뺐다 (밀어 넘기기는 그대로) */}
 
       <div className="spacer" />
       <button className="btn btn-primary" onClick={save}>

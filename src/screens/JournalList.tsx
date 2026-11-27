@@ -115,9 +115,8 @@ export function JournalList({ onBack, onWrite, demo = false }: Props) {
       </div>
 
       <h1>그동안 쓴 일기</h1>
-      <p className="muted">
-        {list.length ? `모두 ${list.length}편이에요. 날짜를 누르면 펼쳐져요.` : '아직 쓴 일기가 없어요.'}
-      </p>
+      {/* "모두 N편이에요. 날짜를 누르면 펼쳐져요." 는 2026-11-27 사용자 요청으로 뺐다 — 비었을 때 안내만 남긴다 */}
+      {list.length ? null : <p className="muted">아직 쓴 일기가 없어요.</p>}
 
       <button className="btn btn-primary" onClick={onWrite} style={{ marginBottom: 16 }}>
         {wroteToday ? '오늘 일기 고치기' : '오늘 일기 쓰기'}

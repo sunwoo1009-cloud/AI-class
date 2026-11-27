@@ -6,8 +6,6 @@ import { JoinScreen } from './screens/JoinScreen';
 import { AdminPage } from './dev/AdminPage';
 import { Boutique } from './screens/Boutique';
 import { RateApp } from './screens/RateApp';
-import { BgmSettings } from './screens/BgmSettings';
-import { startBgmOnFirstGesture } from './lib/bgm';
 import { CalendarLink } from './screens/CalendarLink';
 import { MyPage } from './screens/MyPage';
 import { JournalList } from './screens/JournalList';
@@ -56,8 +54,7 @@ type View =
   | 'coupons'
   | 'boutique'
   | 'rate'
-  | 'settings'
-  | 'bgm';
+  | 'settings';
 
 export function App() {
   return (
@@ -110,10 +107,10 @@ function AppMain() {
 
   useEffect(() => {
     ensureSchemaVersion();
-    // 배경 음악 — 실제 앱에서만, 첫 탭에 튼다 (발표용·관리자·미리보기 주소에서는 틀지 않는다)
+    // 배경 음악은 2026-11-27 사용자 요청으로 기능째 뺐다.
+    // 실제 앱에서만 (발표용·관리자·미리보기 주소에서는 하지 않는다)
     const q = new URLSearchParams(window.location.search);
     if (!['screens', 'admin', 'preview', 'parts'].some((k) => q.has(k))) {
-      startBgmOnFirstGesture();
       // 캘린더 앱 연동 — 연결했으면 첫 누름에 회기 끝 알림을 다시 맞춘다 (6시간마다)
       startCalendarAutoSync();
     }
@@ -285,8 +282,6 @@ function AppMain() {
       return withTabs('boutique', <Boutique onBack={home} />);
     case 'rate':
       return withTabs('rate', <RateApp onBack={home} />);
-    case 'bgm':
-      return withTabs('bgm', <BgmSettings onBack={home} />);
     case 'settings':
       return withTabs(
         'settings',
