@@ -57,7 +57,7 @@ export function CouponBook({ onBack, demoStamps }: Props) {
       {view.cards === 0 ? (
         <p className="muted">아직 다 채운 쿠폰이 없어요</p>
       ) : (
-        <CouponFlipBook count={view.cards} />
+        <CouponAlbum count={view.cards} />
       )}
 
       <div className="spacer" />
@@ -65,17 +65,23 @@ export function CouponBook({ onBack, demoStamps }: Props) {
   );
 }
 
-const FLIP_MS = 650;
+const FLIP_MS = 700;
+/** 한 면에 꽂는 쿠폰 수 — 참고 사진처럼 위아래로 두 장 */
+const PER_PAGE = 2;
 
 /**
- * 다 채운 쿠폰을 책장처럼 넘겨 본다 (2026-11-27 사용자 요청).
- * 한 장씩 보이고, ‹ › 를 누르거나 옆으로 밀면 책장이 왼쪽 묶음을 축으로 넘어간다.
- * 다음 장: 지금 장이 왼쪽으로 넘어가며 아래 장이 드러난다 / 앞 장: 앞 장이 왼쪽에서 넘어와 덮는다.
- * 움직임 줄이기 설정이면 넘기는 움직임 없이 바로 바뀐다.
+ * 다 채운 쿠폰 앨범 (2026-11-27 사용자 요청 + 참고 사진: 펼친 링 바인더 사진 앨범).
+ *
+ * 펼친 앨범 한 쌍 = 왼쪽 면 2장 + 오른쪽 면 2장. 가운데에 링 세 개, 바깥으로 표지 가장자리.
+ * 쿠폰은 작게 꽂고 아래에 "N번째 쿠폰".
+ * 다음: 오른쪽 면이 링을 축으로 왼쪽으로 넘어간다(넘어가는 면의 뒷면 = 다음 쌍의 왼쪽 면).
+ * 앞: 왼쪽 면이 링을 축으로 오른쪽으로 넘어온다(뒷면 = 앞 쌍의 오른쪽 면).
+ * ‹ › 나 옆으로 밀어 넘긴다. 움직임 줄이기 설정이면 바로 바뀐다.
  */
-function CouponFlipBook({ count }: { count: number }) {
-  const [page, setPage] = useState(0);
-  const [flip, setFlip] = useState<{ from: number; to: number; dir: 'next' | 'prev' } | null>(null);
+function CouponAlbum({ count }: { count: number }) {
+  const spreads = Math.ceil(count / (PER_PAGE * 2));
+  const [spread, setSpread] = useState(0);
+  const [flip, setFlip] = useState<'next' | 'prev' | null>(null);
   const timer = useRef<number | null>(null);
   const startX = useRef<number | null>(null);
 
@@ -88,32 +94,44 @@ function CouponFlipBook({ count }: { count: number }) {
 
   function go(dir: 'next' | 'prev') {
     if (flip) return;
-    const to = dir === 'next' ? page + 1 : page - 1;
-    if (to < 0 || to >= count) return;
-    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) return setPage(to);
-    setFlip({ from: page, to, dir });
+    const to = dir === 'next' ? spread + 1 : spread - 1;
+    if (to < 0 || to >= spreads) return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return setSpread(to);
+    setFlip(dir);
     timer.current = window.setTimeout(() => {
-      setPage(to);
+      setSpread(to);
       setFlip(null);
     }, FLIP_MS);
   }
 
-  const sheet = (i: number, cls = '') => (
-    <div className={`flip-page${cls}`} key={`${i}${cls}`}>
-      <StampCard filled={STAMPS_PER_CARD} />
-      <span className="coupon-book-label">{i + 1}번째 쿠폰</span>
-    </div>
-  );
+  /** 쌍 s 의 왼쪽(0)·오른쪽(1) 면 */
+  const page = (s: number, side: 0 | 1) => {
+    const first = s * PER_PAGE * 2 + side * PER_PAGE;
+    return (
+      <div className={`album-page album-page-${side === 0 ? 'left' : 'right'}`}>
+        {Array.from({ length: PER_PAGE }, (_, k) => {
+          const i = first + k;
+          return i < count ? (
+            <figure key={k} className="album-slot">
+              <StampCard filled={STAMPS_PER_CARD} mini />
+              <figcaption>{i + 1}번째 쿠폰</figcaption>
+            </figure>
+          ) : (
+            <div key={k} className="album-slot is-empty" aria-hidden="true" />
+          );
+        })}
+      </div>
+    );
+  };
 
-  // 아래에 깔린 장 / 위에서 넘어가는 장
-  const under = flip ? (flip.dir === 'next' ? flip.to : flip.from) : page;
-  const over = flip ? (flip.dir === 'next' ? flip.from : flip.to) : null;
+  // 넘기는 동안: 깔린 두 면 + 넘어가는 한 장(앞면·뒷면)
+  const left = flip === 'prev' ? page(spread - 1, 0) : page(spread, 0);
+  const right = flip === 'next' ? page(spread + 1, 1) : page(spread, 1);
 
   return (
-    <div className="flipbook">
+    <div className="album">
       <div
-        className="flipbook-stage"
+        className="album-cover"
         onPointerDown={(e) => {
           startX.current = e.clientX;
         }}
@@ -124,30 +142,49 @@ function CouponFlipBook({ count }: { count: number }) {
           if (dx < -40) go('next');
           else if (dx > 40) go('prev');
         }}
-        aria-live="polite"
       >
-        {/* 뒤에 쌓인 장들 — 책 두께 */}
-        {count > 1 ? <span className="flipbook-stack" aria-hidden="true" /> : null}
-        {sheet(under)}
-        {over !== null && flip ? sheet(over, flip.dir === 'next' ? ' is-turning-out' : ' is-turning-in') : null}
+        <div className="album-spread" aria-live="polite">
+          {left}
+          {right}
+          {flip === 'next' ? (
+            <div className="album-leaf is-next" aria-hidden="true">
+              <div className="album-face">{page(spread, 1)}</div>
+              <div className="album-face is-back">{page(spread + 1, 0)}</div>
+            </div>
+          ) : null}
+          {flip === 'prev' ? (
+            <div className="album-leaf is-prev" aria-hidden="true">
+              <div className="album-face">{page(spread, 0)}</div>
+              <div className="album-face is-back">{page(spread - 1, 1)}</div>
+            </div>
+          ) : null}
+          {/* 가운데 링 세 개 */}
+          <div className="album-rings" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </div>
+        </div>
       </div>
 
-      <div className="flipbook-nav">
-        <button type="button" aria-label="앞 쿠폰" disabled={page === 0 || flip !== null} onClick={() => go('prev')}>
-          ‹
-        </button>
-        <span>
-          {(flip ? flip.to : page) + 1} / {count}
-        </span>
-        <button
-          type="button"
-          aria-label="다음 쿠폰"
-          disabled={page === count - 1 || flip !== null}
-          onClick={() => go('next')}
-        >
-          ›
-        </button>
-      </div>
+      {spreads > 1 ? (
+        <div className="flipbook-nav">
+          <button type="button" aria-label="앞 장" disabled={spread === 0 || flip !== null} onClick={() => go('prev')}>
+            ‹
+          </button>
+          <span>
+            {spread + 1 + (flip === 'next' ? 1 : flip === 'prev' ? -1 : 0)} / {spreads}
+          </span>
+          <button
+            type="button"
+            aria-label="다음 장"
+            disabled={spread === spreads - 1 || flip !== null}
+            onClick={() => go('next')}
+          >
+            ›
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

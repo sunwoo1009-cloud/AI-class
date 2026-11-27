@@ -3325,82 +3325,174 @@ small,
   text-wrap: pretty;
 }
 
-/* --- 다 채운 쿠폰 — 책장 넘기기 (2026-11-27) --- */
-.flipbook {
+/* --- 다 채운 쿠폰 — 펼친 링 바인더 앨범 (2026-11-27, 사용자 참고 사진) --- */
+.album {
   margin-top: 8px;
 }
 
-.flipbook-stage {
-  position: relative;
-  min-height: 260px;
-  perspective: 1400px;
+/* 겉표지 — 속지보다 조금 크고 밝은 아이보리, 아래로 그림자 */
+.album-cover {
+  padding: 9px 8px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f7f3ec, #ece5d9);
+  border: 1px solid #ddd3c3;
+  box-shadow:
+    0 2px 0 #d9cfbf,
+    0 12px 22px rgba(70, 55, 35, 0.18);
   touch-action: pan-y;
   user-select: none;
 }
 
-/* 뒤에 쌓인 장 — 오른쪽 아래로 살짝 비켜 책 두께처럼 */
-.flipbook-stack {
-  position: absolute;
-  inset: 8px -5px -5px 8px;
-  border-radius: 18px;
-  background: #efe3cc;
-  border: 1.5px solid var(--border);
-  box-shadow: 4px 4px 0 #e5d6bb;
+.album-spread {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  perspective: 1600px;
 }
 
-.flip-page {
-  position: absolute;
-  inset: 0;
+/* 속지 — 크림색, 가운데(링) 쪽으로 살짝 그늘 */
+.album-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 10px;
+  min-height: 250px;
+  padding: 14px 12px 12px;
+  background: #fbf6e9;
+}
+
+.album-page-left {
+  padding-right: 16px;
+  border-radius: 4px 0 0 4px;
+  background: linear-gradient(90deg, #fbf6e9 80%, #ece4d2);
+}
+
+.album-page-right {
+  padding-left: 16px;
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(270deg, #fbf6e9 80%, #ece4d2);
+}
+
+/* 꽂힌 쿠폰 한 장 + 이름 */
+.album-slot {
+  margin: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  border-radius: 18px;
-  background: var(--paper, #fbf5ea);
+  gap: 4px;
+}
+
+.album-slot .coupon.is-mini {
+  padding: 6px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(70, 55, 35, 0.18);
+}
+
+.album-slot .coupon.is-mini .coupon-grid {
+  gap: 2px;
+}
+
+.album-slot figcaption {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* 빈 자리 — 비어 있는 꽂이 */
+.album-slot.is-empty {
+  min-height: 62px;
+  border: 1.5px dashed #e3d8c3;
+  border-radius: 4px;
+}
+
+/* 가운데 링 세 개 */
+.album-rings {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 26px 0;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.album-rings i {
+  display: block;
+  width: 22px;
+  height: 12px;
+  border: 2.5px solid #c9c2b6;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 1px 1px rgba(70, 55, 35, 0.25);
+}
+
+/* 넘어가는 한 장 — 앞면·뒷면 */
+.album-leaf {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  transform-style: preserve-3d;
+}
+
+.album-leaf.is-next {
+  left: 50%;
   transform-origin: left center;
+  animation: leaf-next 700ms cubic-bezier(0.45, 0.05, 0.35, 1) forwards;
+}
+
+.album-leaf.is-prev {
+  left: 0;
+  transform-origin: right center;
+  animation: leaf-prev 700ms cubic-bezier(0.45, 0.05, 0.35, 1) forwards;
+}
+
+.album-face {
+  position: absolute;
+  inset: 0;
   backface-visibility: hidden;
 }
 
-.flip-page .coupon {
-  width: 100%;
+.album-face > .album-page {
+  height: 100%;
 }
 
-/* 다음 장 — 지금 장이 왼쪽 묶음을 축으로 넘어간다 */
-.flip-page.is-turning-out {
-  z-index: 2;
-  animation: page-out 650ms cubic-bezier(0.45, 0.05, 0.35, 1) forwards;
+.album-face.is-back {
+  transform: rotateY(180deg);
 }
 
-/* 앞 장 — 왼쪽에서 넘어와 덮는다 */
-.flip-page.is-turning-in {
-  z-index: 2;
-  animation: page-in 650ms cubic-bezier(0.45, 0.05, 0.35, 1) forwards;
+/* 그림자는 면(.album-face)에 준다 — 넘어가는 장 자체에 filter 를 주면 3D 가 평평해져 뒷면이 안 보인다 */
+.album-leaf .album-face {
+  box-shadow: 0 6px 14px rgba(60, 40, 20, 0.16);
 }
 
-@keyframes page-out {
-  0% {
+@keyframes leaf-next {
+  from {
     transform: rotateY(0deg);
-    box-shadow: 0 0 0 rgba(60, 40, 20, 0);
   }
-  50% {
-    box-shadow: -18px 8px 24px rgba(60, 40, 20, 0.25);
-  }
-  100% {
-    transform: rotateY(-180deg);
-    box-shadow: 0 0 0 rgba(60, 40, 20, 0);
-  }
-}
-
-@keyframes page-in {
-  0% {
+  to {
     transform: rotateY(-180deg);
   }
-  50% {
-    box-shadow: -18px 8px 24px rgba(60, 40, 20, 0.25);
-  }
-  100% {
+}
+
+@keyframes leaf-prev {
+  from {
     transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(180deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .album-leaf {
+    animation: none;
   }
 }
 

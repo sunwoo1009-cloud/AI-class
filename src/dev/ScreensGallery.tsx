@@ -404,7 +404,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       tall: true,
       render: () => (
         <DemoTabs active="coupons">
-          <CouponBook onBack={noop} demoStamps={34} />
+          <CouponBook onBack={noop} demoStamps={64} />
         </DemoTabs>
       ),
     },
