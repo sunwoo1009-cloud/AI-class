@@ -6,6 +6,8 @@ import { JoinScreen } from './screens/JoinScreen';
 import { AdminPage } from './dev/AdminPage';
 import { Boutique } from './screens/Boutique';
 import { RateApp } from './screens/RateApp';
+import { BgmSettings } from './screens/BgmSettings';
+import { startBgmOnFirstGesture } from './lib/bgm';
 import { Home } from './screens/Home';
 import { TabBar } from './screens/home/TabBar';
 import type { TabTarget } from './screens/home/TabBar';
@@ -39,7 +41,8 @@ type View =
   | 'coupons'
   | 'boutique'
   | 'rate'
-  | 'settings';
+  | 'settings'
+  | 'bgm';
 
 export function App() {
   return (
@@ -83,6 +86,11 @@ function AppMain() {
 
   useEffect(() => {
     ensureSchemaVersion();
+    // 배경 음악 — 실제 앱에서만, 첫 탭에 튼다 (발표용·관리자·미리보기 주소에서는 틀지 않는다)
+    const q = new URLSearchParams(window.location.search);
+    if (!['screens', 'admin', 'preview', 'parts'].some((k) => q.has(k))) {
+      startBgmOnFirstGesture();
+    }
     // 가입해 로그인한 기기면 서버와 조용히 맞춘다 (명세 7.7). 안 했으면 아무것도 안 한다.
     startAutoSync();
     const loadedSettings = loadSettings();
@@ -205,6 +213,8 @@ function AppMain() {
       return withTabs('boutique', <Boutique onBack={home} />);
     case 'rate':
       return withTabs('rate', <RateApp onBack={home} />);
+    case 'bgm':
+      return withTabs('bgm', <BgmSettings onBack={home} />);
     case 'settings':
       return withTabs(
         'settings',

@@ -1,4 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { RefObject } from 'react';
+import { flushSync } from 'react-dom';
+import { TabSwitch } from '../components/ui';
 import { AvatarSvg, PREVIEW_VIEWBOX } from '../avatar/Avatar';
 import { AuthForm } from '../screens/AccountSection';
 import { JoinScreen } from '../screens/JoinScreen';
@@ -16,7 +19,7 @@ import {
 import type { AdminStats, AppReviewItem } from '../sync/admin';
 import { averageRating } from '../lib/appReview';
 
-/** 화면 점검 — 화면 하나만 새 탭에 띄운다 (?screens=<id>) */
+/** 화면 점검 — 위쪽 탭 묶음과 그 안의 화면들 (?screens=<id>&bare=1 을 작은 창으로 띄운다) */
 const SCREEN_GROUPS: { title: string; items: [id: string, label: string][] }[] = [
   {
     title: '처음 · 홈',
@@ -43,7 +46,7 @@ const SCREEN_GROUPS: { title: string; items: [id: string, label: string][] }[] =
     ],
   },
   {
-    title: '기법 (주소 끝에 &step=N 을 붙이면 N번째 단계부터)',
+    title: '기법',
     items: [
       ['tech-breathing', '느린 호흡'],
       ['tech-grounding', '감각 그라운딩'],
@@ -63,6 +66,7 @@ const SCREEN_GROUPS: { title: string; items: [id: string, label: string][] }[] =
       ['coupons', '붕어빵 쿠폰'],
       ['boutique', '부티크'],
       ['rate', '별점·리뷰'],
+      ['bgm', '배경 음악'],
       ['avatar-parts', '아바타 아이템 확인'],
       ['settings', '설정'],
     ],
@@ -158,7 +162,18 @@ export function AdminPage() {
   );
 }
 
-/** 관리자 화면의 틀 — 위쪽 메뉴, 오른쪽 위 계정, 환영 문구, 고른 화면 */
+const TAB_LABEL: Record<Tab, string> = {
+  preview: '처음 쓰는 사람처럼 보기',
+  screens: '화면 점검',
+  ops: '운영 현황',
+};
+
+/**
+ * 관리자 화면의 틀 (2026-11-27 개편)
+ * - 왼쪽 위: ≡ 를 누르면 왼쪽 서랍(Drawer)이 열린다 — 처음 쓰는 사람처럼 보기 · 화면 점검 · 운영 현황
+ * - 그 옆: 지금 어디에 있는지 브레드크럼 (퇴근길 붕어빵 한 입 › 화면 점검 › 기법 › 느린 호흡)
+ * - 오른쪽 위: 👑 + 프로필 + 관리자 계정
+ */
 function AdminShell({
   account,
   onLogout,
@@ -173,50 +188,82 @@ function AdminShell({
     const t = new URLSearchParams(window.location.search).get('tab');
     return t === 'screens' ? 'screens' : 'ops';
   });
+  const [drawer, setDrawer] = useState(false);
+  /** 화면 점검 — 고른 묶음(위쪽 탭)과 크게 본 화면 */
+  const [group, setGroup] = useState(0);
+  const [zoomId, setZoomId] = useState<string | null>(null);
 
   function pick(t: Tab) {
     setTab(t);
+    setZoomId(null);
+    setDrawer(false);
     if (demo) return;
     const q = new URLSearchParams(window.location.search);
     q.set('tab', t);
     window.history.replaceState(null, '', `?${q.toString()}`);
   }
 
+  // 서랍은 Esc 로 닫는다
+  useEffect(() => {
+    if (!drawer) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setDrawer(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [drawer]);
+
+  // 브레드크럼 — 누르면 그 단계로 돌아간다
+  const crumbs: { label: string; go?: () => void }[] = [
+    { label: '퇴근길 붕어빵 한 입', go: () => pick('ops') },
+    { label: TAB_LABEL[tab], go: () => pick(tab) },
+  ];
+  if (tab === 'screens') {
+    const g = SCREEN_GROUPS[group];
+    crumbs.push({ label: g.title, go: () => setZoomId(null) });
+    const z = zoomId ? g.items.find(([id]) => id === zoomId) : undefined;
+    if (z) crumbs.push({ label: z[1] });
+  }
+
+  const drawerItems: { tab: Tab; label: string; sub: string }[] = [
+    { tab: 'preview', label: '처음 쓰는 사람처럼 보기', sub: '온보딩 → 선택 가입 → 인트로' },
+    { tab: 'screens', label: '화면 점검', sub: '모든 화면을 묶음별로' },
+    { tab: 'ops', label: '운영 현황', sub: '가입자·백업·리뷰 숫자' },
+  ];
+
   return (
     <div className={`admin${demo ? ' admin-is-demo' : ''}`}>
       <header className="admin-top">
-        <b className="admin-brand">퇴근길 붕어빵 한 입</b>
+        <button
+          type="button"
+          className="admin-drawer-btn"
+          aria-label="관리자 메뉴 열기"
+          aria-expanded={drawer}
+          aria-controls="admin-drawer"
+          onClick={() => setDrawer(true)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
 
-        <nav className="admin-menu" aria-label="관리자 메뉴">
-          {/* 처음 쓰는 사람처럼 보기 — 실제 화면은 바로 온보딩으로 이동,
-              발표용 시트에서는 시트 안에서 화면이 바뀐다 */}
-          {demo ? (
-            <button
-              className={`admin-menu-item${tab === 'preview' ? ' is-on' : ''}`}
-              aria-current={tab === 'preview' ? 'page' : undefined}
-              onClick={() => pick('preview')}
-            >
-              처음 쓰는 사람처럼 보기
-            </button>
-          ) : (
-            <a className="admin-menu-item" href={`${base}?preview=start`}>
-              처음 쓰는 사람처럼 보기
-            </a>
-          )}
-          <button
-            className={`admin-menu-item${tab === 'screens' ? ' is-on' : ''}`}
-            aria-current={tab === 'screens' ? 'page' : undefined}
-            onClick={() => pick('screens')}
-          >
-            화면 점검
-          </button>
-          <button
-            className={`admin-menu-item${tab === 'ops' ? ' is-on' : ''}`}
-            aria-current={tab === 'ops' ? 'page' : undefined}
-            onClick={() => pick('ops')}
-          >
-            운영 현황
-          </button>
+        <nav className="admin-crumbs" aria-label="현재 위치">
+          <ol>
+            {crumbs.map((c, i) => {
+              const last = i === crumbs.length - 1;
+              return (
+                <li key={i}>
+                  {last || !c.go ? (
+                    <span aria-current={last ? 'page' : undefined}>{c.label}</span>
+                  ) : (
+                    <button type="button" onClick={c.go}>
+                      {c.label}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
         </nav>
 
         <div className="admin-account">
@@ -242,12 +289,85 @@ function AdminShell({
         </div>
       </header>
 
+      {/* 왼쪽 서랍 */}
+      <div
+        className={`admin-drawer-backdrop${drawer ? ' is-open' : ''}`}
+        onClick={() => setDrawer(false)}
+        aria-hidden="true"
+      />
+      <nav
+        id="admin-drawer"
+        className={`admin-drawer${drawer ? ' is-open' : ''}`}
+        aria-label="관리자 메뉴"
+        aria-hidden={!drawer}
+      >
+        <div className="admin-drawer-head">
+          <b>관리자 메뉴</b>
+          <button
+            type="button"
+            className="admin-drawer-close"
+            aria-label="메뉴 닫기"
+            tabIndex={drawer ? 0 : -1}
+            onClick={() => setDrawer(false)}
+          >
+            ✕
+          </button>
+        </div>
+        {drawerItems.map((it) =>
+          // 실제 관리자 화면의 '처음 쓰는 사람처럼 보기'는 온보딩부터 이어지는 미리보기 주소로 간다
+          it.tab === 'preview' && !demo ? (
+            <a
+              key={it.tab}
+              className="admin-drawer-item"
+              href={`${base}?preview=start`}
+              tabIndex={drawer ? 0 : -1}
+            >
+              <span>{it.label}</span>
+              <small>{it.sub}</small>
+            </a>
+          ) : (
+            <button
+              key={it.tab}
+              type="button"
+              className={`admin-drawer-item${tab === it.tab ? ' is-on' : ''}`}
+              aria-current={tab === it.tab ? 'page' : undefined}
+              tabIndex={drawer ? 0 : -1}
+              onClick={() => pick(it.tab)}
+            >
+              <span>{it.label}</span>
+              <small>{it.sub}</small>
+            </button>
+          ),
+        )}
+        {demo ? null : (
+          <p className="admin-drawer-links">
+            <a href={base} tabIndex={drawer ? 0 : -1}>
+              앱 열기
+            </a>
+            {' · '}
+            <a href={`${base}?screens=1`} tabIndex={drawer ? 0 : -1}>
+              발표용 화면
+            </a>
+          </p>
+        )}
+      </nav>
+
       <main className="admin-body">
         <p className="admin-welcome">관리자님, 환영합니다.</p>
 
         {tab === 'preview' ? <DemoPreview onDone={() => pick('ops')} /> : null}
 
-        {tab === 'screens' ? <ScreenCheckCard /> : null}
+        {tab === 'screens' ? (
+          <ScreenCheckCard
+            group={group}
+            onGroup={(g) => {
+              setGroup(g);
+              setZoomId(null);
+            }}
+            zoomId={zoomId}
+            onZoom={setZoomId}
+          />
+        ) : null}
 
         {tab === 'ops' ? (
           <section className="admin-card">
@@ -322,29 +442,222 @@ export function AdminDemoSheet() {
   );
 }
 
-/** 화면 점검 — 모든 화면을 하나씩 새 탭에서 연다. 저장된 기록·설정은 건드리지 않는다. */
-function ScreenCheckCard() {
+/** 화면 점검 썸네일 배율 — 390×780 휴대폰 화면을 이만큼 줄여 늘어놓는다 */
+const THUMB = 0.34;
+const PHONE_W = 390;
+const PHONE_H = 780;
+
+/**
+ * 화면 점검 (2026-11-27 개편).
+ * 위쪽 탭(처음·홈 / 체크인 흐름 / 기법 / 일기·메뉴)으로 묶음을 고르면 그 화면들이 작게 늘어선다.
+ * 하나를 누르면 그 자리에서 커지며(zoom transition) 가운데로 나오고, 그대로 눌러 볼 수 있다.
+ * 화면은 실제 앱을 작은 창(iframe, ?screens=<id>&bare=1)으로 띄운 것이다.
+ */
+function ScreenCheckCard({
+  group,
+  onGroup,
+  zoomId,
+  onZoom,
+}: {
+  group: number;
+  onGroup: (g: number) => void;
+  zoomId: string | null;
+  onZoom: (id: string | null) => void;
+}) {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [stageMin, setStageMin] = useState<number | undefined>(undefined);
+  const g = SCREEN_GROUPS[group];
+
+  // Esc 로 크게 본 화면을 닫는다
+  useEffect(() => {
+    if (!zoomId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onZoom(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [zoomId, onZoom]);
+
   return (
     <section className="admin-card">
       <h2>화면 점검</h2>
       <p className="muted">
-        화면 이름을 누르면 새 탭에서 그 화면만 열려요. 이 브라우저에 저장된 기록과 설정은
-        건드리지 않아요.
+        화면을 누르면 크게 열려요. 크게 연 화면은 실제 앱처럼 눌러 볼 수 있어요. 화면 안에서
+        저장하는 동작은 이 브라우저에 그대로 남아요.
       </p>
 
-      {SCREEN_GROUPS.map((g) => (
-        <div key={g.title} className="admin-group">
-          <h3>{g.title}</h3>
-          <div className="admin-links">
-            {g.items.map(([id, label]) => (
-              <a key={id} href={`${base}?screens=${id}`} target="_blank" rel="noreferrer">
-                {label}
-              </a>
-            ))}
-          </div>
+      <TabSwitch
+        className="admin-toptabs"
+        label="화면 묶음"
+        value={String(group)}
+        options={SCREEN_GROUPS.map((x, i) => ({ id: String(i), label: x.title }))}
+        onChange={(v) => onGroup(Number(v))}
+      />
+
+      <div className="scr-stage" ref={stageRef} style={{ minHeight: stageMin }}>
+        {zoomId ? (
+          <div className="scr-backdrop" onClick={() => onZoom(null)} aria-hidden="true" />
+        ) : null}
+        <div className="scr-grid" key={group}>
+          {g.items.map(([id, label]) => (
+            <ScreenThumb
+              key={id}
+              id={id}
+              label={label}
+              zoomed={zoomId === id}
+              stageRef={stageRef}
+              onOpen={() => onZoom(id)}
+              onClose={() => onZoom(null)}
+              onStageMin={setStageMin}
+            />
+          ))}
         </div>
-      ))}
+      </div>
     </section>
+  );
+}
+
+interface Geo {
+  left: number;
+  top: number;
+  w: number;
+  z: number;
+  /** 무대 너비 — 오른쪽에 도구를 둘 자리가 있는지 본다 */
+  sw: number;
+}
+
+function ScreenThumb({
+  id,
+  label,
+  zoomed,
+  stageRef,
+  onOpen,
+  onClose,
+  onStageMin,
+}: {
+  id: string;
+  label: string;
+  zoomed: boolean;
+  stageRef: RefObject<HTMLDivElement>;
+  onOpen: () => void;
+  onClose: () => void;
+  onStageMin: (h: number | undefined) => void;
+}) {
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [geo, setGeo] = useState<Geo | null>(null);
+  /** 썸네일 자리 (무대 기준) — 커질 때 출발점, 작아질 때 도착점 */
+  const fromRef = useRef<{ left: number; top: number; w: number } | null>(null);
+  const reduce =
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+  const shrinkTo = (g: Geo) => {
+    const fr = fromRef.current;
+    if (!fr) return 'none';
+    return `translate(${fr.left - g.left}px, ${fr.top - g.top}px) scale(${fr.w / g.w})`;
+  };
+
+  useLayoutEffect(() => {
+    const f = frameRef.current;
+    const stage = stageRef.current;
+    if (!f || !stage) return;
+
+    // 열기 — 지금 자리를 재 두고, 무대 가운데의 큰 자리로 옮긴 뒤 거꾸로 줄였다가 풀어 준다 (FLIP)
+    if (zoomed && !geo) {
+      fromRef.current = { left: f.offsetLeft, top: f.offsetTop, w: f.offsetWidth };
+      const sw = stage.clientWidth;
+      const z = Math.max(
+        0.5,
+        Math.min(1, (sw - 40) / PHONE_W, (window.innerHeight - 170) / PHONE_H),
+      );
+      const w = PHONE_W * z;
+      setGeo({ left: (sw - w) / 2, top: 8, w, z, sw });
+      onStageMin(8 + PHONE_H * z + 40);
+      return;
+    }
+
+    // 닫기 — 썸네일 자리로 줄어든 다음 제자리로
+    if (!zoomed && geo) {
+      const anim = f.animate([{ transform: 'none' }, { transform: shrinkTo(geo) }], {
+        duration: reduce ? 0 : 260,
+        easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        fill: 'forwards',
+      });
+      anim.onfinish = () => {
+        flushSync(() => {
+          setGeo(null);
+          onStageMin(undefined);
+        });
+        anim.cancel();
+      };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zoomed]);
+
+  // 큰 자리로 옮긴 직후 — 썸네일 크기에서 커지는 움직임
+  useLayoutEffect(() => {
+    const f = frameRef.current;
+    if (!f || !geo || !zoomed) return;
+    f.animate([{ transform: shrinkTo(geo) }, { transform: 'none' }], {
+      duration: reduce ? 0 : 340,
+      easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+    });
+    stageRef.current?.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [geo]);
+
+  const big = geo !== null;
+  return (
+    <div className="scr-item">
+      {/* 칸 크기를 잡아 두는 자리 — 화면이 커져 빠져나가도 목록이 무너지지 않는다 */}
+      <div className="scr-slot">
+        <div
+          ref={frameRef}
+          className={`scr-frame${big ? ' is-zoomed' : ''}`}
+          style={
+            big
+              ? { left: geo.left, top: geo.top, width: geo.w, height: PHONE_H * geo.z }
+              : undefined
+          }
+        >
+          <iframe
+            src={`${base}?screens=${id}&bare=1`}
+            title={label}
+            loading="lazy"
+            tabIndex={big ? 0 : -1}
+            style={{ transform: `scale(${big ? geo.z : THUMB})` }}
+          />
+          {big ? null : (
+            <button
+              type="button"
+              className="scr-hit"
+              onClick={onOpen}
+              aria-label={`${label} 크게 보기`}
+            />
+          )}
+        </div>
+      </div>
+      {big ? (
+        <div
+          className="scr-tools"
+          style={
+            // 오른쪽에 자리가 없으면 왼쪽 위에
+            geo.left + geo.w + 170 <= geo.sw
+              ? { left: geo.left + geo.w + 14, top: geo.top }
+              : { left: 0, top: geo.top }
+          }
+        >
+          <b>{label}</b>
+          <button type="button" className="btn admin-mini" onClick={onClose}>
+            ✕ 닫기
+          </button>
+          <a className="admin-mini-link" href={`${base}?screens=${id}`} target="_blank" rel="noreferrer">
+            새 탭에서 열기
+          </a>
+        </div>
+      ) : null}
+      <span className="scr-label">{label}</span>
+    </div>
   );
 }
 

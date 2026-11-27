@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { StampCard } from '../screens/CouponBook';
-import { UPDATE_LOG } from './updateLog';
-import type { Change } from './updateLog';
+import { UPDATE_LOG, screenTimeline } from './updateLog';
+import type { Change, ScreenLog } from './updateLog';
 
 /** 첫 번째 시트 — 앱 설명 */
 export function AboutSheet() {
@@ -46,8 +46,8 @@ export function AboutSheet() {
 
 /**
  * 업데이트 목록 시트 (2026-11-27).
- * 위 Select 로 카테고리를 고르면 그 화면들에서 무엇이 추가·수정·삭제됐는지 보인다.
- * 최종으로 정해진 것만 바로 보이고, 중간에 바뀐 과정은 스위치를 켜야 보인다.
+ * 위 Select 로 화면 묶음을 고르면 화면마다 **가장 최근에 바뀐 것 하나**가 보인다.
+ * 그동안 바뀐 것(다른 변경·중간 과정)은 스위치를 켜야 보인다.
  */
 export function UpdatesSheet() {
   const [catId, setCatId] = useState(UPDATE_LOG[0].id);
@@ -58,7 +58,7 @@ export function UpdatesSheet() {
     <div className="upd">
       <div className="upd-top">
         <label className="upd-select">
-          <span>카테고리</span>
+          <span>화면</span>
           <select value={catId} onChange={(e) => setCatId(e.target.value)}>
             {UPDATE_LOG.map((c) => (
               <option key={c.id} value={c.id}>
@@ -68,17 +68,12 @@ export function UpdatesSheet() {
           </select>
         </label>
         <span className="upd-count">
-          화면 {cat.screens.length}개 · 바뀐 것 {total}개 · 날짜는 최종 결정한 날
+          화면 {cat.screens.length}개 · 바뀐 것 {total}개 · 화면마다 가장 최근 것만 보여요
         </span>
       </div>
 
       {cat.screens.map((s) => (
-        <section key={`${cat.id}-${s.screen}`} className="upd-screen">
-          <h3>{s.screen}</h3>
-          {s.changes.map((c, i) => (
-            <UpdateItem key={i} change={c} />
-          ))}
-        </section>
+        <ScreenUpdates key={`${cat.id}-${s.screen}`} log={s} />
       ))}
     </div>
   );
@@ -90,44 +85,49 @@ const KIND_CLASS: Record<Change['kind'], string> = {
   삭제: 'upd-tag-remove',
 };
 
-function UpdateItem({ change }: { change: Change }) {
+/** 화면 하나 — 가장 최근 변경 + '그동안 바뀐 것' 스위치 */
+function ScreenUpdates({ log }: { log: ScreenLog }) {
   const [open, setOpen] = useState(false);
-  const history = change.history ?? [];
+  const { latest, past } = screenTimeline(log);
   return (
-    <div className="upd-item">
-      <div className="upd-item-row">
-        <span className={`upd-tag ${KIND_CLASS[change.kind]}`}>{change.kind}</span>
-        <span className="upd-text">{change.text}</span>
-        <span className="upd-date">{change.date}</span>
+    <section className="upd-screen">
+      <h3>{log.screen}</h3>
+      <div className="upd-item">
+        <div className="upd-item-row">
+          <span className={`upd-tag ${KIND_CLASS[latest.kind]}`}>{latest.kind}</span>
+          <span className="upd-text">{latest.text}</span>
+          <span className="upd-date">{latest.date}</span>
+        </div>
+        {past.length > 0 ? (
+          <>
+            <button
+              type="button"
+              className="upd-toggle"
+              role="switch"
+              aria-checked={open}
+              aria-expanded={open}
+              onClick={() => setOpen((o) => !o)}
+            >
+              <span className="upd-switch" aria-hidden="true" />
+              그동안 바뀐 것 {past.length}개 {open ? '숨기기' : '보기'}
+            </button>
+            {open ? (
+              <ol className="upd-history">
+                {past.map((p, i) => (
+                  <li key={i}>
+                    <span className="upd-date">{p.date}</span>
+                    {p.kind ? (
+                      <span className={`upd-tag upd-tag-sm ${KIND_CLASS[p.kind]}`}>{p.kind}</span>
+                    ) : null}
+                    {p.text}
+                  </li>
+                ))}
+              </ol>
+            ) : null}
+          </>
+        ) : null}
       </div>
-      {history.length > 0 ? (
-        <>
-          <button
-            type="button"
-            className="upd-toggle"
-            aria-expanded={open}
-            onClick={() => setOpen((o) => !o)}
-          >
-            <span className="upd-switch" aria-hidden="true" />
-            중간에 바뀐 과정 {open ? '숨기기' : '보기'}
-          </button>
-          {open ? (
-            <ol className="upd-history">
-              {history.map((h, i) => (
-                <li key={i}>
-                  <span className="upd-date">{h.date}</span>
-                  {h.text}
-                </li>
-              ))}
-              <li>
-                <span className="upd-date">{change.date}</span>
-                <b>최종</b> — {change.text}
-              </li>
-            </ol>
-          ) : null}
-        </>
-      ) : null}
-    </div>
+    </section>
   );
 }
 

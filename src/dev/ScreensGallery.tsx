@@ -8,6 +8,7 @@ import { Journal } from '../screens/Journal';
 import { CouponBook } from '../screens/CouponBook';
 import { Boutique } from '../screens/Boutique';
 import { RateApp } from '../screens/RateApp';
+import { BgmSettings } from '../screens/BgmSettings';
 import { AvatarParts } from './AvatarParts';
 import { AboutSheet, UpdatesSheet } from './PresentSheets';
 import { AdminDemoSheet } from './AdminPage';
@@ -236,7 +237,7 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       id: 'closing',
       label: '종결 의례',
       spec: '8.7',
-      render: () => <ClosingRitual onReady={noop} onMore={noop} onBack={noop} />,
+      render: () => <ClosingRitual onReady={noop} onMore={noop} onBack={noop} coach="always" />,
     },
     {
       id: 'closing-ask',
@@ -339,6 +340,15 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       ),
     },
     {
+      id: 'bgm',
+      label: '배경 음악',
+      render: () => (
+        <DemoTabs active="bgm">
+          <BgmSettings onBack={noop} />
+        </DemoTabs>
+      ),
+    },
+    {
       id: 'avatar-parts',
       label: '아바타 — 아이템 확인용',
       spec: '8.8',
@@ -370,6 +380,11 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
   const params = new URLSearchParams(window.location.search);
   const only = params.get('screens');
   const single = only ? byId.get(only) : undefined;
+
+  // &bare=1 — 화면만 꽉 채워 띄운다 (관리자 화면 점검의 작은 창, 2026-11-27)
+  if (single && params.has('bare')) {
+    return <div className="gal-bare">{single.render()}</div>;
+  }
 
   // 낮/저녁 버튼은 뺐다 (차이가 거의 보이지 않아서). 주소에 &time=9 / &time=18 은 그대로 먹는다.
   if (single) {
@@ -413,7 +428,7 @@ const SHEETS: Sheet[] = [
   {
     title: '메뉴',
     kind: 'row',
-    ids: ['summary', 'review', 'calendar', 'coupons', 'rate', 'settings'],
+    ids: ['summary', 'review', 'calendar', 'coupons', 'rate', 'bgm', 'settings'],
   },
   { title: '아바타 꾸미기', kind: 'row', ids: ['boutique', 'avatar-parts'] },
   { title: '관리자 화면', kind: 'admin' },

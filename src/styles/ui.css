@@ -1196,3 +1196,690 @@
 .account-notice-list li + li {
   margin-top: 4px;
 }
+
+/* 그동안 바뀐 것 목록 안의 작은 추가·수정·삭제 표시 */
+.upd-tag.upd-tag-sm {
+  display: inline-block;
+  margin: 0 6px 0 0;
+  padding: 0 6px;
+  font-size: 0.6875rem;
+  vertical-align: 1px;
+}
+
+/* --- 스위치 (2026-11-27) --- */
+.ui-switch {
+  position: relative;
+  flex: none;
+  width: 54px;
+  height: 32px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1.5px solid var(--btn-edge);
+  background: var(--surface-alt);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.ui-switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 3px rgba(60, 45, 30, 0.3);
+  transition: transform 0.22s cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+
+.ui-switch.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.ui-switch.is-on .ui-switch-knob {
+  transform: translateX(22px);
+}
+
+.ui-switch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.ui-switch:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* --- 슬라이더 (2026-11-27) — 채운 쪽은 진하게 --- */
+.ui-slider {
+  --pct: 50%;
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  margin: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.ui-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent) var(--pct), var(--surface-alt) var(--pct));
+  border: 1px solid var(--border);
+}
+
+.ui-slider::-moz-range-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent) var(--pct), var(--surface-alt) var(--pct));
+  border: 1px solid var(--border);
+}
+
+.ui-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  margin-top: -9px;
+  border-radius: 50%;
+  background: var(--btn-bg);
+  border: 2px solid var(--accent);
+  box-shadow: 0 2px 4px rgba(60, 45, 30, 0.25);
+}
+
+.ui-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--btn-bg);
+  border: 2px solid var(--accent);
+}
+
+.ui-slider:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ui-slider:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+/* --- 배경 음악 화면 --- */
+.bgm-card {
+  display: grid;
+  gap: 10px;
+}
+
+.bgm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bgm-label {
+  display: grid;
+  font-weight: 700;
+}
+
+.bgm-label small {
+  font-weight: 400;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.bgm-volume {
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+
+.bgm-volume.is-off {
+  opacity: 0.55;
+}
+
+.bgm-volume-num {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.bgm-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bgm-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bgm-note {
+  margin-top: 4px;
+  font-size: 0.875rem;
+}
+
+/* --- 종결 의례 — 두 번 톡톡 (2026-11-27) --- */
+/* 첫 번째 누름: 쿠폰이 살짝 눌렸다 올라온다 */
+.coupon.is-tapped {
+  animation: coupon-tap 0.22s ease;
+}
+
+@keyframes coupon-tap {
+  50% {
+    transform: scale(0.97);
+  }
+}
+
+/* --- 코치 마크 --- */
+.coach {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  overflow: hidden;
+  cursor: pointer;
+  animation: coach-in 0.25s ease;
+}
+
+@keyframes coach-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* 쿠폰 자리만 뚫고 나머지를 어둡게 */
+.coach-spot {
+  position: absolute;
+  border-radius: 26px;
+  box-shadow:
+    0 0 0 3px rgba(255, 247, 232, 0.9),
+    0 0 0 9999px rgba(38, 28, 18, 0.62);
+  pointer-events: none;
+}
+
+.coach-hand {
+  position: absolute;
+  width: 44px;
+  height: 52px;
+  pointer-events: none;
+  animation: coach-tap 1.6s ease-in-out infinite;
+}
+
+.coach-hand svg {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  fill: #fffaf0;
+  stroke: #3b3228;
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* 손끝 아래 동그라미가 두 번 퍼진다 */
+.coach-ripple {
+  position: absolute;
+  top: -10px;
+  left: -2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid #f8e08e;
+  opacity: 0;
+  animation: coach-ripple 1.6s ease-out infinite;
+}
+
+@keyframes coach-tap {
+  0%, 100% { transform: translateY(0); }
+  10% { transform: translateY(5px) scale(0.95); }
+  20% { transform: translateY(0); }
+  30% { transform: translateY(5px) scale(0.95); }
+  40% { transform: translateY(0); }
+}
+
+@keyframes coach-ripple {
+  0% { opacity: 0; transform: scale(0.4); }
+  10% { opacity: 1; transform: scale(0.6); }
+  22% { opacity: 0; transform: scale(1.6); }
+  30% { opacity: 1; transform: scale(0.6); }
+  42% { opacity: 0; transform: scale(1.6); }
+  100% { opacity: 0; }
+}
+
+.coach-bubble {
+  position: absolute;
+  left: 50%;
+  width: min(300px, calc(100% - 40px));
+  transform: translateX(-50%);
+  padding: 16px 18px 14px;
+  border-radius: 18px;
+  background: var(--btn-bg);
+  border: 1.5px solid var(--btn-edge);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  cursor: default;
+}
+
+.coach-bubble::before {
+  content: '';
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  margin-left: -9px;
+  border: 9px solid transparent;
+  border-top: 0;
+  border-bottom-color: var(--btn-edge);
+}
+
+.coach-title {
+  margin: 0 0 2px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.coach-text {
+  margin: 0 0 12px;
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+
+.btn.coach-ok {
+  margin-top: 0;
+  padding: 10px 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coupon.is-tapped,
+  .coach,
+  .coach-hand,
+  .coach-ripple {
+    animation: none;
+  }
+}
+
+/* =================================================================== */
+/* 관리자 화면 개편 (2026-11-27) — 서랍 · 브레드크럼 · 화면 점검 탭과 확대     */
+/* =================================================================== */
+
+.gal-bare {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.admin {
+  position: relative;
+}
+
+.admin-top {
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+
+/* ≡ 서랍 열기 */
+.admin-drawer-btn {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0;
+  border-radius: 12px;
+  border: 1.5px solid var(--btn-edge);
+  background: var(--btn-bg);
+  box-shadow: 0 3px 0 var(--btn-ledge);
+  cursor: pointer;
+}
+
+.admin-drawer-btn span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--text);
+}
+
+.admin-drawer-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 브레드크럼 */
+.admin-crumbs {
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9375rem;
+}
+
+.admin-crumbs li {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.admin-crumbs li + li::before {
+  content: '›';
+  margin: 0 8px;
+  color: var(--text-muted);
+  font-size: 1.125rem;
+}
+
+.admin-crumbs button {
+  padding: 4px 6px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.admin-crumbs button:hover {
+  background: var(--surface-alt);
+  color: var(--text);
+}
+
+.admin-crumbs li:first-child button {
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.admin-crumbs [aria-current='page'] {
+  padding: 4px 6px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* 왼쪽 서랍 */
+.admin-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(40, 30, 20, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.admin-drawer-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.admin-drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 61;
+  width: 280px;
+  max-width: 85%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 14px;
+  background: var(--surface);
+  border-right: 1.5px solid var(--border);
+  box-shadow: 8px 0 24px rgba(50, 35, 20, 0.18);
+  transform: translateX(-105%);
+  transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+  visibility: hidden;
+}
+
+.admin-drawer.is-open {
+  transform: none;
+  visibility: visible;
+}
+
+/* 발표용 시트 안에서는 관리자 틀 안에만 */
+.admin-is-demo .admin-drawer,
+.admin-is-demo .admin-drawer-backdrop {
+  position: absolute;
+}
+
+.admin-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+
+.admin-drawer-close {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.admin-drawer-close:hover {
+  background: var(--surface-alt);
+}
+
+.admin-drawer-item {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 14px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.admin-drawer-item span {
+  font-weight: 700;
+}
+
+.admin-drawer-item small {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.admin-drawer-item:hover {
+  background: var(--surface-alt);
+}
+
+.admin-drawer-item.is-on {
+  background: var(--sign-bg);
+  color: var(--sign-text);
+}
+
+.admin-drawer-item.is-on small {
+  color: var(--sign-text);
+  opacity: 0.85;
+}
+
+.admin-drawer-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.admin-drawer-links {
+  margin-top: auto;
+  padding: 10px 8px 0;
+  border-top: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+
+/* 화면 점검 — 위쪽 탭 (밑줄이 미끄러진다) */
+.tabsw.admin-toptabs {
+  margin: 6px 0 16px;
+  padding: 0;
+  border-bottom: 1.5px solid var(--border);
+  gap: 0;
+}
+
+.admin-toptabs .tabsw-ind {
+  top: auto;
+  bottom: -1.5px;
+  height: 3px;
+  border: none;
+  border-radius: 3px 3px 0 0;
+  background: var(--accent);
+  box-shadow: none;
+}
+
+.admin-toptabs .tabsw-tab {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.admin-toptabs .tabsw-tab[aria-selected='true'] {
+  color: var(--accent);
+}
+
+/* 화면 점검 — 썸네일과 확대 */
+.scr-stage {
+  position: relative;
+  transition: min-height 0.2s ease;
+}
+
+.scr-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 16px;
+  animation: panel-from-right 0.25s ease;
+}
+
+.scr-item {
+  width: calc(390px * 0.34);
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
+
+.scr-slot {
+  width: calc(390px * 0.34);
+  height: calc(780px * 0.34);
+}
+
+.scr-frame {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  box-shadow: 0 3px 0 var(--btn-ledge);
+  transform-origin: 0 0;
+}
+
+.scr-frame iframe {
+  display: block;
+  width: 390px;
+  height: 780px;
+  border: none;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* 썸네일 전체를 누를 수 있게 덮는 투명 단추 */
+.scr-frame {
+  position: relative;
+}
+
+.scr-frame:not(.is-zoomed) {
+  position: relative;
+}
+
+.scr-hit {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.scr-hit:hover {
+  background: rgba(58, 98, 121, 0.08);
+}
+
+.scr-hit:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+  border-radius: 14px;
+}
+
+.scr-frame.is-zoomed {
+  position: absolute;
+  z-index: 5;
+  border-radius: 22px;
+  box-shadow: 0 18px 40px rgba(40, 28, 15, 0.3);
+}
+
+.scr-frame.is-zoomed iframe {
+  pointer-events: auto;
+}
+
+.scr-backdrop {
+  position: absolute;
+  inset: -8px;
+  z-index: 4;
+  border-radius: 16px;
+  background: rgba(244, 236, 224, 0.92);
+  cursor: zoom-out;
+  animation: coach-in 0.2s ease;
+}
+
+.scr-tools {
+  position: absolute;
+  z-index: 6;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  animation: coach-in 0.3s 0.15s ease both;
+}
+
+.scr-tools b {
+  font-size: 1.0625rem;
+}
+
+.admin-mini-link {
+  font-size: 0.875rem;
+}
+
+.scr-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.35;
+}

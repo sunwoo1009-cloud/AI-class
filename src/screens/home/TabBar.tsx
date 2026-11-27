@@ -12,13 +12,15 @@ export type TabTarget =
   | 'coupons'
   | 'boutique'
   | 'rate'
-  | 'settings';
+  | 'settings'
+  | 'bgm';
 
 /** '더보기' 안에 든 화면 */
 const MORE: { id: TabTarget; label: string; sub: string }[] = [
   { id: 'review', label: '돌아보기', sub: '나아지고 있나' },
   { id: 'boutique', label: '부티크', sub: '도장으로 직장인 꾸미기' },
   { id: 'rate', label: '별점·리뷰', sub: '이 앱 어땠나요' },
+  { id: 'bgm', label: '배경 음악', sub: '켜기·끄기, 음량' },
   { id: 'settings', label: '설정', sub: '백업·가입·데이터' },
 ];
 

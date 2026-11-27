@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { CSSProperties, KeyboardEvent, RefObject } from 'react';
+import { DOUBLE_TAP_MS, isDoubleTap } from '../lib/doubleTap';
+import type { Tap } from '../lib/doubleTap';
 import { TECHNIQUE_LABELS } from '../constants';
 import { couponView, STAMPS_PER_CARD } from '../lib/coupon';
 import type { CouponView } from '../lib/coupon';
@@ -8,7 +10,24 @@ import { TAIYAKI_BODY, TAIYAKI_TAIL } from './menu/FoodIcon';
 import type { TechniqueId } from '../types';
 import { BackButton } from '../components/ui';
 
-const HOLD_MS = 3000;
+/** 두 번 누른 뒤 도장이 찍히는 움직임 길이 (2026-11-27 — 전에는 3초 길게 누르기) */
+const STAMP_MS = 450;
+
+const COACH_KEY = 'cbd:coachStamp';
+function coachSeen(): boolean {
+  try {
+    return localStorage.getItem(COACH_KEY) === '1';
+  } catch {
+    return true;
+  }
+}
+function markCoachSeen() {
+  try {
+    localStorage.setItem(COACH_KEY, '1');
+  } catch {
+    // 저장이 막혀도 이번에는 닫힌다
+  }
+}
 
 /** bye — '괜찮아요'를 누른 뒤 인사 화면. 여기서 홈으로 가야 기록(ready)이 끝난다. */
 export type ClosingPhase = 'breath' | 'hold' | 'closed' | 'ask' | 'bye';
@@ -28,6 +47,10 @@ interface Props {
   alreadyStamped?: boolean;
   /** 도장을 찍은 순간 */
   onStamped?: () => void;
+  /**
+   * '두 번 톡톡' 코치 마크 — auto: 이 기기에서 처음 한 번만, always: 매번(발표용), never: 띄우지 않음
+   */
+  coach?: 'auto' | 'always' | 'never';
 }
 
 /** 명세 8.7 / 9절 화면 8 — 모든 경로가 마지막에 거친다 */
@@ -38,6 +61,7 @@ export function ClosingRitual({
   onBack,
   alreadyStamped = false,
   onStamped,
+  coach = 'auto',
 }: Props) {
   const [phase, setPhase] = useState<Phase>(alreadyStamped ? 'ask' : initialPhase);
   const [progress, setProgress] = useState(0);
@@ -82,11 +106,12 @@ export function ClosingRitual({
     rafRef.current = null;
   }
 
-  function startHold() {
-    if (phase !== 'hold') return;
+  /** 두 번 누르면 도장이 쿵 — 짧게 찍히는 움직임을 보여준 뒤 닫는다 */
+  function stamp() {
+    if (phase !== 'hold' || timerRef.current !== null) return;
     const started = Date.now();
     const tick = () => {
-      const ratio = Math.min((Date.now() - started) / HOLD_MS, 1);
+      const ratio = Math.min((Date.now() - started) / STAMP_MS, 1);
       setProgress(ratio);
       if (ratio < 1) rafRef.current = requestAnimationFrame(tick);
     };
@@ -95,7 +120,7 @@ export function ClosingRitual({
       clearHold();
       setProgress(1);
       setPhase('closed');
-    }, HOLD_MS);
+    }, STAMP_MS);
   }
 
   function cancelHold() {
@@ -105,16 +130,47 @@ export function ClosingRitual({
 
   useEffect(() => clearHold, []);
 
-  // 포인터뿐 아니라 키보드로도 누를 수 있어야 한다
+  // 첫 번째 누름 — 쿠폰이 살짝 눌리고, 바로 한 번 더 누르면 찍힌다 (명세 8.7, 2026-11-27)
+  const lastTapRef = useRef<Tap | null>(null);
+  const [tapped, setTapped] = useState(false);
+  function onTap(x: number, y: number) {
+    if (phase !== 'hold') return;
+    const cur = { t: Date.now(), x, y };
+    if (isDoubleTap(lastTapRef.current, cur)) {
+      lastTapRef.current = null;
+      setTapped(false);
+      stamp();
+      return;
+    }
+    lastTapRef.current = cur;
+    setTapped(true);
+    window.setTimeout(() => setTapped(false), DOUBLE_TAP_MS);
+  }
+
+  // 키보드 — Enter·Space 를 두 번 (같은 자리로 본다)
   function onKeyDown(e: KeyboardEvent) {
     if (e.key !== ' ' && e.key !== 'Enter') return;
     e.preventDefault();
     if (e.repeat) return;
-    startHold();
+    onTap(0, 0);
   }
 
+  // 코치 마크 — 처음 도장 화면에서 '두 번 톡톡'을 알려준다
+  const [coachOn, setCoachOn] = useState(false);
+  useEffect(() => {
+    if (phase !== 'hold') return;
+    if (coach === 'always' || (coach === 'auto' && !coachSeen())) setCoachOn(true);
+  }, [phase, coach]);
+  function closeCoach() {
+    setCoachOn(false);
+    markCoachSeen();
+  }
+
+  const appRef = useRef<HTMLDivElement>(null);
+  const couponRef = useRef<HTMLDivElement>(null);
+
   return (
-    <div className="app app-paper">
+    <div className="app app-paper" ref={appRef}>
       <div className="topbar">
         {/* 인사 화면에서는 마무리 질문으로, 그 앞은 체크인 흐름의 앞 단계로 */}
         {phase === 'bye' ? (
@@ -145,14 +201,11 @@ export function ClosingRitual({
               view={view}
               progress={progress}
               stamped={stamped}
+              tapped={tapped}
+              cardRef={couponRef}
               press={{
-                onPointerDown: startHold,
-                onPointerUp: cancelHold,
-                onPointerLeave: cancelHold,
-                onPointerCancel: cancelHold,
+                onPointerUp: (e: PointerEvent) => onTap(e.clientX, e.clientY),
                 onKeyDown,
-                onKeyUp: cancelHold,
-                onBlur: cancelHold,
               }}
             />
 
@@ -161,6 +214,10 @@ export function ClosingRitual({
             ) : null}
           </div>
         </div>
+      ) : null}
+
+      {coachOn && phase === 'hold' ? (
+        <CoachMark appRef={appRef} targetRef={couponRef} onClose={closeCoach} />
       ) : null}
 
       {phase === 'ask' ? (
@@ -215,7 +272,7 @@ export function ClosingRitual({
 /**
  * 붕어빵 쿠폰 한 장. 다섯 칸씩 두 줄.
  *
- * press 가 있으면 길게 눌러 도장을 찍을 수 있고, 없으면 보기만 한다.
+ * press 가 있으면 두 번 톡톡 눌러 도장을 찍을 수 있고, 없으면 보기만 한다.
  * 마무리 질문 화면에서도 방금 찍은 쿠폰을 그대로 보여주려고 따로 뺐다.
  */
 function CouponCard({
@@ -223,24 +280,30 @@ function CouponCard({
   progress,
   stamped,
   press,
+  tapped = false,
+  cardRef,
 }: {
   view: CouponView;
   progress: number;
   stamped: boolean;
   press?: Record<string, unknown>;
+  /** 첫 번째 누름을 받았는가 — 쿠폰이 살짝 눌린다 */
+  tapped?: boolean;
+  cardRef?: RefObject<HTMLDivElement>;
 }) {
   return (
     <>
       <div
+        ref={cardRef}
         className={`coupon${stamped ? ' is-stamped' : ''}${
           press ? '' : ' is-static'
-        }`}
+        }${tapped ? ' is-tapped' : ''}`}
         {...press}
         role={press ? 'button' : undefined}
         tabIndex={press && !stamped ? 0 : undefined}
         aria-label={
           press
-            ? `붕어빵 쿠폰. 도장 ${view.filled}개. 3초 동안 길게 눌러 도장을 찍으세요`
+            ? `붕어빵 쿠폰. 도장 ${view.filled}개. 두 번 연달아 눌러 도장을 찍으세요`
             : `붕어빵 쿠폰. 도장 ${view.filled}개`
         }
       >
@@ -284,7 +347,9 @@ function CouponCard({
             ? '쿠폰 한 장을 다 채웠어요'
             : stamped
               ? '찍었어요'
-              : '쿠폰을 3초 길게 누르기'}
+              : tapped
+                ? '한 번 더!'
+                : '쿠폰을 두 번 톡톡 누르기'}
         </p>
       </div>
 
@@ -292,6 +357,95 @@ function CouponCard({
         도장 {view.total}개 · 모은 쿠폰 {view.cards}장
       </p>
     </>
+  );
+}
+
+/**
+ * 코치 마크 (2026-11-27) — 쿠폰만 밝게 남기고 나머지를 어둡게 덮은 뒤
+ * "두 번 톡톡 누르면 도장이 찍혀요"를 알려준다. 아무 데나 누르거나 '알겠어요'로 닫는다.
+ * 화면(.app) 안에 겹쳐 그려서 발표용 틀 안에서도 제자리에 뜬다.
+ */
+function CoachMark({
+  appRef,
+  targetRef,
+  onClose,
+}: {
+  appRef: RefObject<HTMLDivElement>;
+  targetRef: RefObject<HTMLDivElement>;
+  onClose: () => void;
+}) {
+  const [box, setBox] = useState<{ top: number; left: number; width: number; height: number } | null>(
+    null,
+  );
+
+  useLayoutEffect(() => {
+    const place = () => {
+      const app = appRef.current;
+      const target = targetRef.current;
+      if (!app || !target) return;
+      const a = app.getBoundingClientRect();
+      const t = target.getBoundingClientRect();
+      setBox({ top: t.top - a.top, left: t.left - a.left, width: t.width, height: t.height });
+    };
+    place();
+    window.addEventListener('resize', place);
+    return () => window.removeEventListener('resize', place);
+  }, [appRef, targetRef]);
+
+  useEffect(() => {
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  // 키보드로 바로 닫을 수 있게 '알겠어요'에 초점 — 발표 화면이 튀지 않게 스크롤은 하지 않는다
+  const okRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    okRef.current?.focus({ preventScroll: true });
+  }, [box !== null]);
+
+  if (!box) return null;
+  const pad = 10;
+  return (
+    <div className="coach" role="dialog" aria-modal="true" aria-label="도장 찍는 법" onClick={onClose}>
+      <div
+        className="coach-spot"
+        style={{
+          top: box.top - pad,
+          left: box.left - pad,
+          width: box.width + pad * 2,
+          height: box.height + pad * 2,
+        }}
+      />
+      {/* 쿠폰 가운데에서 손가락이 두 번 톡톡 */}
+      <div
+        className="coach-hand"
+        aria-hidden="true"
+        style={{ top: box.top + box.height / 2 - 6, left: box.left + box.width / 2 - 14 }}
+      >
+        <span className="coach-ripple" />
+        <svg viewBox="0 0 48 56" focusable="false">
+          <path d="M18 30 V9 a4 4 0 0 1 8 0 V24 l1-1 a4 4 0 0 1 7 2 l1-1 a4 4 0 0 1 7 2 V38 c0 9-6 15-14 15 h-2 c-6 0-9-3-12-8 L8 36 a4 4 0 0 1 6-5 Z" />
+        </svg>
+      </div>
+      <div className="coach-bubble" style={{ top: box.top + box.height + pad + 16 }}>
+        <p className="coach-title">쿠폰을 두 번 톡톡!</p>
+        <p className="coach-text">두 번 연달아 누르면 도장이 찍혀요</p>
+        <button
+          type="button"
+          className="btn btn-primary coach-ok"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          ref={okRef}
+        >
+          알겠어요
+        </button>
+      </div>
+    </div>
   );
 }
 

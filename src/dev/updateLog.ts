@@ -280,6 +280,17 @@ export const UPDATE_LOG: CategoryLog[] = [
             history: [{ date: '처음', text: '"준비됐어요" / "조금 더 시간이 필요해요"' }],
           },
           { kind: '추가', date: '11-24', text: '"괜찮아요"를 누르면 "오늘 하루도 수고했어요" 화면' },
+          {
+            kind: '수정',
+            date: '11-27',
+            text: '쿠폰을 두 번 톡톡(더블 탭) 누르면 도장이 찍혀요',
+            history: [{ date: '처음', text: '쿠폰을 3초 길게 눌러야 도장이 찍혔어요' }],
+          },
+          {
+            kind: '추가',
+            date: '11-27',
+            text: '처음 도장 화면에서 코치 마크 — 쿠폰만 밝게 남기고 "쿠폰을 두 번 톡톡!"을 알려줘요',
+          },
         ],
       },
     ],
@@ -369,6 +380,16 @@ export const UPDATE_LOG: CategoryLog[] = [
         ],
       },
       {
+        screen: '배경 음악',
+        changes: [
+          {
+            kind: '추가',
+            date: '11-27',
+            text: '더보기 → 배경 음악 화면: 음악 켜기·끄기 스위치와 음량 슬라이더. 앱을 열고 처음 누르면 음악이 나와요',
+          },
+        ],
+      },
+      {
         screen: '설정',
         changes: [
           { kind: '삭제', date: '11-25', text: '부를 이름 칸 (닉네임은 가입할 때 정해요)' },
@@ -450,6 +471,18 @@ export const UPDATE_LOG: CategoryLog[] = [
             text: '왼쪽 위 제목은 "퇴근길 붕어빵 한 입", 화면의 "운영자"는 모두 "관리자"로',
             history: [{ date: '11-25', text: '제목이 "운영자 화면"이었어요' }],
           },
+          {
+            kind: '수정',
+            date: '11-27',
+            text: '메뉴를 왼쪽 서랍(≡)으로, 왼쪽 위에 지금 위치 브레드크럼(퇴근길 붕어빵 한 입 › 화면 점검 › 기법 › 느린 호흡)',
+            history: [{ date: '11-25', text: '위쪽에 메뉴 버튼 세 개가 늘어서 있었어요' }],
+          },
+          {
+            kind: '수정',
+            date: '11-27',
+            text: '화면 점검: 위쪽 탭(처음·홈 / 체크인 흐름 / 기법 / 일기·메뉴)에 화면들이 작게 늘어서고, 누르면 그 자리에서 커지며 열려요(줌 전환)',
+            history: [{ date: '11-25', text: '화면 이름 목록을 누르면 새 탭에서 열렸어요' }],
+          },
         ],
       },
       {
@@ -525,3 +558,41 @@ export const UPDATE_LOG: CategoryLog[] = [
     ],
   },
 ];
+
+/* ------------------------------------------------------------------ */
+/* 화면 하나의 바뀐 것 정리 (2026-11-27)                                   */
+/* 가장 최근에 바뀐 것 하나만 바로 보이고, 나머지는 스위치를 켜야 보인다. */
+
+/** '처음' 은 가장 오래된 것으로 친다 */
+function dateRank(date: string): number {
+  const m = /^(\d{2})-(\d{2})$/.exec(date);
+  return m ? Number(m[1]) * 100 + Number(m[2]) : -1;
+}
+
+export interface PastEntry {
+  date: string;
+  text: string;
+  /** 따로 적힌 변경이면 추가·수정·삭제, 중간 과정이면 없음 */
+  kind?: ChangeKind;
+}
+
+/**
+ * - latest: 날짜가 가장 늦은 변경. 같은 날이면 목록에서 뒤에 적힌 것(나중에 한 것)
+ * - past: 그 밖의 변경과 모든 중간 과정을 최근 것부터
+ */
+export function screenTimeline(s: ScreenLog): { latest: Change; past: PastEntry[] } {
+  let latestIndex = 0;
+  s.changes.forEach((c, i) => {
+    if (dateRank(c.date) >= dateRank(s.changes[latestIndex].date)) latestIndex = i;
+  });
+  const latest = s.changes[latestIndex];
+
+  const past: (PastEntry & { order: number })[] = [];
+  let order = 0;
+  s.changes.forEach((c, i) => {
+    for (const h of c.history ?? []) past.push({ date: h.date, text: h.text, order: order++ });
+    if (i !== latestIndex) past.push({ date: c.date, text: c.text, kind: c.kind, order: order++ });
+  });
+  past.sort((a, b) => dateRank(b.date) - dateRank(a.date) || b.order - a.order);
+  return { latest, past: past.map(({ order: _o, ...rest }) => rest) };
+}
