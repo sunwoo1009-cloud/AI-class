@@ -1,5 +1,9 @@
 import { sanitizeCloset, stampBalance } from '../lib/boutique';
 import type { Closet } from '../lib/boutique';
+import { sanitizeCaseLog } from '../lib/caseMix';
+import type { CaseEntry } from '../lib/caseMix';
+import { sanitizePulse } from '../lib/pulse';
+import type { PulseCheck } from '../lib/pulse';
 import type {
   CheckIn,
   JournalEntry,
@@ -25,6 +29,11 @@ export const KEYS = {
   stamps: `${PREFIX}stampTotal`,
   lastExport: `${PREFIX}lastExportAt`,
   closet: `${PREFIX}closet`,
+  /** 마이페이지 (2026-11-27) — 사례 종류 기록, 2주 점검, 외상 비중 알림을 닫은 시각, 캘린더 연동 */
+  caseLog: `${PREFIX}caseLog`,
+  pulse: `${PREFIX}pulse`,
+  traumaSnoozeAt: `${PREFIX}traumaSnoozeAt`,
+  calLink: `${PREFIX}calLink`,
 } as const;
 
 /**
@@ -190,6 +199,45 @@ export function loadStampBalance(): number {
 /** 가져오기로 도장 수를 옮길 때 쓴다 */
 export function saveStampTotal(n: number): void {
   write(KEYS.stamps, Math.max(0, Math.floor(n)));
+}
+
+// --- 마이페이지 (2026-11-27) ---
+
+/** 사례 종류 기록 — 날짜·종류·횟수만 */
+export function loadCaseLog(): CaseEntry[] {
+  return sanitizeCaseLog(read<unknown>(KEYS.caseLog, []));
+}
+
+export function saveCaseLog(log: CaseEntry[]): void {
+  write(KEYS.caseLog, log);
+}
+
+export function loadTraumaSnoozeAt(): string | null {
+  return read<string | null>(KEYS.traumaSnoozeAt, null);
+}
+
+export function saveTraumaSnoozeAt(iso: string): void {
+  write(KEYS.traumaSnoozeAt, iso);
+}
+
+/** 2주 점검 기록 — 오래된 것부터 */
+export function loadPulse(): PulseCheck[] {
+  return sanitizePulse(read<unknown>(KEYS.pulse, []));
+}
+
+export function addPulse(check: PulseCheck): PulseCheck[] {
+  const next = [...loadPulse(), check];
+  write(KEYS.pulse, next);
+  return next;
+}
+
+/** 캘린더 연동 상태 (lib/calendarLink.ts 가 모양을 정한다) */
+export function readCalLinkRaw(): unknown {
+  return read<unknown>(KEYS.calLink, null);
+}
+
+export function writeCalLinkRaw(v: unknown): void {
+  write(KEYS.calLink, v);
 }
 
 // --- 백업 (명세 7.6) ---

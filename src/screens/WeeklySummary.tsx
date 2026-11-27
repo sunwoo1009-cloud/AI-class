@@ -32,7 +32,7 @@ export function WeeklySummary({ onBack }: Props) {
   return (
     <div className="app">
       <div className="topbar">
-        <BackButton onClick={onBack} label="홈으로" />
+        <BackButton onClick={onBack} label="마이페이지로" />
         <span className="topbar-title">최근 7일</span>
       </div>
 

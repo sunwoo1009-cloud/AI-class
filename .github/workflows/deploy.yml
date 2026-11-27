@@ -41,6 +41,9 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          # 캘린더 앱 연동(명세 7.12) — 구글 OAuth 클라이언트 ID. 비밀값이 아니라 저장소 Variables 에 둔다.
+          # 비어 있으면 연동 화면만 '준비 중'으로 나온다.
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
 
       - uses: actions/configure-pages@v5
 

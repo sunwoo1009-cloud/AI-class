@@ -21,7 +21,7 @@ export function CouponBook({ onBack }: Props) {
   return (
     <div className="app app-paper">
       <div className="topbar">
-        <BackButton onClick={onBack} label="홈으로" />
+        <BackButton onClick={onBack} label="마이페이지로" />
         <span className="topbar-title">붕어빵 쿠폰</span>
       </div>
 

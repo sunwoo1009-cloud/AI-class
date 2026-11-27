@@ -443,3 +443,103 @@ export function Slider({
     />
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* 스낵바 — 화면 아래에 뜨는 한 줄 알림. '확인'을 눌러야 없어진다 (2026-11-27, 마이페이지) */
+
+export function Snackbar({
+  open,
+  message,
+  actionLabel = '확인',
+  onAction,
+}: {
+  open: boolean;
+  message: ReactNode;
+  actionLabel?: string;
+  onAction: () => void;
+}) {
+  const [leaving, setLeaving] = useState(false);
+  const [shown, setShown] = useState(open);
+  useEffect(() => {
+    if (open) {
+      setShown(true);
+      setLeaving(false);
+    }
+  }, [open]);
+  if (!shown) return null;
+  return (
+    <div className={`snackbar${leaving ? ' is-leaving' : ''}`} role="alert">
+      <span className="snackbar-text">{message}</span>
+      <button
+        type="button"
+        className="snackbar-btn"
+        onClick={() => {
+          setLeaving(true);
+          window.setTimeout(() => {
+            setShown(false);
+            onAction();
+          }, 180);
+        }}
+      >
+        {actionLabel}
+      </button>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* 아래에서 올라오는 시트 — 용수철처럼 살짝 넘쳤다 자리 잡는다 (2026-11-27, 온보딩) */
+
+export function BottomSheet({
+  open,
+  title,
+  onClose,
+  children,
+}: {
+  open: boolean;
+  title: ReactNode;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  const [phase, setPhase] = useState<'closed' | 'open' | 'closing'>(open ? 'open' : 'closed');
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const titleId = useId();
+
+  useEffect(() => {
+    if (open) setPhase('open');
+    else setPhase((p) => (p === 'open' ? 'closing' : p));
+  }, [open]);
+
+  useEffect(() => {
+    if (phase !== 'closing') return;
+    const t = window.setTimeout(() => setPhase('closed'), 220);
+    return () => window.clearTimeout(t);
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== 'open') return;
+    closeRef.current?.focus({ preventScroll: true });
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [phase, onClose]);
+
+  if (phase === 'closed') return null;
+  return (
+    <div className={`bsheet-wrap${phase === 'closing' ? ' is-closing' : ''}`}>
+      <div className="bsheet-backdrop" onClick={onClose} aria-hidden="true" />
+      <div className="bsheet" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+        <span className="bsheet-grip" aria-hidden="true" />
+        <h2 id={titleId} className="bsheet-title">
+          {title}
+        </h2>
+        <div className="bsheet-body">{children}</div>
+        <button ref={closeRef} type="button" className="btn bsheet-close" onClick={onClose}>
+          닫기
+        </button>
+      </div>
+    </div>
+  );
+}

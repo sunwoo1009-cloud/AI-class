@@ -786,7 +786,7 @@
   max-width: var(--max-width);
   transform: translateX(-50%);
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   padding: 6px 6px calc(8px + env(safe-area-inset-bottom));
   background: var(--btn-bg);
   border: 1.5px solid var(--border);
@@ -1882,4 +1882,869 @@
   font-weight: 700;
   text-align: center;
   line-height: 1.35;
+}
+
+/* ================================================================== */
+/* 2026-11-27 — 온보딩 칸(stagger) · 아래 시트(spring) · 스낵바 ·
+   마이페이지 · 2주 점검 · 캘린더 앱 연동 · 홈 알림 띠 */
+
+/* --- 온보딩: 제목만 단 칸이 차례로 떠오른다 --- */
+.onb-hint {
+  margin: 18px 0 8px;
+  text-align: center;
+}
+
+.onb-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.onb-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 18px 18px;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--btn-ledge);
+  opacity: 0;
+  animation: onb-stagger 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.onb-card.is-note {
+  background: var(--warn-surface);
+  border-color: var(--warn-border);
+}
+
+.onb-card:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--btn-ledge);
+}
+
+.onb-card:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.onb-card-num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.onb-card-label {
+  flex: 1;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.onb-card-chev {
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  transform: rotate(-90deg);
+}
+
+@keyframes onb-stagger {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.onb-sheet-list {
+  margin: 0;
+  padding-left: 1.1em;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  line-height: 1.55;
+}
+
+.onb-sheet-list li::marker {
+  color: var(--accent);
+}
+
+.onb-sheet-list.is-note li:last-child {
+  font-weight: 650;
+}
+
+/* --- 아래에서 올라오는 시트 (용수철) --- */
+.bsheet-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.bsheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(40, 30, 20, 0.42);
+  animation: bsheet-fade 200ms ease both;
+}
+
+.bsheet {
+  position: relative;
+  width: 100%;
+  max-width: var(--max-width);
+  max-height: 82%;
+  overflow: auto;
+  padding: 10px 22px calc(18px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -10px 30px rgba(60, 45, 30, 0.22);
+  /* 아래에서 올라와 살짝 넘쳤다가 자리 잡는다 */
+  animation: bsheet-spring 620ms linear both;
+}
+
+.bsheet-grip {
+  display: block;
+  width: 42px;
+  height: 5px;
+  margin: 0 auto 14px;
+  border-radius: 3px;
+  background: var(--border);
+}
+
+.bsheet-title {
+  margin: 0 0 12px;
+  font-size: 1.15rem;
+  line-height: 1.4;
+}
+
+.bsheet-kicker {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--accent);
+}
+
+.bsheet-body {
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+
+.btn.bsheet-close {
+  text-align: center;
+}
+
+.bsheet-wrap.is-closing .bsheet {
+  animation: bsheet-down 220ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.bsheet-wrap.is-closing .bsheet-backdrop {
+  animation: bsheet-fade 220ms ease reverse both;
+}
+
+@keyframes bsheet-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 감쇠 용수철을 몇 점으로 — 넘침, 되돌아옴, 멈춤 */
+@keyframes bsheet-spring {
+  0% {
+    transform: translateY(100%);
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  }
+  40% {
+    transform: translateY(-4.5%);
+    animation-timing-function: ease-in-out;
+  }
+  60% {
+    transform: translateY(1.6%);
+    animation-timing-function: ease-in-out;
+  }
+  78% {
+    transform: translateY(-0.6%);
+    animation-timing-function: ease-in-out;
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes bsheet-down {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+/* --- 스낵바 — 탭 막대 위에 뜨고 확인으로 닫는다 --- */
+.snackbar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(92px + env(safe-area-inset-bottom));
+  z-index: 60;
+  width: calc(100% - 32px);
+  max-width: calc(var(--max-width) - 32px);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px 14px 18px;
+  border-radius: 16px;
+  background: #3b2c17;
+  color: #fff7e8;
+  box-shadow: 0 8px 22px rgba(40, 30, 20, 0.3);
+  animation: snack-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.snackbar.is-leaving {
+  animation: snack-out 180ms ease both;
+}
+
+.snackbar-text {
+  flex: 1;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  font-weight: 650;
+}
+
+.snackbar-btn {
+  flex: none;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 12px;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@keyframes snack-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes snack-out {
+  to {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+}
+
+/* --- 마이페이지 --- */
+.my-nick label {
+  font-weight: 700;
+}
+
+.my-pulse,
+.my-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  font: inherit;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.card.my-pulse {
+  border-width: 1.5px;
+}
+
+.card.my-pulse.is-due {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.my-pulse-text,
+.my-row-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.my-pulse-text b {
+  font-size: 1.05rem;
+}
+
+.my-pulse-text small,
+.my-row-text small {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.my-pulse-items {
+  margin-top: 2px;
+}
+
+.my-chev {
+  font-size: 1.4rem;
+  color: var(--text-muted);
+}
+
+.my-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--stamp-ink);
+}
+
+.my-list {
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.my-row {
+  padding: 14px 16px;
+  border: none;
+  background: none;
+}
+
+.my-row + .my-row {
+  border-top: 1px solid var(--border);
+}
+
+.my-row:active {
+  background: var(--btn-press);
+}
+
+.my-cases h2 {
+  margin: 0 0 4px;
+}
+
+.case-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+
+/* 스낵바가 떠 있으면 맨 아래 내용이 가리지 않게 */
+.with-tabbar > .app.mypage.has-snack {
+  padding-bottom: calc(190px + env(safe-area-inset-bottom));
+}
+
+.case-chip {
+  display: flex;
+  align-items: stretch;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  background: var(--btn-bg);
+  overflow: hidden;
+}
+
+.case-chip.is-on {
+  border-color: var(--btn-edge);
+}
+
+.case-add {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 10px 12px 14px;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.case-add:active {
+  background: var(--btn-press);
+}
+
+.case-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  font-weight: 650;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.case-name small {
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.case-n {
+  min-width: 1.6em;
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.case-minus {
+  flex: none;
+  width: 44px;
+  border: none;
+  border-left: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.case-minus:disabled {
+  color: var(--border);
+  cursor: default;
+}
+
+.case-swatch {
+  flex: none;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.case-h3 {
+  margin: 18px 0 8px;
+  font-size: 0.95rem;
+}
+
+.case-bar {
+  display: flex;
+  height: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface-alt);
+  gap: 2px;
+}
+
+.case-bar span {
+  flex-basis: 0;
+  min-width: 4px;
+}
+
+.case-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+}
+
+.case-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.case-trauma {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 2px 10px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface-alt);
+}
+
+.case-trauma b {
+  font-size: 1.4rem;
+}
+
+.case-trauma small {
+  grid-column: 1 / -1;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.case-trauma.is-high {
+  background: #f6e1d9;
+  color: #6e2717;
+}
+
+.case-trauma.is-high small {
+  color: #7d3a2a;
+}
+
+/* --- 2주 점검 --- */
+.pulse-q {
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.pulse-q legend {
+  display: flex;
+  gap: 10px;
+  float: left;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 0;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.pulse-q legend small {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--accent);
+}
+
+.pulse-q-num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.85rem;
+}
+
+.pulse-opts {
+  clear: both;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.pulse-opt {
+  padding: 11px 4px;
+  border: 1.5px solid var(--btn-edge);
+  border-radius: 12px;
+  background: var(--btn-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.pulse-opt.is-on {
+  background: var(--btn-primary-bg);
+  border-color: var(--btn-primary-ledge);
+  font-weight: 700;
+  animation: pulse-pick 260ms cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+@keyframes pulse-pick {
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+.pulse-res-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pulse-trend {
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--text-muted);
+}
+
+.pulse-trend.is-up {
+  color: var(--stamp-ink);
+}
+
+.pulse-trend.is-down {
+  color: var(--accent);
+}
+
+.card.pulse-res.is-signal {
+  border-color: var(--stamp-ink);
+}
+
+.pulse-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 40px;
+}
+
+.pulse-bar {
+  width: 18px;
+  border-radius: 5px 5px 2px 2px;
+  background: var(--accent-soft);
+}
+
+.pulse-bar:last-child {
+  background: var(--accent);
+}
+
+/* --- 캘린더 앱 연동 --- */
+.callink-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0 16px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 16px rgba(60, 45, 30, 0.12);
+}
+
+.callink-preview-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: var(--btn-primary-bg);
+}
+
+.callink-preview-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--btn-primary-text);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.callink-preview-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.92rem;
+}
+
+.callink-preview-text small {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.callink-steps {
+  margin: 0 0 14px;
+  padding-left: 1.3em;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.callink-kw {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 16px 0 14px;
+  font-weight: 650;
+}
+
+.callink-kw input {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1.5px solid var(--btn-edge);
+  background: var(--btn-bg);
+  color: var(--text);
+  font: inherit;
+  font-weight: 400;
+}
+
+.callink-kw small {
+  font-weight: 400;
+}
+
+.callink-off {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface-alt);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.btn.callink-connect {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.callink-g {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.callink-on-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.callink-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #3f8f5a;
+}
+
+.callink-list {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+  font-size: 0.88rem;
+}
+
+.callink-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px dashed var(--border);
+}
+
+.callink-list li span {
+  color: var(--text-muted);
+}
+
+/* --- 홈 알림 띠 — 캘린더의 회기가 막 끝났을 때 --- */
+.home-nudge {
+  position: absolute;
+  /* 말풍선을 가리지 않게 탭 막대 바로 위에 */
+  bottom: calc(100px + env(safe-area-inset-bottom));
+  left: 14px;
+  right: 14px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px 12px 16px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  box-shadow: 0 8px 20px rgba(40, 30, 20, 0.22);
+  animation: snack-drop 420ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+
+.home-nudge p {
+  flex: 1;
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.home-nudge-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.home-nudge-go {
+  padding: 9px 12px;
+  border: none;
+  border-radius: 12px;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.home-nudge-x {
+  width: 34px;
+  border: none;
+  border-radius: 12px;
+  background: var(--surface-alt);
+  color: var(--text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+@keyframes snack-drop {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 발표용 틀·관리자 작은 창 안에서는 화면 틀 안에 머문다 */
+.gal-screen .bsheet-wrap {
+  position: absolute;
+}
+
+.gal-screen .snackbar {
+  position: sticky;
+  left: auto;
+  bottom: 84px;
+  width: auto;
+  margin: 12px 0 0;
+  transform: none;
+  animation-name: snack-in-flat;
+}
+
+@keyframes snack-in-flat {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onb-card,
+  .bsheet,
+  .bsheet-backdrop,
+  .snackbar,
+  .home-nudge,
+  .pulse-opt.is-on {
+    animation-duration: 1ms !important;
+  }
 }

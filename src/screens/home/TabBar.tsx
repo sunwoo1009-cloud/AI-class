@@ -1,24 +1,29 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { evaluateEscalation } from '../../lib/escalation';
-import { loadCheckIns } from '../../storage/store';
+import { pulseDue } from '../../lib/pulse';
+import { loadCheckIns, loadPulse } from '../../storage/store';
 
 /** 탭 막대에서 갈 수 있는 화면 */
 export type TabTarget =
   | 'home'
+  | 'mypage'
   | 'summary'
   | 'review'
   | 'calendar'
   | 'coupons'
+  | 'calendarLink'
+  | 'pulse'
   | 'boutique'
   | 'rate'
   | 'settings'
   | 'bgm';
 
+/** 마이페이지 안에 든 화면 — 이 화면들에서는 '마이페이지' 탭이 켜진다 */
+const MY_PAGE: TabTarget[] = ['mypage', 'summary', 'review', 'calendar', 'coupons', 'calendarLink', 'pulse'];
+
 /** '더보기' 안에 든 화면 */
 const MORE: { id: TabTarget; label: string; sub: string }[] = [
-  { id: 'review', label: '돌아보기', sub: '나아지고 있나' },
-  { id: 'boutique', label: '부티크', sub: '도장으로 직장인 꾸미기' },
   { id: 'rate', label: '별점·리뷰', sub: '이 앱 어땠나요' },
   { id: 'bgm', label: '배경 음악', sub: '켜기·끄기, 음량' },
   { id: 'settings', label: '설정', sub: '백업·가입·데이터' },
@@ -32,15 +37,20 @@ interface Props {
 
 /**
  * 아래에 고정된 탭 막대 (2026-11-27 — 왼쪽 위 메뉴 바를 대신한다).
- * 홈 · 주간 요약 · 캘린더 · 쿠폰 · 더보기(돌아보기·부티크·별점·설정).
+ * 2026-11-27 다시 묶음: 홈 · 마이페이지 · 부티크 · 더보기(별점·리뷰·배경 음악·설정).
+ * 주간 요약·돌아보기·캘린더·쿠폰 모음은 마이페이지 안으로 들어갔다.
  *
- * 주간 요약 탭의 숫자 배지는 명세 7.2 자원 제안 카드가 떠 있다는 표시다.
- * 요약이 탭 뒤로 들어가 있어서 그 신호를 놓치지 않게 붙인다.
+ * 마이페이지 탭의 숫자 배지 = 살펴볼 것의 수. 명세 7.2 자원 제안 카드가 떠 있으면 1,
+ * 2주 점검을 할 때가 됐으면 1. 요약·점검이 탭 뒤에 있어서 그 신호를 놓치지 않게 붙인다.
  * 백업 알림(7.6)은 홈에 띄우지 않는다는 원칙대로 배지로 만들지 않았다.
  */
 export function TabBar({ active, onNavigate }: Props) {
   const [moreOpen, setMoreOpen] = useState(false);
-  const escalated = useMemo(() => evaluateEscalation(loadCheckIns()).triggered, []);
+  const badge = useMemo(
+    () =>
+      (evaluateEscalation(loadCheckIns()).triggered ? 1 : 0) + (pulseDue(loadPulse()) ? 1 : 0),
+    [],
+  );
   const moreActive = MORE.some((m) => m.id === active);
 
   useEffect(() => {
@@ -59,9 +69,8 @@ export function TabBar({ active, onNavigate }: Props) {
 
   const tabs: { id: TabTarget | 'more'; label: string; icon: ReactNode; badge?: number }[] = [
     { id: 'home', label: '홈', icon: <IconHome /> },
-    { id: 'summary', label: '주간 요약', icon: <IconChart />, badge: escalated ? 1 : 0 },
-    { id: 'calendar', label: '캘린더', icon: <IconCalendar /> },
-    { id: 'coupons', label: '쿠폰', icon: <IconTicket /> },
+    { id: 'mypage', label: '마이페이지', icon: <IconPerson />, badge },
+    { id: 'boutique', label: '부티크', icon: <IconShirt /> },
     { id: 'more', label: '더보기', icon: <IconMore /> },
   ];
 
@@ -92,7 +101,12 @@ export function TabBar({ active, onNavigate }: Props) {
 
       <nav className="tabbar" aria-label="메뉴" onClick={(e) => e.stopPropagation()}>
         {tabs.map((t) => {
-          const on = t.id === 'more' ? moreActive || moreOpen : t.id === active;
+          const on =
+            t.id === 'more'
+              ? moreActive || moreOpen
+              : t.id === 'mypage'
+                ? MY_PAGE.includes(active)
+                : t.id === active;
           return (
             <button
               key={t.id}
@@ -139,29 +153,18 @@ function IconHome() {
     </Svg>
   );
 }
-function IconChart() {
+function IconPerson() {
   return (
     <Svg>
-      <path d="M4.5 19.5 H19.5" />
-      <path d="M7.5 16.5 V12" />
-      <path d="M12 16.5 V7.5" />
-      <path d="M16.5 16.5 V10" />
+      <circle cx="12" cy="8.5" r="3.5" />
+      <path d="M5 19.5 C5.8 15.6 8.6 13.8 12 13.8 C15.4 13.8 18.2 15.6 19 19.5" />
     </Svg>
   );
 }
-function IconCalendar() {
+function IconShirt() {
   return (
     <Svg>
-      <rect x="4.5" y="6" width="15" height="13.5" rx="2.5" />
-      <path d="M4.5 10.5 H19.5 M9 4 V7.5 M15 4 V7.5" />
-    </Svg>
-  );
-}
-function IconTicket() {
-  return (
-    <Svg>
-      <path d="M4 7.5 H20 V10.5 A1.8 1.8 0 0 0 20 13.5 V16.5 H4 V13.5 A1.8 1.8 0 0 0 4 10.5 Z" />
-      <path d="M14.5 8 V9.2 M14.5 11.4 V12.6 M14.5 14.8 V16" />
+      <path d="M9 4.5 L4.5 7 L6 11 L8 10.2 V19.5 H16 V10.2 L18 11 L19.5 7 L15 4.5 C14.4 6 13.3 6.8 12 6.8 C10.7 6.8 9.6 6 9 4.5 Z" />
     </Svg>
   );
 }

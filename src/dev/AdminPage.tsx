@@ -5,6 +5,7 @@ import { TabSwitch } from '../components/ui';
 import { AvatarSvg, PREVIEW_VIEWBOX } from '../avatar/Avatar';
 import { AuthForm } from '../screens/AccountSection';
 import { JoinScreen } from '../screens/JoinScreen';
+import { CalendarLink } from '../screens/CalendarLink';
 import { Onboarding } from '../screens/Onboarding';
 import { IntroScene } from '../scenes/IntroScene';
 import { loadCloset } from '../storage/store';
@@ -18,6 +19,7 @@ import {
 } from '../sync/admin';
 import type { AdminStats, AppReviewItem } from '../sync/admin';
 import { averageRating } from '../lib/appReview';
+import { UpdatesSheet } from './PresentSheets';
 
 /** 화면 점검 — 위쪽 탭 묶음과 그 안의 화면들 (?screens=<id>&bare=1 을 작은 창으로 띄운다) */
 const SCREEN_GROUPS: { title: string; items: [id: string, label: string][] }[] = [
@@ -26,8 +28,10 @@ const SCREEN_GROUPS: { title: string; items: [id: string, label: string][] }[] =
     items: [
       ['onboarding', '온보딩'],
       ['join', '선택 가입'],
+      ['calendar-link-start', '캘린더 앱 연동 안내'],
       ['intro', '인트로 — 퇴근길'],
       ['home', '홈 — 노점'],
+      ['home-nudge', '홈 — 회기 끝 알림 띠'],
     ],
   },
   {
@@ -57,13 +61,22 @@ const SCREEN_GROUPS: { title: string; items: [id: string, label: string][] }[] =
     ],
   },
   {
-    title: '일기 · 메뉴',
+    title: '마이페이지',
     items: [
-      ['journal', '하루 끝 일기'],
+      ['mypage', '마이페이지'],
+      ['pulse', '2주 점검'],
+      ['pulse-result', '2주 점검 — 결과'],
       ['summary', '주간 요약'],
       ['review', '돌아보기'],
       ['calendar', '캘린더'],
       ['coupons', '붕어빵 쿠폰'],
+      ['calendar-link', '캘린더 앱 연동'],
+    ],
+  },
+  {
+    title: '일기 · 메뉴',
+    items: [
+      ['journal', '하루 끝 일기'],
       ['boutique', '부티크'],
       ['rate', '별점·리뷰'],
       ['bgm', '배경 음악'],
@@ -76,13 +89,13 @@ const SCREEN_GROUPS: { title: string; items: [id: string, label: string][] }[] =
 const base = import.meta.env.BASE_URL;
 
 /** preview 는 발표용 시트에서만 쓴다 (실제 화면은 ?preview=start 로 이동) */
-type Tab = 'preview' | 'screens' | 'ops';
+type Tab = 'preview' | 'screens' | 'ops' | 'updates';
 type Gate = 'loading' | 'not-set-up' | 'not-signed-in' | 'not-admin' | 'admin';
 
 /**
  * 관리자 화면 (?admin=1).
  * - 들어오면 먼저 로그인. 관리자 계정이면 "관리자님, 환영합니다."
- * - 위쪽 메뉴: 처음 쓰는 사람처럼 보기(바로 이동) · 화면 점검 · 운영 현황
+ * - 왼쪽 서랍: 처음 쓰는 사람처럼 보기(바로 이동) · 화면 점검 · 운영 현황 · 업데이트 목록
  * - 오른쪽 위: 👑 + 프로필 + 관리자 계정
  * 개인별 기록은 보여주지 않는다 — 숫자와 피드백·리뷰만.
  */
@@ -166,6 +179,7 @@ const TAB_LABEL: Record<Tab, string> = {
   preview: '처음 쓰는 사람처럼 보기',
   screens: '화면 점검',
   ops: '운영 현황',
+  updates: '업데이트 목록',
 };
 
 /**
@@ -186,7 +200,7 @@ function AdminShell({
   const [tab, setTab] = useState<Tab>(() => {
     if (demo) return 'ops';
     const t = new URLSearchParams(window.location.search).get('tab');
-    return t === 'screens' ? 'screens' : 'ops';
+    return t === 'screens' || t === 'updates' ? t : 'ops';
   });
   const [drawer, setDrawer] = useState(false);
   /** 화면 점검 — 고른 묶음(위쪽 탭)과 크게 본 화면 */
@@ -226,9 +240,10 @@ function AdminShell({
   }
 
   const drawerItems: { tab: Tab; label: string; sub: string }[] = [
-    { tab: 'preview', label: '처음 쓰는 사람처럼 보기', sub: '온보딩 → 선택 가입 → 인트로' },
+    { tab: 'preview', label: '처음 쓰는 사람처럼 보기', sub: '온보딩 → 선택 가입 → 캘린더 연동 → 인트로' },
     { tab: 'screens', label: '화면 점검', sub: '모든 화면을 묶음별로' },
     { tab: 'ops', label: '운영 현황', sub: '가입자·백업·리뷰 숫자' },
+    { tab: 'updates', label: '업데이트 목록', sub: '화면마다 바뀐 것' },
   ];
 
   return (
@@ -369,6 +384,14 @@ function AdminShell({
           />
         ) : null}
 
+        {/* 2026-11-27 — 발표용 화면의 '업데이트 목록'과 같은 내용 */}
+        {tab === 'updates' ? (
+          <section className="admin-card">
+            <h2>업데이트 목록</h2>
+            <UpdatesSheet />
+          </section>
+        ) : null}
+
         {tab === 'ops' ? (
           <section className="admin-card">
             <h2>
@@ -388,6 +411,7 @@ const DEMO_LOOK = { skin: 'skin-1', hair: 'hair-wave', top: 'top-vest' };
 const PREVIEW_STEPS = [
   ['onboarding', '온보딩'],
   ['join', '선택 가입'],
+  ['calendar', '캘린더 연동'],
   ['intro', '인트로'],
 ] as const;
 type PreviewStep = (typeof PREVIEW_STEPS)[number][0];
@@ -417,7 +441,10 @@ function DemoPreview({ onDone }: { onDone: () => void }) {
       <div className="gal-frame admin-preview-frame">
         <div className="gal-screen">
           {step === 'onboarding' ? <Onboarding onDone={() => setStep('join')} /> : null}
-          {step === 'join' ? <JoinScreen onDone={() => setStep('intro')} /> : null}
+          {step === 'join' ? <JoinScreen onDone={() => setStep('calendar')} /> : null}
+          {step === 'calendar' ? (
+            <CalendarLink variant="start" demo onDone={() => setStep('intro')} />
+          ) : null}
           {step === 'intro' ? <IntroScene onDone={onDone} /> : null}
         </div>
       </div>

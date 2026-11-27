@@ -10,8 +10,6 @@ import {
   signUp,
   startAutoSync,
   syncNow,
-  updateNickname,
-  NICKNAME_MAX,
 } from '../sync/account';
 import type { Account } from '../sync/account';
 import { clearAllData, loadSettings } from '../storage/store';
@@ -77,13 +75,7 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
   const [note, setNote] = useState<string | null>(null);
   const [prefs, setPrefs] = useState(loadSyncPrefs);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [nickDraft, setNickDraft] = useState('');
   const sync = useProgress();
-
-  // 로그인한 계정이 바뀌면 닉네임 칸을 그 계정 닉네임으로 채운다
-  useEffect(() => {
-    setNickDraft(account?.nickname ?? '');
-  }, [account]);
 
   useEffect(() => {
     if (!accountsAvailable) return;
@@ -202,41 +194,7 @@ export function AccountSection({ onChangeSettings, onReset }: Props) {
           {note ? <p className="account-note">{note}</p> : null}
         </div>
 
-        {/* 닉네임 바꾸기 — 자기 거리두기 기법에서 부르는 이름이 함께 바뀐다 */}
-        <div className="card">
-          <label className="account-field" htmlFor="nickname-edit">
-            <span>닉네임</span>
-          </label>
-          <div className="btn-row" style={{ marginTop: 6 }}>
-            <input
-              id="nickname-edit"
-              className="account-inline-input"
-              value={nickDraft}
-              maxLength={NICKNAME_MAX}
-              autoComplete="nickname"
-              placeholder="예: 슈붕파"
-              onChange={(e) => setNickDraft(e.target.value)}
-            />
-            <button
-              className="btn btn-primary account-inline-btn"
-              disabled={busy || !nickDraft.trim() || nickDraft.trim() === account.nickname}
-              onClick={() =>
-                void run(async () => {
-                  const r = await updateNickname(nickDraft);
-                  if (!r.ok) return setNote(r.reason);
-                  setAccount(await currentAccount());
-                  const s = loadSettings();
-                  if (s) onChangeSettings(s);
-                  setNote('닉네임을 바꿨어요');
-                })
-              }
-            >
-              바꾸기
-            </button>
-          </div>
-          <small className="muted">자기 거리두기 기법에서 이 이름으로 불러요</small>
-        </div>
-
+        {/* 닉네임 바꾸기는 2026-11-27 마이페이지로 옮겼다 */}
         <details className="account-details">
           <summary>무엇이 올라가나요?</summary>
           <Notice />

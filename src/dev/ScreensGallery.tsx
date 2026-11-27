@@ -9,6 +9,9 @@ import { CouponBook } from '../screens/CouponBook';
 import { Boutique } from '../screens/Boutique';
 import { RateApp } from '../screens/RateApp';
 import { BgmSettings } from '../screens/BgmSettings';
+import { MyPage } from '../screens/MyPage';
+import { PulseCheck } from '../screens/PulseCheck';
+import { CalendarLink } from '../screens/CalendarLink';
 import { AvatarParts } from './AvatarParts';
 import { AboutSheet, UpdatesSheet } from './PresentSheets';
 import { AdminDemoSheet } from './AdminPage';
@@ -103,6 +106,67 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       spec: '7.7',
       tall: true,
       render: () => <JoinScreen onDone={noop} onBack={noop} />,
+    },
+    {
+      id: 'calendar-link-start',
+      label: '캘린더 앱 연동 안내',
+      tall: true,
+      render: () => <CalendarLink variant="start" onDone={noop} onBack={noop} demo />,
+    },
+    {
+      id: 'home-nudge',
+      label: '홈 — 회기 끝 알림 띠',
+      render: () => (
+        <DemoTabs active="home">
+          <Home onStartCheckIn={noop} onOpenJournal={noop} nudge={{ onStart: noop, onDismiss: noop }} />
+        </DemoTabs>
+      ),
+    },
+    {
+      id: 'mypage',
+      label: '마이페이지',
+      tall: true,
+      render: () => (
+        <DemoTabs active="mypage">
+          <MyPage
+            settings={settings}
+            onChangeSettings={setSettings}
+            onOpen={noop}
+            onBack={noop}
+            demo
+          />
+        </DemoTabs>
+      ),
+    },
+    {
+      id: 'pulse',
+      label: '2주 점검',
+      tall: true,
+      render: () => (
+        <DemoTabs active="pulse">
+          <PulseCheck onBack={noop} demo />
+        </DemoTabs>
+      ),
+    },
+    {
+      id: 'pulse-result',
+      label: '2주 점검 — 결과',
+      tall: true,
+      render: () => (
+        <DemoTabs active="pulse">
+          <PulseCheck onBack={noop} demo startAtResult />
+        </DemoTabs>
+      ),
+    },
+    {
+      id: 'calendar-link',
+      label: '캘린더 앱 연동',
+      tall: true,
+      render: () => (
+        <DemoTabs active="calendarLink">
+          <CalendarLink variant="menu" onBack={noop} demo />
+        </DemoTabs>
+      ),
     },
     {
       id: 'reaction',
@@ -422,14 +486,26 @@ type Sheet =
 const SHEETS: Sheet[] = [
   { title: '앱 설명', kind: 'about' },
   // 처음 여는 순서대로: 온보딩 → 선택 가입 → (다음부터 열 때마다) 인트로 → 홈
-  { title: '시작', kind: 'row', ids: ['onboarding', 'join', 'intro', 'home'] },
+  { title: '시작', kind: 'row', ids: ['onboarding', 'join', 'calendar-link-start', 'intro', 'home'] },
   { title: '기법을 사용해 감정 관리하기', kind: 'checkin' },
   { title: '오늘의 나를 기록하기', kind: 'row', ids: ['journal'] },
+  // 2026-11-27 — 주간 요약·돌아보기·캘린더·쿠폰은 마이페이지 안으로
   {
-    title: '메뉴',
+    title: '마이페이지',
     kind: 'row',
-    ids: ['summary', 'review', 'calendar', 'coupons', 'rate', 'bgm', 'settings'],
+    ids: [
+      'mypage',
+      'pulse',
+      'pulse-result',
+      'summary',
+      'review',
+      'calendar',
+      'coupons',
+      'calendar-link',
+      'home-nudge',
+    ],
   },
+  { title: '메뉴', kind: 'row', ids: ['rate', 'bgm', 'settings'] },
   { title: '아바타 꾸미기', kind: 'row', ids: ['boutique', 'avatar-parts'] },
   { title: '관리자 화면', kind: 'admin' },
   // 2026-11-24 부터 받은 수정 요청을 화면별로 (2026-11-27)
