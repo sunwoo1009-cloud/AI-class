@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BackButton, Snackbar } from '../components/ui';
-import { AvatarSvg } from '../avatar/Avatar';
+import { Avatar3DLazy } from '../avatar3d/Avatar3DLazy';
 import {
   bumpCase,
   CASE_KINDS,
@@ -167,7 +167,7 @@ export function MyPage({ settings, onChangeSettings, onOpen, onBack, demo = fals
 
       {/* 맨 위 — 부티크에서 입힌 아바타와 닉네임. 닉네임을 누르면 바꿀 수 있다 (2026-11-27) */}
       <section className="my-profile">
-        <AvatarSvg className="my-avatar" equipped={equipped} title="내 아바타" />
+        <Avatar3DLazy className="my-avatar3d" fallbackClassName="my-avatar" equipped={equipped} title="내 아바타" />
         {editing ? (
           <div className="my-nick">
             <label htmlFor="my-nick" className="sr-only">

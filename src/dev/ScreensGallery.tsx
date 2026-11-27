@@ -29,6 +29,7 @@ import { WeeklySummary } from '../screens/WeeklySummary';
 import { IntroScene } from '../scenes/IntroScene';
 import { loadSettings } from '../storage/store';
 import { TabBar } from '../screens/home/TabBar';
+import { Avatar3DParts } from './Avatar3DParts';
 import type { TabTarget } from '../screens/home/TabBar';
 import type { Settings } from '../types';
 
@@ -440,6 +441,13 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
       spec: '8.8',
       tall: true,
       render: () => <AvatarParts />,
+    },
+    {
+      id: 'avatar-3d',
+      label: '아바타 3D — 옷차림별 앞·옆·뒤',
+      spec: '8.8',
+      tall: true,
+      render: () => <Avatar3DParts />,
     },
     {
       id: 'settings',

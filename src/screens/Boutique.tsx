@@ -12,6 +12,7 @@ import {
 import type { Category, Closet, Item, Slot } from '../lib/boutique';
 import { loadCloset, loadStampTotal, saveCloset } from '../storage/store';
 import { BackButton, TabSwitch } from '../components/ui';
+import { Avatar3DLazy } from '../avatar3d/Avatar3DLazy';
 
 interface Props {
   onBack: () => void;
@@ -140,7 +141,14 @@ export function Boutique({ onBack }: Props) {
 
       {/* 무대 */}
       <div className="boutique-stage">
-        <AvatarSvg className="boutique-avatar" equipped={stage} title="꾸민 직장인" />
+        {/* 2026-11-27 — 3D. 좌우로 끌면 돌아가 뒷모습까지 보인다 */}
+        <Avatar3DLazy
+          className="boutique-avatar3d"
+          fallbackClassName="boutique-avatar"
+          equipped={stage}
+          rotatable
+          title="꾸민 직장인"
+        />
         {tryList.length > 0 ? (
           <span className="boutique-trying">입어 보는 중 {tryList.length}개</span>
         ) : null}
