@@ -144,32 +144,32 @@ function buildHead(g: THREE.Group, skin: string, hasSkin: boolean, blush: boolea
   g.add(mouth);
 }
 
-/** 머리 위를 덮는 모자 같은 머리카락 */
-function hairCap(color: string, lowFront = 0.9): THREE.Mesh {
-  const cap = mesh(new THREE.SphereGeometry(HEAD_R + 0.03, 48, 24, 0, Math.PI * 2, 0, lowFront), color);
-  cap.scale.set(1, 0.95, 0.94);
-  return at(cap, 0, HEAD_Y + 0.01, -0.005);
-}
-
 function buildHair(g: THREE.Group, id: string | undefined, silhouette: string) {
   const color = id ? HAIR : silhouette;
-  // 뒷머리는 모든 모양에 — 뒤에서 봐도 머리가 있게
-  // three.js 구의 가로 각은 φ=π 에서 +x, 1.5π 에서 뒤(-z), 2π 에서 -x — 그래서 π~2π 가 뒤쪽 반
-  // 옆에서 볼 때 경계가 귀 바로 뒤에 오도록 양쪽으로 조금 더 감싼다
-  const back = mesh(
-    new THREE.SphereGeometry(HEAD_R + 0.025, 40, 24, Math.PI - 0.2, Math.PI + 0.4, 0, Math.PI * 0.62),
-    color,
-  );
-  back.scale.set(1, 0.95, 0.94);
-  g.add(at(back, 0, HEAD_Y, -0.005));
-  g.add(hairCap(color, id === 'hair-wave' || !id ? 0.95 : 1.05));
+  /*
+   * 머리카락 바탕 — 세 조각 (2026-11-27 "머리가 비어있어" 고침: 전에는 정수리만 얇게 덮여 옆이 맨머리였다)
+   * three.js 구의 가로 각 φ: 앞(+z)이 0.5π, +x 가 π, 뒤(-z)가 1.5π, -x 가 0/2π. 세로 각 θ 는 정수리에서 0.
+   *  ① 옆·뒤 껍질: 앞쪽 ±0.75 만 비우고 귀 바로 위(θ≈1.38)까지 덮는다
+   *  ② 뒤통수: 뒤쪽만 목덜미(θ≈2.3)까지
+   *  ③ 앞 정수리: 이마 위(θ≈1.0)까지 — 그 아래 이마는 비워 두고 앞머리가 내려온다
+   */
+  const R = HEAD_R + 0.03;
+  const shell = (phiStart: number, phiLen: number, thetaLen: number) => {
+    const m = mesh(new THREE.SphereGeometry(R, 48, 28, phiStart, phiLen, 0, thetaLen), color);
+    m.scale.set(1, 0.95, 0.94);
+    return at(m, 0, HEAD_Y + 0.005, -0.005);
+  };
+  const FRONT = Math.PI / 2;
+  g.add(shell(FRONT + 0.75, Math.PI * 2 - 1.5, 1.38));
+  g.add(shell(Math.PI * 1.5 - 0.95, 1.9, 2.3));
+  g.add(shell(FRONT - 0.8, 1.6, 1.0));
 
   if (!id || id === 'hair-wave') {
-    // 앞머리 — 동글동글한 덩어리가 이마를 따라 (참고 이미지)
+    // 앞머리 — 동글동글한 덩어리가 정수리 끝에서 이마로 내려온다 (참고 이미지)
     for (let i = -3; i <= 3; i++) {
-      const lump = mesh(new THREE.SphereGeometry(0.085, 20, 16), color);
-      lump.scale.set(1, 0.8, 0.7);
-      stick(lump, onHead(i * 0.2, 0.42 - Math.abs(i) * 0.03, -0.015));
+      const lump = mesh(new THREE.SphereGeometry(0.095, 20, 16), color);
+      lump.scale.set(1, 0.85, 0.7);
+      stick(lump, onHead(i * 0.21, 0.5 - Math.abs(i) * 0.035, 0.0));
       g.add(lump);
     }
     return;
