@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BackButton } from '../components/ui';
+import { BackButton, SegmentedControl } from '../components/ui';
 import {
   PULSE_ITEMS,
   PULSE_LEVELS,
@@ -153,23 +153,13 @@ export function PulseCheck({ onBack, demo = false, startAtResult = false }: Prop
               {x.question}
             </span>
           </legend>
-          <div className="pulse-opts" role="radiogroup" aria-label={x.title}>
-            {PULSE_LEVELS.map((l) => {
-              const on = answers[x.id] === l.value;
-              return (
-                <button
-                  key={l.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={on}
-                  className={`pulse-opt${on ? ' is-on' : ''}`}
-                  onClick={() => setAnswers((a) => ({ ...a, [x.id]: l.value }))}
-                >
-                  {l.label}
-                </button>
-              );
-            })}
-          </div>
+          {/* 2026-11-27 — 아니에요·조금·꽤·많이를 segmented control 로 (사용자 요청) */}
+          <SegmentedControl
+            label={x.title}
+            options={PULSE_LEVELS.map((l) => ({ value: l.value, label: l.label }))}
+            value={answers[x.id]}
+            onChange={(v) => setAnswers((a) => ({ ...a, [x.id]: v }))}
+          />
         </fieldset>
       ))}
 

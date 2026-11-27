@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AvatarSvg, PREVIEW_VIEWBOX } from '../avatar/Avatar';
+
 import type { Equipped } from '../avatar/Avatar';
 import {
   CATEGORIES,
@@ -12,7 +12,7 @@ import {
 import type { Category, Closet, Item, Slot } from '../lib/boutique';
 import { loadCloset, loadStampTotal, saveCloset } from '../storage/store';
 import { BackButton, TabSwitch } from '../components/ui';
-import { Avatar3DLazy } from '../avatar3d/Avatar3DLazy';
+import { Avatar3DLazy, Thumb3D } from '../avatar3d/Avatar3DLazy';
 
 interface Props {
   onBack: () => void;
@@ -147,6 +147,7 @@ export function Boutique({ onBack }: Props) {
           fallbackClassName="boutique-avatar"
           equipped={stage}
           rotatable
+          room
           title="꾸민 직장인"
         />
         {tryList.length > 0 ? (
@@ -188,11 +189,11 @@ export function Boutique({ onBack }: Props) {
                 onClick={() => onPick(item)}
               >
                 {worn ? <span className="boutique-check" aria-hidden="true">✓</span> : null}
-                <AvatarSvg
+                {/* 2026-11-27 — 칸 그림도 3D */}
+                <Thumb3D
                   className="boutique-thumb"
-                  viewBox={PREVIEW_VIEWBOX[item.slot]}
+                  slot={item.slot}
                   equipped={{ ...stage, [item.slot]: item.id }}
-                  mannequin
                 />
                 <span className="boutique-name">{item.name}</span>
                 <span className="boutique-price">

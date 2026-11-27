@@ -49,14 +49,80 @@ const SHOULDER_Y = 0.98;
 
 /* ------------------------------------------------------------------ */
 
-const mats = new Map<string, THREE.MeshStandardMaterial>();
-/** 클레이 질감 — 반사 없이 무르게 */
-function mat(color: string, rough = 0.88): THREE.MeshStandardMaterial {
+/**
+ * 클레이 표면 요철 (2026-11-27 "질감도 클레이 같이") — 손으로 빚은 듯한 얕은 눌림과 아주 고운 알갱이.
+ * 캔버스로 한 번 만들어 모든 재질이 같이 쓴다(bump map).
+ */
+let clayBump: THREE.CanvasTexture | null = null;
+function clayTexture(): THREE.CanvasTexture | null {
+  if (clayBump) return clayBump;
+  if (typeof document === 'undefined') return null;
+  const size = 256;
+  const c = document.createElement('canvas');
+  c.width = size;
+  c.height = size;
+  const ctx = c.getContext('2d');
+  if (!ctx) return null;
+  ctx.fillStyle = 'rgb(128,128,128)';
+  ctx.fillRect(0, 0, size, size);
+  // 정해진 씨앗으로 늘 같은 무늬 (렌더마다 달라지지 않게)
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  // 손가락으로 누른 듯한 넓고 얕은 눌림 — 가장자리가 이어지게 아홉 칸에 같이 그린다
+  for (let i = 0; i < 70; i++) {
+    const x = rnd() * size;
+    const y = rnd() * size;
+    const r = 10 + rnd() * 26;
+    const v = rnd() < 0.5 ? 112 : 146;
+    for (const dx of [-size, 0, size]) {
+      for (const dy of [-size, 0, size]) {
+        const g = ctx.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, r);
+        g.addColorStop(0, `rgba(${v},${v},${v},0.55)`);
+        g.addColorStop(1, `rgba(${v},${v},${v},0)`);
+        ctx.fillStyle = g;
+        ctx.fillRect(x + dx - r, y + dy - r, r * 2, r * 2);
+      }
+    }
+  }
+  // 고운 알갱이
+  const img = ctx.getImageData(0, 0, size, size);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const n = (rnd() - 0.5) * 18;
+    img.data[i] += n;
+    img.data[i + 1] += n;
+    img.data[i + 2] += n;
+  }
+  ctx.putImageData(img, 0, 0);
+  clayBump = new THREE.CanvasTexture(c);
+  clayBump.wrapS = THREE.RepeatWrapping;
+  clayBump.wrapT = THREE.RepeatWrapping;
+  clayBump.repeat.set(2, 2);
+  return clayBump;
+}
+
+/** 같이 쓰는 재질 — 아바타를 버릴 때 지우지 않는다 */
+const shared = new WeakSet<THREE.Material>();
+const mats = new Map<string, THREE.MeshPhysicalMaterial>();
+/**
+ * 클레이 질감 — 반사 없이 무르고, 가장자리에 보송한 빛(sheen)이 살짝 돈다.
+ * 표면에는 손으로 빚은 요철(bump)을 얕게 준다.
+ */
+export function mat(color: string, rough = 0.9): THREE.MeshPhysicalMaterial {
   const key = `${color}|${rough}`;
   let m = mats.get(key);
   if (!m) {
-    m = new THREE.MeshStandardMaterial({ color: new THREE.Color(color), roughness: rough, metalness: 0 });
+    m = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(color),
+      roughness: rough,
+      metalness: 0,
+      sheen: 0.35,
+      sheenRoughness: 0.85,
+      sheenColor: new THREE.Color('#fff6ec'),
+      bumpMap: clayTexture(),
+      bumpScale: 1.4,
+    });
     mats.set(key, m);
+    shared.add(m);
   }
   return m;
 }
@@ -364,10 +430,14 @@ function buildAccessories(g: THREE.Group, eq: Equipped) {
   }
 }
 
+/** 아이템 칸 그림용 — 피부를 안 입혔으면 실루엣 대신 연한 마네킹 색 (2D 의 mannequin 과 같다) */
+const MANNEQUIN = '#ddd3c8';
+
 /** 입힌 것대로 아바타 한 벌을 만든다. 바닥 그림자 받이는 따로(scene 쪽에서). */
-export function buildAvatar(eq: Equipped, silhouette = SILHOUETTE): THREE.Group {
+export function buildAvatar(eq: Equipped, opts: { silhouette?: string; mannequin?: boolean } = {}): THREE.Group {
+  const silhouette = opts.silhouette ?? SILHOUETTE;
   const g = new THREE.Group();
-  const skin = eq.skin ? (SKIN[eq.skin] ?? silhouette) : silhouette;
+  const skin = eq.skin ? (SKIN[eq.skin] ?? silhouette) : opts.mannequin ? MANNEQUIN : silhouette;
   buildLegs(g, eq.bottom, eq.shoes, silhouette, skin);
   buildTorso(g, eq.top, silhouette, skin);
   buildHead(g, skin, Boolean(eq.skin), eq.skin !== 'skin-4');
@@ -376,17 +446,78 @@ export function buildAvatar(eq: Equipped, silhouette = SILHOUETTE): THREE.Group 
   return g;
 }
 
-/** 다 쓴 모양을 버린다 (재질은 같이 쓰므로 남긴다) */
+/** 다 쓴 모양을 버린다 (같이 쓰는 재질은 남긴다) */
 export function disposeAvatar(g: THREE.Object3D): void {
   g.traverse((o) => {
     if (o instanceof THREE.Mesh) {
       o.geometry.dispose();
-      if (o.material instanceof THREE.Material && !mats.has(keyOf(o.material))) o.material.dispose();
+      const m = o.material;
+      if (m instanceof THREE.Material && !shared.has(m)) m.dispose();
     }
   });
 }
 
-function keyOf(m: THREE.Material): string {
-  if (m instanceof THREE.MeshStandardMaterial) return `#${m.color.getHexString()}|${m.roughness}`;
-  return '';
+/* ------------------------------------------------------------------ */
+/* 옷장 배경 (2026-11-27 "배경은 집에 있는 옷장 앞") — 같은 클레이 재질로 */
+
+/**
+ * 집 안 옷장 앞: 뒤로 나무 옷장(문 두 짝·손잡이·위 몰딩·받침), 벽(아래 징두리), 나무 바닥, 둥근 러그.
+ * 아바타는 러그 가운데(원점)에 선다. 옷장은 돌지 않는다.
+ */
+export function buildRoom(): THREE.Group {
+  const room = new THREE.Group();
+  const flat = (geo: THREE.BufferGeometry, color: string, rough = 0.95) => {
+    const m = new THREE.Mesh(geo, mat(color, rough));
+    m.receiveShadow = true;
+    return m;
+  };
+
+  // 벽 + 아래 징두리
+  room.add(at(flat(new THREE.PlaneGeometry(12, 6), '#efe2d0'), 0, 3, -1.6));
+  room.add(at(flat(new THREE.BoxGeometry(12, 0.55, 0.04), '#e2cfb6'), 0, 0.275, -1.58));
+  room.add(at(flat(new THREE.BoxGeometry(12, 0.05, 0.07), '#cfb898'), 0, 0.56, -1.57));
+
+  // 나무 바닥 — 판자 결
+  const floor = flat(new THREE.PlaneGeometry(12, 8), '#c9a37c');
+  floor.rotation.x = -Math.PI / 2;
+  room.add(at(floor, 0, 0, 1.2));
+  for (let i = -6; i <= 6; i++) {
+    const seam = flat(new THREE.BoxGeometry(0.012, 0.002, 8), '#b38c64');
+    room.add(at(seam, i * 0.42 + 0.1, 0.001, 1.2));
+  }
+
+  // 둥근 러그
+  const rug = flat(new THREE.CylinderGeometry(0.85, 0.85, 0.025, 64), '#ead3c4');
+  room.add(at(rug, 0, 0.012, 0.05));
+  const rugRing = flat(new THREE.TorusGeometry(0.72, 0.03, 10, 64), '#dcbcaa');
+  rugRing.rotation.x = Math.PI / 2;
+  room.add(at(rugRing, 0, 0.026, 0.05));
+
+  // 나무 옷장
+  const W = 2.3;
+  const H = 2.45;
+  const D = 0.55;
+  const Z = -1.3;
+  const wood = '#b8875a';
+  const door = '#c7976a';
+  const body = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), mat(wood));
+  body.castShadow = true;
+  body.receiveShadow = true;
+  room.add(at(body, 0, H / 2 + 0.08, Z));
+  // 받침과 위 몰딩
+  room.add(at(flat(new THREE.BoxGeometry(W + 0.06, 0.1, D + 0.04), '#a3754c'), 0, 0.05, Z));
+  room.add(at(flat(new THREE.BoxGeometry(W + 0.14, 0.1, D + 0.1), '#a3754c'), 0, H + 0.13, Z));
+  // 문 두 짝 — 가운데 틈, 문마다 안쪽 판
+  for (const s of [-1, 1]) {
+    const leaf = flat(new THREE.BoxGeometry(W / 2 - 0.08, H - 0.2, 0.04), door);
+    room.add(at(leaf, s * (W / 4), H / 2 + 0.08, Z + D / 2 + 0.02));
+    const panelTop = flat(new THREE.BoxGeometry(W / 2 - 0.3, 0.9, 0.02), '#cfa277');
+    room.add(at(panelTop, s * (W / 4), H * 0.68, Z + D / 2 + 0.05));
+    const panelBottom = flat(new THREE.BoxGeometry(W / 2 - 0.3, 0.7, 0.02), '#cfa277');
+    room.add(at(panelBottom, s * (W / 4), H * 0.27, Z + D / 2 + 0.05));
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.045, 16, 12), mat('#8a5f3c', 0.7));
+    knob.castShadow = true;
+    room.add(at(knob, s * 0.09, H / 2 + 0.1, Z + D / 2 + 0.08));
+  }
+  return room;
 }

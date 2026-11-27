@@ -76,6 +76,12 @@ export const UPDATE_LOG: CategoryLog[] = [
         screen: '선택 가입',
         changes: [
           {
+            kind: '수정',
+            date: '11-27',
+            text: '"기록을 백업할까요?" 아래 설명을 목록으로 묶어 제목 옆 ⓘ 툴팁에 넣었어요',
+            history: [{ date: '11-25', text: '제목 아래에 설명 문단이 여섯 줄로 펼쳐져 있었어요' }],
+          },
+          {
             kind: '추가',
             date: '11-25',
             text: '온보딩 다음에 선택 가입 화면을 넣었어요. 가입하지 않고 시작할 수도 있어요',
@@ -184,8 +190,11 @@ export const UPDATE_LOG: CategoryLog[] = [
           {
             kind: '수정',
             date: '11-27',
-            text: '"맛있는 냄새! 먹을까?"는 오른쪽 아래로 동그라미 꼬리가 달린 상상하는 말풍선(구름)에, 두 버튼은 말풍선 밖 아래에',
-            history: [{ date: '처음', text: '네모 말풍선 안에 문구와 두 버튼이 함께 있었어요' }],
+            text: '"맛있는 냄새! 먹을까?"는 테두리에 그라데이션이 들어간 깔끔한 타원 말풍선(오른쪽 아래 동그라미 꼬리)에, 두 버튼은 말풍선 아래에 폭을 줄여 한 줄로 나란히',
+            history: [
+              { date: '처음', text: '네모 말풍선 안에 문구와 두 버튼이 함께 있었어요' },
+              { date: '11-27', text: '구름 모양 상상 말풍선, 두 버튼은 아래에 위아래로' },
+            ],
           },
         ],
       },
@@ -531,6 +540,12 @@ export const UPDATE_LOG: CategoryLog[] = [
         screen: '2주 점검',
         changes: [
           {
+            kind: '수정',
+            date: '11-27',
+            text: '아니에요·조금·꽤·많이를 segmented control 로 — 고른 칸 바탕이 미끄러져 옮겨 가요',
+            history: [{ date: '11-27', text: '따로 떨어진 버튼 네 개였어요' }],
+          },
+          {
             kind: '추가',
             date: '11-27',
             text: '2주마다 세 가지 점검 — 회기 후 피로 회복 시간, 내담자와의 정서적 거리감, 사례 개념화 흥미 (아니에요·조금·꽤·많이)',
@@ -560,6 +575,12 @@ export const UPDATE_LOG: CategoryLog[] = [
       {
         screen: '주간 요약',
         changes: [
+          {
+            kind: '수정',
+            date: '11-27',
+            text: '이번 주 기록은 2×2 타일, 반응 유형은 간식 그림이 든 3칸 타일 grid 로',
+            history: [{ date: '처음', text: '이름과 값이 한 줄씩 늘어선 목록이었어요' }],
+          },
           {
             kind: '수정',
             date: '11-24',
@@ -664,6 +685,12 @@ export const UPDATE_LOG: CategoryLog[] = [
       {
         screen: '설정',
         changes: [
+          {
+            kind: '수정',
+            date: '11-27',
+            text: '설정에 들어가면 제목 네 개(홈 화면 추가 · 기록 백업·동기화 · 인트로 날씨 지역 · 데이터)만 보이고, 누르면 그 화면으로 들어가요',
+            history: [{ date: '처음', text: '모든 설정이 한 화면에 길게 이어져 있었어요' }],
+          },
           { kind: '삭제', date: '11-25', text: '부를 이름 칸 (닉네임은 가입할 때 정해요)' },
           {
             kind: '추가',
@@ -702,6 +729,14 @@ export const UPDATE_LOG: CategoryLog[] = [
       {
         screen: '옷장 — 직장인 꾸미기',
         changes: [
+          { kind: '수정', date: '11-27', text: '아바타 질감을 클레이처럼 — 보송한 빛과 손으로 빚은 얕은 요철' },
+          { kind: '추가', date: '11-27', text: '무대 배경: 집 안 나무 옷장 앞(벽·나무 바닥·둥근 러그)' },
+          {
+            kind: '수정',
+            date: '11-27',
+            text: '아래 아이템 칸 그림도 3D 로',
+            history: [{ date: '11-24', text: '2D 그림이었어요' }],
+          },
           {
             kind: '수정',
             date: '11-27',

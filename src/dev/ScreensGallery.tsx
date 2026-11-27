@@ -466,6 +466,32 @@ export function ScreensGallery({ onBack }: { onBack: () => void }) {
         </DemoTabs>
       ),
     },
+    // 2026-11-27 — 설정을 나눈 세부 화면들
+    ...(
+      [
+        ['install', '홈 화면 추가'],
+        ['account', '기록 백업·동기화'],
+        ['weather', '인트로 날씨 지역'],
+        ['data', '데이터'],
+      ] as const
+    ).map(([page, name]) => ({
+      id: `settings-${page}`,
+      label: `설정 — ${name}`,
+      spec: '9절 화면 13',
+      tall: true,
+      render: () => (
+        <DemoTabs active="settings">
+          <SettingsScreen
+            settings={settings}
+            onChangeSettings={setSettings}
+            onReset={noop}
+            onBack={noop}
+            demo
+            initialPage={page}
+          />
+        </DemoTabs>
+      ),
+    })),
   ];
 
   const byId = new Map(screens.map((s) => [s.id, s]));

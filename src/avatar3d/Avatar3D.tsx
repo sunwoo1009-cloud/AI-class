@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import type { Equipped } from '../avatar/Avatar';
-import { buildAvatar, disposeAvatar } from './buildAvatar';
+import { buildAvatar, buildRoom, disposeAvatar } from './buildAvatar';
 
 export interface Avatar3DProps {
   equipped: Equipped;
@@ -11,6 +11,8 @@ export interface Avatar3DProps {
   title?: string;
   /** 처음 돌아가 있는 각도(도) — 확인용 화면에서 뒷모습을 바로 보려고 */
   angle?: number;
+  /** 집 안 옷장 앞 배경 (옷장 무대) */
+  room?: boolean;
 }
 
 const reduceMotion = () =>
@@ -22,7 +24,14 @@ const reduceMotion = () =>
  * - 옷장(rotatable): 좌우로 끌면 돌아가고, 놓으면 살살 멈춘다. ‹ › 버튼으로 45도씩.
  * - 마이페이지: 돌리지 않고 앞모습. 그릴 일이 있을 때만 그린다(계속 돌지 않는다).
  */
-export default function Avatar3D({ equipped, rotatable = false, className, title, angle = 0 }: Avatar3DProps) {
+export default function Avatar3D({
+  equipped,
+  rotatable = false,
+  className,
+  title,
+  angle = 0,
+  room = false,
+}: Avatar3DProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const api = useRef<{
@@ -69,11 +78,27 @@ export default function Avatar3D({ equipped, rotatable = false, className, title
     rim.position.set(0, 2.5, -3);
     scene.add(rim);
 
-    // 바닥 그림자만 받는 판
+    // 배경 — 옷장 무대는 집 안 옷장 앞, 그 밖에는 바닥 그림자만 받는 투명한 판
     const ground = new THREE.Mesh(new THREE.CircleGeometry(1.2, 48), new THREE.ShadowMaterial({ opacity: 0.18 }));
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
-    scene.add(ground);
+    let backdrop: THREE.Group | null = null;
+    if (room) {
+      backdrop = buildRoom();
+      scene.add(backdrop);
+      key.shadow.camera.left = -3;
+      key.shadow.camera.right = 3;
+      key.shadow.camera.top = 3.2;
+      key.shadow.camera.bottom = -1;
+      key.shadow.camera.far = 14;
+      key.shadow.mapSize.set(2048, 2048);
+      key.shadow.camera.updateProjectionMatrix();
+      // 방 안이라 조금 물러서서 옷장이 보이게
+      camera.position.set(0, 1.2, 5.4);
+      camera.lookAt(0, 0.98, 0);
+    } else {
+      scene.add(ground);
+    }
 
     const pivot = new THREE.Group();
     pivot.rotation.y = (angle * Math.PI) / 180;
@@ -183,12 +208,13 @@ export default function Avatar3D({ equipped, rotatable = false, className, title
       canvas.removeEventListener('pointerup', onUp);
       canvas.removeEventListener('pointercancel', onUp);
       if (avatar) disposeAvatar(avatar);
+      if (backdrop) disposeAvatar(backdrop);
       ground.geometry.dispose();
       renderer.dispose();
       api.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rotatable]);
+  }, [rotatable, room]);
 
   // 입힌 것이 바뀌면 다시 만든다
   const eqKey = JSON.stringify(equipped);

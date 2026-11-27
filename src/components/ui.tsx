@@ -313,6 +313,54 @@ export function DoneButton({
 /* ------------------------------------------------------------------ */
 /* 탭 전환 — 고른 탭 아래 바탕이 미끄러져 옮겨 간다 */
 
+/**
+ * Segmented control (2026-11-27, 2주 점검) — 같은 폭의 칸이 한 줄로 붙어 있고,
+ * 고른 칸 바탕(thumb)이 미끄러져 옮겨 간다. 아직 안 골랐으면 바탕이 없다.
+ * 하나만 고르는 라디오와 같다(role=radiogroup).
+ */
+export function SegmentedControl<T extends string | number>({
+  options,
+  value,
+  onChange,
+  label,
+}: {
+  options: { value: T; label: string }[];
+  value: T | undefined;
+  onChange: (next: T) => void;
+  label: string;
+}) {
+  const i = options.findIndex((o) => o.value === value);
+  const n = options.length;
+  return (
+    <div
+      className="segc"
+      role="radiogroup"
+      aria-label={label}
+      style={{ gridTemplateColumns: `repeat(${n}, 1fr)` }}
+    >
+      {i >= 0 ? (
+        <span
+          className="segc-thumb"
+          aria-hidden="true"
+          style={{ width: `calc((100% - 8px) / ${n})`, transform: `translateX(${i * 100}%)` }}
+        />
+      ) : null}
+      {options.map((o) => (
+        <button
+          key={String(o.value)}
+          type="button"
+          role="radio"
+          aria-checked={o.value === value}
+          className="segc-opt"
+          onClick={() => onChange(o.value)}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function TabSwitch<T extends string>({
   options,
   value,

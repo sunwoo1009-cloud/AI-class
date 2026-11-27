@@ -3,6 +3,8 @@ import { evaluateEscalation } from '../lib/escalation';
 import { buildWeeklySummary } from '../lib/summary';
 import { loadCheckIns, loadWeeklySessions, saveWeeklySession } from '../storage/store';
 import { BackButton } from '../components/ui';
+import { reactionInfo } from '../constants';
+import { FoodIcon } from './menu/FoodIcon';
 
 interface Props {
   onBack: () => void;
@@ -58,33 +60,30 @@ export function WeeklySummary({ onBack }: Props) {
         <p className="muted">최근 7일 안에 체크인 기록이 없어요.</p>
       ) : (
         <>
-          <div className="card">
-            <div className="stat-row">
-              <span className="stat-label">체크인</span>
-              <span className="stat-value">{summary.checkInCount}회</span>
-            </div>
-            <div className="stat-row">
-              <span className="stat-label">하기 전 평균 점수</span>
-              <span className="stat-value">{summary.avgSudsPre ?? '—'}</span>
-            </div>
-            <div className="stat-row">
-              <span className="stat-label">재평가 평균</span>
-              <span className="stat-value">{summary.avgSudsPost ?? '—'}</span>
-            </div>
-            <div className="stat-row">
-              <span className="stat-label">이번 주 회기 수</span>
-              <span className="stat-value">
-                {summary.sessions !== null ? `${summary.sessions}회` : '—'}
-              </span>
-            </div>
+          {/* 2026-11-27 — 줄 목록 대신 grid 타일 (사용자 요청) */}
+          <div className="ws-grid">
+            {(
+              [
+                ['체크인', `${summary.checkInCount}회`],
+                ['하기 전 평균 점수', summary.avgSudsPre ?? '—'],
+                ['재평가 평균', summary.avgSudsPost ?? '—'],
+                ['이번 주 회기 수', summary.sessions !== null ? `${summary.sessions}회` : '—'],
+              ] as const
+            ).map(([label, value]) => (
+              <div className="ws-tile" key={label}>
+                <span className="ws-value">{value}</span>
+                <span className="ws-label">{label}</span>
+              </div>
+            ))}
           </div>
 
           <h2>반응 유형</h2>
-          <div className="card">
+          <div className="ws-grid ws-grid-3">
             {summary.reactionCounts.map((r) => (
-              <div className="stat-row" key={r.reaction}>
-                <span className="stat-label">{r.label}</span>
-                <span className="stat-value">{r.count}회</span>
+              <div className={`ws-tile${r.count ? '' : ' is-zero'}`} key={r.reaction}>
+                <FoodIcon className="ws-icon" kind={reactionInfo(r.reaction).menuItem.icon} />
+                <span className="ws-value">{r.count}회</span>
+                <span className="ws-label">{r.label}</span>
               </div>
             ))}
           </div>

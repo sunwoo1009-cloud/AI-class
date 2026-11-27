@@ -98,6 +98,8 @@ interface Props {
   onBack: () => void;
   /** 발표용 모음 — 삭제를 눌러도 진행·완료 화면만 보이고 기록은 지우지 않는다 */
   demo?: boolean;
+  /** 처음 열 화면 (화면 모음에서 세부 화면을 바로 보려고) */
+  initialPage?: SettingsPage;
 }
 
 function snapshot(): Snapshot {
@@ -111,13 +113,24 @@ function snapshot(): Snapshot {
   };
 }
 
+/** 설정 안의 화면 (2026-11-27) — 목록과 네 세부 화면 */
+export type SettingsPage = 'menu' | 'install' | 'account' | 'weather' | 'data';
+
 /** 명세 9절 화면 13 */
 export function SettingsScreen({
   onChangeSettings,
   onReset,
   onBack,
   demo = false,
+  initialPage = 'menu',
 }: Props) {
+  const [page, setPage] = useState<SettingsPage>(initialPage);
+  function openPage(next: SettingsPage) {
+    setPage(next);
+    setImportNote(null);
+    setConfirmingReset(false);
+    window.scrollTo({ top: 0 });
+  }
   const [includeJournal, setIncludeJournal] = useState(false);
   const [importNote, setImportNote] = useState<string | null>(null);
   const [confirmingReset, setConfirmingReset] = useState(false);
@@ -215,15 +228,70 @@ export function SettingsScreen({
     );
   }
 
+  // 2026-11-27 — 설정을 제목 목록과 세부 화면으로 나눴다 (사용자 요청)
+  if (page === 'menu') {
+    const rows: { id: Exclude<SettingsPage, 'menu'>; label: string; dot?: boolean }[] = [
+      { id: 'install', label: '홈 화면 추가' },
+      { id: 'account', label: '기록 백업·동기화' },
+      { id: 'weather', label: '인트로 날씨 지역' },
+      { id: 'data', label: '데이터', dot: showBackupNote },
+    ];
+    return (
+      <div className="app">
+        <div className="topbar">
+          <BackButton onClick={onBack} label="홈으로" />
+          <span className="topbar-title">설정</span>
+        </div>
+        <h1>설정</h1>
+        <nav className="my-list" aria-label="설정 메뉴">
+          {rows.map((r) => (
+            <button key={r.id} type="button" className="my-row" onClick={() => openPage(r.id)}>
+              <span className="my-row-text">
+                <b>{r.label}</b>
+              </span>
+              {r.dot ? <span className="my-dot" aria-label="살펴볼 것이 있어요" /> : null}
+              <span className="my-chev" aria-hidden="true">
+                ›
+              </span>
+            </button>
+          ))}
+        </nav>
+        <div className="spacer" />
+        <p className="muted" style={{ marginTop: 24 }}>
+          가입하지 않으면 기록은 이 브라우저에만 남아요. 가입은 선택이에요.
+        </p>
+      </div>
+    );
+  }
+
+  const TITLES: Record<Exclude<SettingsPage, 'menu'>, string> = {
+    install: '홈 화면 추가',
+    account: '기록 백업·동기화',
+    weather: '인트로 날씨 지역',
+    data: '데이터',
+  };
+
   return (
     <div className="app">
       <div className="topbar">
-        <BackButton onClick={onBack} label="홈으로" />
-        <span className="topbar-title">설정</span>
+        <BackButton onClick={() => openPage('menu')} label="설정으로" />
+        <span className="topbar-title">{TITLES[page]}</span>
       </div>
 
+      {page === 'install' ? (
+        <>
+          <h1>홈 화면 추가</h1>
+          {installed ? (
+            <p className="muted">이미 홈 화면에 추가해서 쓰고 있어요.</p>
+          ) : null}
+        </>
+      ) : null}
+      {page === 'account' ? <h1 className="sr-only">기록 백업·동기화</h1> : null}
+      {page === 'weather' ? <h1 className="sr-only">인트로 날씨 지역</h1> : null}
+      {page === 'data' ? <h1>데이터</h1> : null}
+
       {/* 명세 7.6 — 한 달 넘게 내보내지 않았으면 조용히 알린다 */}
-      {showBackupNote ? (
+      {page === 'data' && showBackupNote ? (
         <div className="card card-note">
           <p style={{ marginBottom: 0 }}>
             {lastExport
@@ -236,11 +304,11 @@ export function SettingsScreen({
       ) : null}
 
       {/* 명세 7.6 — 브라우저 주소로 쓰면 기록이 지워질 수 있다.
-          2026-11-27 제목 아래 내용을 아코디언으로 접었다. */}
-      {installed ? null : (
+          2026-11-27 제목 아래 내용을 아코디언으로 접었다. 같은 날 '홈 화면 추가' 화면으로 옮겼다. */}
+      {page !== 'install' ? null : (
         <div className="card card-note">
           <p style={{ marginBottom: 8, fontWeight: 650 }}>
-            홈 화면에 추가해서 쓰세요
+            {installed ? '다른 기기에서도 이렇게 추가하세요' : '홈 화면에 추가해서 쓰세요'}
           </p>
           <Accordion
             items={[
@@ -262,10 +330,12 @@ export function SettingsScreen({
       )}
 
       {/* 명세 7.7 — 선택 가입. 닉네임도 가입할 때 정한다 (예전 '표시 이름' 칸을 대신한다) */}
-      <AccountSection onChangeSettings={onChangeSettings} onReset={onReset} />
+      {page === 'account' ? <AccountSection onChangeSettings={onChangeSettings} onReset={onReset} /> : null}
 
-      <WeatherPlaceSection />
+      {page === 'weather' ? <WeatherPlaceSection /> : null}
 
+      {page === 'data' ? (
+        <>
       <h2 style={{ marginTop: 22 }}>데이터 내보내기</h2>
       <p className="muted">
         백업하거나 기기를 바꿀 때 쓰세요.
@@ -316,7 +386,7 @@ export function SettingsScreen({
       <p className="muted">
         이 기기의 체크인, 일기, 회기 수, 쿠폰 도장, 꾸민 직장인을 모두 지우고 로그아웃해요.
         되돌릴 수 없어요. 기관 공용 기기에서 쓰셨다면 나가기 전에 지우세요. 서버에 백업한
-        기록은 남아요 — 서버 기록까지 지우려면 위의 ‘계정 삭제’를 쓰세요.
+        기록은 남아요 — 서버 기록까지 지우려면 설정 → ‘기록 백업·동기화’의 ‘계정 삭제’를 쓰세요.
       </p>
       {/* 2026-11-27 — 전부 지우기 → 진행 막대 → 100% 가 되면 지운 뒤 화면(After delete) */}
       {wipe.pct !== null ? (
@@ -353,11 +423,10 @@ export function SettingsScreen({
           모든 데이터 삭제
         </button>
       )}
+        </>
+      ) : null}
 
       <div className="spacer" />
-      <p className="muted" style={{ marginTop: 24 }}>
-        가입하지 않으면 기록은 이 브라우저에만 남아요. 가입은 선택이에요.
-      </p>
     </div>
   );
 }

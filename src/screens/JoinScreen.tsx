@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { accountsAvailable, startAutoSync } from '../sync/account';
 import { AuthForm } from './AccountSection';
-import { BackButton } from '../components/ui';
+import { BackButton, Tooltip } from '../components/ui';
 
 interface Props {
   /** 가입하든 안 하든 다음으로 (홈) */
@@ -25,20 +25,22 @@ export function JoinScreen({ onDone, onBack }: Props) {
           <BackButton onClick={onBack} label="앞 화면으로" />
         </div>
       ) : null}
-      <h1>기록을 백업할까요?</h1>
-      <p className="muted">
-        가입은 선택이에요.
-        <br />
-        가입하지 않아도 모든 기능을 쓸 수 있고,
-        <br />
-        기록은 이 기기에만 남아요.
-        <br />
-        가입하면 기록을 서버에 백업하고
-        <br />
-        다른 기기에서도 이어서 쓸 수 있어요.
-        <br />
-        나중에 설정에서도 가입할 수 있어요.
-      </p>
+      {/* 2026-11-27 — 아래 설명을 목록으로 묶어 제목 옆 ⓘ 툴팁으로 (사용자 요청) */}
+      <h1 className="title-with-tip">
+        기록을 백업할까요?
+        <Tooltip
+          label="가입 안내 보기"
+          align="start"
+          lines={[
+            '• 가입은 선택이에요',
+            '• 가입하지 않아도 모든 기능을 쓸 수 있어요',
+            '• 가입하지 않으면 기록은 이 기기에만 남아요',
+            '• 가입하면 기록을 서버에 백업해요',
+            '• 다른 기기에서도 이어서 쓸 수 있어요',
+            '• 나중에 설정에서도 가입할 수 있어요',
+          ]}
+        />
+      </h1>
 
       {done ? (
         <div className="card">

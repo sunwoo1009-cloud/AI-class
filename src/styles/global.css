@@ -1315,6 +1315,19 @@ input[type='range'] {
   height: 66px;
 }
 
+/* 3D 로 그린 칸 그림 (2026-11-27) — 정사각 그림을 칸 안에 맞춘다 */
+img.boutique-thumb.thumb3d {
+  height: 84px;
+  object-fit: contain;
+  animation: thumb-in 260ms ease both;
+}
+
+@keyframes thumb-in {
+  from {
+    opacity: 0.4;
+  }
+}
+
 .boutique-name {
   font-size: 0.8125rem;
   font-weight: 700;
