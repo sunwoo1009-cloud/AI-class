@@ -1,5 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { speechText } from './guide';
+import { speechText, voiceScore } from './guide';
+
+describe('자연스러운 한국어 목소리 고르기', () => {
+  const v = (name: string, lang = 'ko-KR') => ({ name, lang });
+  it('한국어가 아니면 고르지 않는다', () => {
+    expect(voiceScore(v('Samantha', 'en-US'))).toBeLessThan(0);
+  });
+  it('신경망·온라인 > 프리미엄·향상 > Google > 기본 > 압축', () => {
+    const order = [
+      v('Microsoft SunHi Online (Natural) - Korean (Korea)'),
+      v('Yuna (Premium)'),
+      v('Yuna (Enhanced)'),
+      v('Google 한국의'),
+      v('Yuna'),
+      v('Yuna (Compact)'),
+    ].map(voiceScore);
+    expect([...order].sort((a, b) => b - a)).toEqual(order);
+  });
+});
 
 describe('음성 안내 — 읽을 글 다듬기', () => {
   it('닉네임 자리(○○)와 뒤 조사는 읽지 않는다', () => {

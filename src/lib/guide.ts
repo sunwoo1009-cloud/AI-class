@@ -51,13 +51,41 @@ export function speechText(text: string): string {
     .trim();
 }
 
-let koVoice: SpeechSynthesisVoice | null | undefined;
+/**
+ * 한국어 목소리 가운데 가장 자연스러운 것 고르기 (순수 함수, 2026-11-27 "로봇 같다" 고침).
+ * 기기·브라우저마다 들어 있는 목소리가 다르다. 이름으로 질을 어림한다:
+ * - 엣지의 "Microsoft ○○ Online (Natural)", 신경망 목소리(Neural) — 가장 사람 같다
+ * - 아이폰의 향상·프리미엄(Enhanced/Premium) 목소리, 크롬·안드로이드의 Google 목소리
+ * - 기기에 깔린 기본·압축(Compact) 목소리는 뒤로
+ */
+export function voiceScore(v: { name: string; lang: string; localService?: boolean }): number {
+  if (!v.lang?.toLowerCase().startsWith('ko')) return -1;
+  const n = v.name;
+  let s = 1;
+  if (/natural|neural/i.test(n)) s += 6;
+  if (/online/i.test(n)) s += 2;
+  if (/premium|프리미엄/i.test(n)) s += 5;
+  if (/enhanced|향상/i.test(n)) s += 4;
+  if (/google/i.test(n)) s += 3;
+  if (/compact|축소/i.test(n)) s -= 3;
+  return s;
+}
+
+let koVoice: SpeechSynthesisVoice | null = null;
 function pickVoice(): SpeechSynthesisVoice | null {
   if (!speechAvailable) return null;
-  if (koVoice !== undefined && koVoice !== null) return koVoice;
+  if (koVoice) return koVoice;
+  // 목소리 목록은 늦게 채워진다 — 비어 있으면 다음에 다시 고른다
   const voices = window.speechSynthesis.getVoices();
-  koVoice = voices.find((v) => v.lang?.toLowerCase().startsWith('ko')) ?? null;
+  let best: SpeechSynthesisVoice | null = null;
+  for (const v of voices) if (voiceScore(v) > (best ? voiceScore(best) : 0)) best = v;
+  koVoice = best;
   return koVoice;
+}
+if (speechAvailable) {
+  window.speechSynthesis.addEventListener?.('voiceschanged', () => {
+    koVoice = null;
+  });
 }
 
 /** 지금 읽던 것을 멈추고 새로 읽는다 */
@@ -69,7 +97,8 @@ export function speak(text: string): void {
   synth.cancel();
   const u = new SpeechSynthesisUtterance(t);
   u.lang = 'ko-KR';
-  u.rate = 0.9;
+  // 너무 느리면 오히려 기계처럼 들린다 — 조금 느긋한 정도로
+  u.rate = 0.95;
   u.pitch = 1;
   const v = pickVoice();
   if (v) u.voice = v;
